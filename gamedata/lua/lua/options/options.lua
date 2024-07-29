@@ -285,6 +285,16 @@ options = {
         key = 'ui',
         items = {
             {
+                title = "<LOC OPTIONS_0006>Language",
+                key = 'selectedlanguage',
+                type = 'toggle',
+                restart = true,
+                default = __language,
+                custom = {
+                    states = __installedlanguages,
+                },
+            },
+            {
                 title = "UI Scale",
                 key = 'ui_scale',
                 restart = true,

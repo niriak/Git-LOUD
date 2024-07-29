@@ -9,10 +9,23 @@
 LOG("*DEBUG UserInit")
 
 __language = GetPreference('options_overrides.language', '')
-
+-- Build language select options
+__installedlanguages = DiskFindFiles("/loc/", '*strings_db.lua')
+for index, language in __installedlanguages do
+    language = string.upper(string.gsub(language, ".*/(.*)/.*", "%1"))
+    __installedlanguages[index] = { text = language, key = language }
+end
 
 -- load global functions
 doscript '/lua/globalInit.lua'
+
+-- Do we have an custom language set inside user-options ?
+local selectedlanguage = import("/lua/user/prefs.lua").GetFromCurrentProfile('options').selectedlanguage
+if selectedlanguage ~= nil then
+    __language = selectedlanguage
+    SetPreference('options_overrides.language', __language)
+    doscript '/lua/system/Localization.lua'
+end
 
 WaitFrames = coroutine.yield
 
