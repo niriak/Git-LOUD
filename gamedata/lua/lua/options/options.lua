@@ -625,7 +625,47 @@ options = {
                         {text = "<LOC _On>", key = 1 },
                     },
                 },
-            }
+            },
+
+            {
+                title = 'Casting tools',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+            {
+                title = "<LOC OPTIONS_0309>Painting",
+                key = 'casting_painting',
+                type = 'toggle',
+                default = 18,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = false },
+                        { text = "<LOC CTRL>Use CTRL ", key = 17 },
+                        { text = "<LOC ALT>Use ALT", key = 18 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0315>Show mouse locations of players",
+                key = 'share_mouse',
+                type = 'toggle',
+                default = 'off',
+                custom = {
+                    states = {
+                        { text = "<LOC _On>", key = 'on' },
+                        { text = "<LOC _Off>", key = 'off' },
+                    },
+                },
+
+                set = function(control, value, startup)
+                    if GetCurrentUIState() == 'game' then
+                        import("/lua/ui/game/casting/mouse.lua").UpdatePreferenceOption(value)
+                    end
+                end,
+            },
         },
     },
     video = {

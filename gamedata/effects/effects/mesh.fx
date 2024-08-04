@@ -5,7 +5,7 @@
 ///
 /// Summary  :  Effect file for mesh rendering.
 ///
-/// Copyright © 2006 Gas Powered Games, Inc.  All rights reserved.
+/// Copyright ï¿½ 2006 Gas Powered Games, Inc.  All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////
@@ -2492,6 +2492,12 @@ float4 CommandFeedbackPS0( VERTEXNORMAL_VERTEX vertex, uniform bool fade ) : COL
 {
     float4 color = tex2D( albedoSampler, vertex.texcoord0.xy);
 	return float4(color.rgb, fade ? saturate(color.a * vertex.material.x) : color.a );
+}
+
+float4 FakeRingsPS( VERTEXNORMAL_VERTEX vertex, uniform float alpha) : COLOR0
+{
+    float4 color = tex2D( albedoSampler, vertex.texcoord0.xy);
+    return float4(color.rgb, vertex.material.y );
 }
 
 float4 CommandFeedbackPS1( VERTEXNORMAL_VERTEX vertex, uniform float glow) : COLOR0
@@ -5516,6 +5522,29 @@ technique RallyPoint
 
         VertexShader = compile vs_1_1 CommandFeedbackVS(0.7);
         PixelShader = compile ps_2_0 CommandFeedbackPS0(false);
+    }
+}
+
+technique FakeRings
+<
+    string cartographicTechnique = "CartographicFeedback";
+
+    int renderStage = STAGE_PREWATER + STAGE_PREEFFECT;
+    int parameter = PARAM_FRACTIONCOMPLETE;
+>
+{
+    pass P0
+    {
+        AlphaState( AlphaBlend_SrcAlpha_InvSrcAlpha_Write_RGB )    // if RGBA is written, then you get glow, just RGB is no glow
+        RasterizerState( Rasterizer_Cull_CW )
+
+#ifndef DIRECT3D10
+        AlphaTestEnable = true;
+        AlphaRef = 0x23;
+#endif
+
+        VertexShader = compile vs_1_1 NormalMappedVS();
+        PixelShader = compile ps_2_0 FakeRingsPS(false);
     }
 }
 

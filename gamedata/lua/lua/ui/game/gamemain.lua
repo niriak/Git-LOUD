@@ -430,8 +430,10 @@ function CreateUI(isReplay)
         import('/lua/gaz_ui/modules/console_commands.lua').Init()
     end
 
+    -- casting tools
+    import("/lua/ui/game/casting/mouse.lua")
+    import("/lua/ui/game/casting/painting.lua")
 end
-	
 
 local provider = false
 

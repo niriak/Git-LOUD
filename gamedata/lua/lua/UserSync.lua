@@ -32,6 +32,36 @@ local PlaySound = moho.entity_methods.PlaySound
 
 local CurrentSimSpeed = 0	-- record the current sim speed rate and use this to detect a change
 
+local SyncCallbacks = { }
+function AddOnSyncCallback(cb, identifier)
+    SyncCallbacks[identifier] = cb
+end
+
+function RemoveOnSyncCallback(identifier)
+    SyncCallbacks[identifier] = nil
+end
+
+---@type table<string, table<string, function>>
+local HashedSyncCallbacks = { }
+
+--- Adds a callback
+---@param cb function
+---@param cat string        # Category to listen to (e.g., Sync.ArmyTransfer)
+---@param id string         # Identifier to allow us to be replaced
+function AddOnSyncHashedCallback(cb, cat, id)
+    HashedSyncCallbacks[cat] = HashedSyncCallbacks[cat] or { }
+    HashedSyncCallbacks[cat][id] = cb
+end
+
+--- Removes a callback
+---@param cat string        # Sync category to listen to
+---@param id string
+function RemoveOnSyncHashedCallback(cat, id)
+    if HashedSyncCallbacks[cat] then
+        HashedSyncCallbacks[cat][id] = nil
+    end
+end
+
 -- Here's an opportunity for user side script to examine the Sync table for the new tick
 function OnSync()
 
@@ -158,6 +188,27 @@ function OnSync()
 	
         scoreData.current = dcopy(Sync.Score)
 		Sync.FullScoreSync = false
+    end
+
+    -- old sync callbacks
+    for k, callback in SyncCallbacks do 
+        local ok, msg = pcall(callback, Sync)
+
+        -- if it fails, kick it out
+        if not ok then
+            SyncCallbacks[k] = nil
+            WARN(msg)
+        end
+    end
+
+    -- new sync callbacks
+    for k, data in Sync do
+        local callbacks = HashedSyncCallbacks[k]
+        if callbacks then
+            for l, callback in callbacks do
+                callback(data)
+            end
+        end
     end
 
 	if not tempty(Sync.GameResult) then
