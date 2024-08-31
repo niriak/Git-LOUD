@@ -256,6 +256,7 @@ UnitBlueprint {
             
             Turreted = true,
             UseFiringSolutionInsteadOfAimBone = true,
+            WeaponCategory = "Direct Fire",
         },
         {
             AboveWaterTargetsOnly = true,
@@ -322,6 +323,7 @@ UnitBlueprint {
 			
             Turreted = true,
             UseFiringSolutionInsteadOfAimBone = true,
+            WeaponCategory = "Direct Fire",
         },
         {
             Buffs = {
@@ -333,6 +335,7 @@ UnitBlueprint {
             },
 			
             Damage = 0,
+            DisplayName = "Death EMP",
             DummyWeapon = true,
 
             Label = 'DeathWeapon',

@@ -55,6 +55,7 @@ end
 -- table.contains(t,val) returns the key for val if it is in t.
 -- Otherwise, return nil
 function table.find(t,val)
+    if not t then return end -- prevents looping over nil table
     for k,v in t do
         if v == val then
             return k
@@ -278,6 +279,38 @@ function table.inverse(t)
     return r
 end
 
+--- Combines a series of tables into one table. Returns a new table. The parameters are merged into the new table in order
+---@see `table.assimilate`
+---@param ... table[]
+---@return table
+function table.combine(...)
+    local combined = { }
+    for k = 1, arg.n do
+        for key, value in arg[k] do
+            combined[key] = value
+        end
+    end
+
+    return combined
+end
+
+--- Converts a table to a new table with values as keys and values equal to true, duplicated table values are discarded
+--- it is useful for quickly looking up values in tables instead of looping over them
+--- table.hash { [1] = 'A',  [2] = 'B',  [3] = 'C',  [4] = 'C' } =>
+---            { [A] = true, [B] = true, [C] = true }
+function table.hash(t)
+    if not t then return {} end -- prevents looping over nil table
+    local r = {}
+    for k, v in t do
+        if type(v) ~= "string" and type(v) ~= 'number' then
+            r[tostring(v)] = true
+        else
+            r[v] = true
+        end
+    end
+    return r
+end
+
 -- table.map(fn,t) returns a table with the same keys as t but with
 -- fn applied to each value.
 function table.map(fn, t)
@@ -290,12 +323,31 @@ end
 
 -- table.empty(t) returns true if t has no keys/values.
 function table.empty(t)
-
+    if type(t) ~= 'table' then return true end
     return next(t) == nil
-
 end
 
 -- All functions hereafter are borrowed from FAF -------------------------------
+
+--- Returns a new table with unique values stored using numeric keys and it does not preserve keys of the original table
+---@generic T, G
+---@param t? table<T, G>
+---@return table<T, G> | nil
+function table.unique(t)
+    if not t then return end -- prevents looping over nil table
+    local unique = {}
+    local ins = {}
+    local n = 0
+    for k, v in t do
+        if not ins[v] then
+            n = n + 1
+            unique[n] = v -- faster than table.insert(unique, v)
+            ins[v] = true
+        end
+    end
+
+    return unique
+end
 
 --- "explode" a string into a series of tokens, using a separator character `sep`
 function StringSplit(str, sep)

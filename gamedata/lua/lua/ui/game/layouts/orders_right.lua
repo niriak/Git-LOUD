@@ -1,19 +1,17 @@
-local UIUtil = import('/lua/ui/uiutil.lua')
-local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
-local GameCommon = import('/lua/ui/game/gamecommon.lua')
-local Bitmap = import('/lua/maui/bitmap.lua').Bitmap
 
-local Grid_Params = import('/lua/ui/game/orders.lua').Get_Grid_Params()
-
-local numSlots = Grid_Params.Grid.numSlots
-local firstAltSlot = Grid_Params.Grid.firstAltSlot
-local vertRows = Grid_Params.Grid.vertRows
-local horzRows = Grid_Params.Grid.horzRows
-local vertCols = Grid_Params.Grid.vertCols
-local horzCols = Grid_Params.Grid.horzCols
+local UIUtil = import("/lua/ui/uiutil.lua")
+local LayoutHelpers = import("/lua/maui/layouthelpers.lua")
+local GameCommon = import("/lua/ui/game/gamecommon.lua")
+local Bitmap = import("/lua/maui/bitmap.lua").Bitmap
+local numSlots = 14
+local firstAltSlot = 8
+local vertRows = 7
+local horzRows = 2
+local vertCols = numSlots/vertRows
+local horzCols = numSlots/horzRows
 
 function SetLayout()
-    local controls = import('/lua/ui/game/orders.lua').controls
+    local controls = import("/lua/ui/game/orders.lua").controls
 
     controls.bg:SetTexture(UIUtil.SkinnableFile('/game/orders-panel/order-panel_bmp.dds'))
     LayoutHelpers.AtRightIn(controls.bg, controls.controlClusterGroup, 10)
@@ -50,24 +48,19 @@ function SetLayout()
     controls.bracketRightMid:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_m.dds'))
 
     controls.bracketRightMin.Top:Set(controls.bg.Top)
-    LayoutHelpers.AtRightIn(controls.bracketRightMin, controls.bg, -11)
+    controls.bracketRightMin.Right:Set(function() return controls.bg.Right() + 11 end)
 
     controls.bracketRightMax.Bottom:Set(controls.bg.Bottom)
     controls.bracketRightMax.Right:Set(controls.bracketRightMin.Right)
 
     controls.bracketRightMid.Bottom:Set(controls.bracketRightMax.Top)
     controls.bracketRightMid.Top:Set(controls.bracketRightMin.Bottom)
-    LayoutHelpers.AtRightIn(controls.bracketRightMid, controls.bracketRightMin, 7)
+    controls.bracketRightMid.Right:Set(function() return controls.bracketRightMin.Right() - 7 end)
 
     LayoutHelpers.SetDimensions(controls.orderButtonGrid, GameCommon.iconWidth * horzCols, GameCommon.iconHeight * horzRows)
     LayoutHelpers.AtCenterIn(controls.orderButtonGrid, controls.bg, 0, -1)
     controls.orderButtonGrid:AppendRows(horzRows)
     controls.orderButtonGrid:AppendCols(horzCols)
-
-    controls.bg.Width:Set(Grid_Params.Order_Slots.panelsize.width)
-    controls.bg.Height:Set(Grid_Params.Order_Slots.panelsize.height)
-    LayoutHelpers.SetDimensions(controls.orderButtonGrid, Grid_Params.Order_Slots.iconsize.width * Grid_Params.Grid.horzCols, Grid_Params.Order_Slots.iconsize.height * Grid_Params.Grid.horzRows)
-    LayoutHelpers.AtLeftTopIn(controls.orderButtonGrid, controls.bg, 10, 12)
 
     controls.bg.Mini = function(state)
         controls.bg:SetHidden(state)

@@ -660,10 +660,6 @@ function ModBlueprints(all_blueprints)
 					end
 				end
 
-				if wep.DisplayName then
-					wep.DisplayName = nil
-				end
-
 				if wep.RangeCategory == 'UWRC_AntiAir' then
 				
 					if not wep.AntiSat == true then
@@ -1144,6 +1140,9 @@ function ModBlueprints(all_blueprints)
 		
 		if bp.Categories then
 		
+            -- Construct hash-based categories
+            bp.CategoriesHash = table.hash(bp.Categories)
+
 			local categories = {}
 			
 			for j,category in pairs(bp.Categories) do

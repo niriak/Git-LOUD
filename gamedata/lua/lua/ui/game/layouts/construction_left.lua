@@ -60,7 +60,6 @@ function SetLayout()
     LayoutHelpers.AtLeftIn(controls.minBG, controls.constructionGroup, 21)
     LayoutHelpers.ResetRight(controls.minBG)
     LayoutHelpers.ResetBottom(controls.minBG)
-    LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth, controls.minBG.BitmapHeight)
 
     controls.leftBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-left/bracket_bmp_t.dds'))
     controls.leftBracketMin.Left:Set(controls.constructionGroup.Left)
@@ -349,9 +348,9 @@ function LayoutTabs(controls)
         t4 = '/game/construct-tech_btn/t4_btn_',
         templates = '/game/construct-tech_btn/template_btn_',
         LCH = '/game/construct-tech_btn/left_upgrade_btn_',
+        Command = '/game/construct-tech_btn/left_upgrade_btn_',
         RCH = '/game/construct-tech_btn/r_upgrade_btn_',
         Back = '/game/construct-tech_btn/m_upgrade_btn_',
-        Command = '/game/construct-tech_btn/left_upgrade_btn_',
     }
 
     local function GetTabTextures(id)
@@ -386,7 +385,7 @@ function LayoutTabs(controls)
         end
     end
 
-    if table.getsize(controls.tabs) > 0 then
+    if not table.empty(controls.tabs) then
         for id, control in controls.tabs do
             SetupTab(control)
 
@@ -412,7 +411,6 @@ end
 function OnTabChangeLayout(type)
     local controls = import('/lua/ui/game/construction.lua').controls
     if type == 'construction' or type == 'templates' then
-        controls.extraBtn1.icon:Show()
         controls.extraBtn1.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/infinite_on.dds')
         controls.extraBtn1.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/infinite_off.dds')
         if controls.extraBtn1:IsDisabled() then
@@ -420,17 +418,8 @@ function OnTabChangeLayout(type)
         else
             controls.extraBtn1.icon:SetTexture(controls.extraBtn1.icon.OnTexture)
         end
-        controls.extraBtn2.icon:Show()
-        controls.extraBtn2.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_on.dds')
-        controls.extraBtn2.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_off.dds')
-        if controls.extraBtn2:IsDisabled() then
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OffTexture)
-        else
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OnTexture)
-        end
 
     elseif type == 'selection' then
-        controls.extraBtn1.icon:Show()
         controls.extraBtn1.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/template_on.dds')
         controls.extraBtn1.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/template_off.dds')
         if controls.extraBtn1:IsDisabled() then
@@ -438,19 +427,9 @@ function OnTabChangeLayout(type)
         else
             controls.extraBtn1.icon:SetTexture(controls.extraBtn1.icon.OnTexture)
         end
-        controls.extraBtn2.icon:Show()
-        controls.extraBtn2.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_on.dds')
-        controls.extraBtn2.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_off.dds')
-        if controls.extraBtn2:IsDisabled() then
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OffTexture)
-        else
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OnTexture)
-        end
     else
         controls.extraBtn1.icon:Hide()
-        controls.extraBtn2.icon:Hide()
         controls.extraBtn1.icon:SetSolidColor('00000000')
-        controls.extraBtn2.icon:SetSolidColor('00000000')
     end
 end
 

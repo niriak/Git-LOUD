@@ -1,9 +1,9 @@
-local UIUtil = import('/lua/ui/uiutil.lua')
-local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
-local Grid = import('/lua/maui/grid.lua').Grid
-local Button = import('/lua/maui/button.lua').Button
-local Bitmap = import('/lua/maui/bitmap.lua').Bitmap
-local Checkbox = import('/lua/maui/checkbox.lua').Checkbox
+local UIUtil = import("/lua/ui/uiutil.lua")
+local LayoutHelpers = import("/lua/maui/layouthelpers.lua")
+local Grid = import("/lua/maui/grid.lua").Grid
+local Button = import("/lua/maui/button.lua").Button
+local Bitmap = import("/lua/maui/bitmap.lua").Bitmap
+local Checkbox = import("/lua/maui/checkbox.lua").Checkbox
 
 
 function SetLayout()
@@ -44,9 +44,9 @@ function SetLayout()
             off = UIUtil.UIFile('/game/construct-sm_btn/fforward_off.dds')
         }
     }
-    local controls = import('/lua/ui/game/construction.lua').controls
-    local ordersControl = import('/lua/ui/game/construction.lua').ordersControl
-    local controlClusterGroup = import('/lua/ui/game/construction.lua').controlClusterGroup
+    local controls = import("/lua/ui/game/construction.lua").controls
+    local ordersControl = import("/lua/ui/game/construction.lua").ordersControl
+    local controlClusterGroup = import("/lua/ui/game/construction.lua").controlClusterGroup
     LayoutHelpers.AtTopIn(controls.constructionGroup, controlClusterGroup, 12)
     controls.constructionGroup.Bottom:Set(controlClusterGroup.Bottom)
     if ordersControl then
@@ -61,7 +61,9 @@ function SetLayout()
     LayoutHelpers.AtLeftIn(controls.minBG, controls.constructionGroup, 67)
     LayoutHelpers.ResetRight(controls.minBG)
     LayoutHelpers.ResetTop(controls.minBG)
-    LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth, controls.minBG.BitmapHeight)
+    LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth(), controls.minBG.BitmapHeight())
+    --controls.minBG.Width:Set(controls.minBG.BitmapWidth)
+    --controls.minBG.Height:Set(controls.minBG.BitmapHeight)
 
     controls.leftBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-left/bracket_bmp_t.dds'))
     LayoutHelpers.AtLeftIn(controls.leftBracketMin, controls.constructionGroup, -8)
@@ -69,7 +71,7 @@ function SetLayout()
 
     controls.leftBracketMax:SetTexture(UIUtil.UIFile('/game/bracket-left/bracket_bmp_b.dds'))
     controls.leftBracketMax.Left:Set(controls.leftBracketMin.Left)
-    controls.leftBracketMax.Bottom:Set(controls.constructionGroup.Bottom)
+    LayoutHelpers.AtBottomIn(controls.leftBracketMax, controls.constructionGroup)
 
     controls.leftBracketMid:SetTexture(UIUtil.UIFile('/game/bracket-left/bracket_bmp_m.dds'))
     LayoutHelpers.AtLeftIn(controls.leftBracketMid, controls.leftBracketMin, 7)
@@ -101,7 +103,9 @@ function SetLayout()
     controls.midBG1:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_m1.dds'))
     controls.midBG1.Left:Set(controls.minBG.Right)
     controls.midBG1.Bottom:Set(controls.minBG.Bottom)
-    LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth, controls.midBG1.BitmapHeight)
+    LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth(), controls.midBG1.BitmapHeight())
+    --controls.midBG1.Height:Set(controls.midBG1.BitmapHeight)
+    --controls.midBG1.Width:Set(controls.midBG1.BitmapWidth)
     LayoutHelpers.ResetTop(controls.midBG1)
 
     if not controls.midBG2 then
@@ -110,17 +114,22 @@ function SetLayout()
     controls.midBG2:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_m2.dds'))
     controls.midBG2.Left:Set(controls.midBG1.Right)
     controls.midBG2.Bottom:Set(controls.minBG.Bottom)
-    LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth, controls.midBG2.BitmapHeight)
+    LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth(), controls.midBG2.BitmapHeight())
+    --controls.midBG2.Height:Set(controls.midBG2.BitmapHeight)
+    --controls.midBG2.Width:Set(controls.midBG2.BitmapWidth)
     LayoutHelpers.ResetTop(controls.midBG2)
 
     controls.midBG3:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_m3.dds'))
     controls.midBG3.Left:Set(controls.midBG2.Right)
     controls.midBG3.Right:Set(controls.maxBG.Left)
     controls.midBG3.Bottom:Set(controls.maxBG.Bottom)
-    LayoutHelpers.SetHeight(controls.midBG3, controls.midBG3.BitmapHeight)
+    --controls.midBG3:SetTiled(true)
+    LayoutHelpers.SetHeight(controls.midBG3, controls.midBG3.BitmapHeight())
+    --controls.midBG3.Height:Set(controls.midBG3.BitmapHeight)
     LayoutHelpers.ResetWidth(controls.midBG3)
     LayoutHelpers.ResetTop(controls.midBG3)
-    LayoutHelpers.SetHeight(controls.midBG3, controls.midBG3.BitmapHeight)
+    LayoutHelpers.SetHeight(controls.midBG3, controls.midBG3.BitmapHeight())
+    --controls.midBG3.Height:Set(controls.midBG3.BitmapHeight)
 
     LayoutHelpers.AtTopIn(controls.choices, controls.minBG, 5)
     LayoutHelpers.SetHeight(controls.choices, 50)
@@ -152,7 +161,9 @@ function SetLayout()
     LayoutHelpers.AtVerticalCenterIn(controls.scrollMin, controls.choices)
     LayoutHelpers.ResetLeft(controls.scrollMin)
     LayoutHelpers.ResetBottom(controls.scrollMin)
-    LayoutHelpers.SetDimensions(controls.scrollMin, controls.scrollMin.BitmapWidth, controls.scrollMin.BitmapHeight)
+    LayoutHelpers.SetDimensions(controls.scrollMin, controls.scrollMin.BitmapWidth(), controls.scrollMin.BitmapHeight())
+    --controls.scrollMin.Height:Set(controls.scrollMin.BitmapHeight)
+    --controls.scrollMin.Width:Set(controls.scrollMin.BitmapWidth)
 
     controls.scrollMinIcon:SetTexture(textures.minIcon.on)
     LayoutHelpers.AtCenterIn(controls.scrollMinIcon, controls.scrollMin)
@@ -246,7 +257,7 @@ function SetLayout()
     controls.secondaryChoicesBGMid.Depth:Set(function() return controls.secondaryChoices.Depth() - 1 end)
 
     LayoutHelpers.AtLeftIn(controls.secondaryProgress, controls.secondaryChoices, 5)
-    LayoutHelpers.AtTopIn(controls.secondaryProgress, controls.secondaryChoices, 42)
+    LayoutHelpers.AtTopIn(controls.secondaryProgress, controls.secondaryChoices, 43)
     controls.secondaryProgress.Depth:Set(function() return controls.secondaryChoices.Depth() + 5 end)
     LayoutHelpers.SetDimensions(controls.secondaryProgress, 40, 4)
 
@@ -333,7 +344,7 @@ function SetLayout()
     LayoutHelpers.Below(controls.extraBtn2, controls.extraBtn1, 1)
 
     controls.constructionGroup:DisableHitTest()
-    LayoutTabs(import('/lua/ui/game/construction.lua').controls)
+    LayoutTabs(import("/lua/ui/game/construction.lua").controls)
     controls.constructionGroup:Hide()
 end
 
@@ -352,9 +363,9 @@ function LayoutTabs(controls)
         t4 = '/game/construct-tech_btn/t4_btn_',
         templates = '/game/construct-tech_btn/template_btn_',
         LCH = '/game/construct-tech_btn/left_upgrade_btn_',
+        Command = '/game/construct-tech_btn/left_upgrade_btn_',
         RCH = '/game/construct-tech_btn/r_upgrade_btn_',
         Back = '/game/construct-tech_btn/m_upgrade_btn_',
-        Command = '/game/construct-tech_btn/left_upgrade_btn_',
     }
 
     local function GetTabTextures(id)
@@ -389,7 +400,7 @@ function LayoutTabs(controls)
         end
     end
 
-    if table.getsize(controls.tabs) > 0 then
+    if not table.empty(controls.tabs) then
         for id, control in controls.tabs do
             SetupTab(control)
 
@@ -407,10 +418,10 @@ function LayoutTabs(controls)
         controls.midBG2:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_m2.dds'))
         controls.midBG3:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_m3.dds'))
         controls.minBG:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_l.dds'))
-        LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth(), controls.minBG.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth(), controls.midBG1.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth(), controls.midBG2.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG3, controls.midBG3.BitmapWidth(), controls.midBG3.BitmapHeight())
+        LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth(), controls.minBG.BitmapHeight()) -- TODO: This is an ugly hack for the problem described above
+        LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth(), controls.midBG1.BitmapHeight()) -- TODO
+        LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth(), controls.midBG2.BitmapHeight()) -- TODO
+        LayoutHelpers.SetDimensions(controls.midBG3, controls.midBG3.BitmapWidth(), controls.midBG3.BitmapHeight()) -- TODO
         LayoutHelpers.AtLeftIn(controls.minBG, controls.constructionGroup, 67)
         LayoutHelpers.AtBottomIn(controls.maxBG, controls.minBG, 1)
         LayoutHelpers.AtBottomIn(controls.minBG, controls.constructionGroup, 4)
@@ -419,10 +430,10 @@ function LayoutTabs(controls)
         controls.midBG2:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_s_bmp_m.dds'))
         controls.midBG3:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_s_bmp_m.dds'))
         controls.minBG:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_s_bmp_l.dds'))
-        LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth(), controls.minBG.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth(), controls.midBG1.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth(), controls.midBG2.BitmapHeight())
-        LayoutHelpers.SetDimensions(controls.midBG3, controls.midBG3.BitmapWidth(), controls.midBG3.BitmapHeight())
+        LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth(), controls.minBG.BitmapHeight()) -- TODO
+        LayoutHelpers.SetDimensions(controls.midBG1, controls.midBG1.BitmapWidth(), controls.midBG1.BitmapHeight()) -- TODO
+        LayoutHelpers.SetDimensions(controls.midBG2, controls.midBG2.BitmapWidth(), controls.midBG2.BitmapHeight()) -- TODO
+        LayoutHelpers.SetDimensions(controls.midBG3, controls.midBG3.BitmapWidth(), controls.midBG3.BitmapHeight()) -- TODO
         LayoutHelpers.AtLeftIn(controls.minBG, controls.constructionGroup, 69)
         LayoutHelpers.AtBottomIn(controls.maxBG, controls.minBG, 0)
         LayoutHelpers.AtBottomIn(controls.minBG, controls.constructionGroup, 5)
@@ -438,13 +449,12 @@ function LayoutTabs(controls)
 end
 
 function OnTabChangeLayout(type)
-    local controls = import('/lua/ui/game/construction.lua').controls
-    if type != 'selection' then
+    local controls = import("/lua/ui/game/construction.lua").controls
+    if type ~= 'selection' then
         LayoutHelpers.AtLeftIn(controls.choices, controls.minBG, 85)
         LayoutHelpers.AtRightIn(controls.choices, controls.maxBG, 49)
     end
     if type == 'construction' or type == 'templates' then
-        controls.extraBtn1.icon:Show()
         controls.extraBtn1.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/infinite_on.dds')
         controls.extraBtn1.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/infinite_off.dds')
         if controls.extraBtn1:IsDisabled() then
@@ -452,20 +462,9 @@ function OnTabChangeLayout(type)
         else
             controls.extraBtn1.icon:SetTexture(controls.extraBtn1.icon.OnTexture)
         end
-        controls.extraBtn2.icon:Show()
-        controls.extraBtn2.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_on.dds')
-        controls.extraBtn2.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_off.dds')
-        if controls.extraBtn2:IsDisabled() then
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OffTexture)
-        else
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OnTexture)
-        end
-
         LayoutHelpers.AtTopIn(controls.choices, controls.minBG, 31)
         LayoutHelpers.AtLeftTopIn(controls.extraBtn1, controls.minBG, 10, 31)
-        LayoutHelpers.Below(controls.extraBtn2, controls.extraBtn1, 1)
     elseif type == 'selection' then
-        controls.extraBtn1.icon:Show()
         controls.extraBtn1.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/template_on.dds')
         controls.extraBtn1.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/template_off.dds')
         if controls.extraBtn1:IsDisabled() then
@@ -473,32 +472,20 @@ function OnTabChangeLayout(type)
         else
             controls.extraBtn1.icon:SetTexture(controls.extraBtn1.icon.OnTexture)
         end
-        controls.extraBtn2.icon:Show()
-        controls.extraBtn2.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_on.dds')
-        controls.extraBtn2.icon.OffTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_off.dds')
-        if controls.extraBtn2:IsDisabled() then
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OffTexture)
-        else
-            controls.extraBtn2.icon:SetTexture(controls.extraBtn2.icon.OnTexture)
-        end
         LayoutHelpers.AtTopIn(controls.choices, controls.minBG, 4)
         LayoutHelpers.AtLeftTopIn(controls.extraBtn1, controls.minBG, 8, 4)
-        LayoutHelpers.Below(controls.extraBtn2, controls.extraBtn1, 1)
         LayoutHelpers.AtLeftIn(controls.choices, controls.minBG, 83)
         LayoutHelpers.AtRightIn(controls.choices, controls.maxBG, 49)
     else
         LayoutHelpers.AtTopIn(controls.choices, controls.minBG, 31)
         LayoutHelpers.AtLeftTopIn(controls.extraBtn1, controls.minBG, 10, 31)
-        LayoutHelpers.Below(controls.extraBtn2, controls.extraBtn1, 1)
         controls.extraBtn1.icon:Hide()
-        controls.extraBtn2.icon:Hide()
         controls.extraBtn1.icon:SetSolidColor('00000000')
-        controls.extraBtn2.icon:SetSolidColor('00000000')
     end
 end
 
 function OnSelection(empty)
-    local controls = import('/lua/ui/game/construction.lua').controls
+    local controls = import("/lua/ui/game/construction.lua").controls
     if empty then
         if not controls.constructionGroup:IsHidden() then
             controls.constructionGroup:Hide()

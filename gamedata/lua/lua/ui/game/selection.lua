@@ -1,3 +1,8 @@
+selectionSets = {}
+local selectionSetCallbacks = {}
+local lastSelectionName = nil
+local lastSelectionTime = 0
+
 function PlaySelectionSound(newSelection)
     for k, v in newSelection do
         local bp = v:GetBlueprint()
@@ -8,10 +13,22 @@ function PlaySelectionSound(newSelection)
     end
 end
 
-selectionSets = {}
-local selectionSetCallbacks = {}
-local lastSelectionName = nil
-local lastSelectionTime = 0
+local hidden_select = false
+function IsHidden()
+    return hidden_select == true
+end
+
+function Hidden(callback)
+    local CM = import("/lua/ui/game/commandmode.lua")
+    local current_command = CM.GetCommandMode()
+    local old_selection = GetSelectedUnits() or {}
+
+    hidden_select = true
+    callback()
+    SelectUnits(old_selection)
+    CM.StartCommandMode(current_command[1], current_command[2])
+    hidden_select = false
+end
 
 -- add a function to get called when a selection set changes
 -- with parameters function(name, unitArray, applied)

@@ -6,6 +6,7 @@ Factions = {
     {
         Key = 'uef',
         Category = 'UEF',
+        FactionInUnitBp = 'UEF',
         DisplayName = "<LOC _UEF>UEF",
         SoundPrefix = 'UEF',
         InitialUnit = 'uel0001',
@@ -54,6 +55,7 @@ Factions = {
     {
         Key = 'aeon',
         Category = 'AEON',
+        FactionInUnitBp = 'Aeon',
         DisplayName = "<LOC _Aeon>Aeon",
         SoundPrefix = 'Aeon',
         InitialUnit = 'ual0001',
@@ -102,6 +104,7 @@ Factions = {
     {
         Key = 'cybran',
         Category = 'CYBRAN',
+        FactionInUnitBp = 'Cybran',
         DisplayName = "<LOC _Cybran>Cybran",
         SoundPrefix = 'Cybran',
         InitialUnit = 'url0001',
@@ -150,6 +153,7 @@ Factions = {
     {
         Key = 'seraphim',
         Category = 'SERAPHIM',
+        FactionInUnitBp = 'Seraphim',
         DisplayName = "<LOC _Seraphim>Seraphim",
         SoundPrefix = 'Seraphim',
         InitialUnit = 'xsl0001',
@@ -202,9 +206,12 @@ FactionIndexMap = {}
 -- file designator to faction key
 FactionDesToKey = {}
 
+FactionInUnitBpToKey = {}
+
 for index, value in Factions do
     FactionIndexMap[value.Key] = index
     FactionDesToKey[value.CampaignFileDesignator] = value.Key
+    FactionInUnitBpToKey[value.FactionInUnitBp] = index
 end
 
 

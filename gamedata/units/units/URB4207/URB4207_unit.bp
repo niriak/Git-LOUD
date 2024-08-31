@@ -6,7 +6,7 @@ UnitBlueprint {
         UISelection     = Sound { Bank = 'Interface', Cue = 'Cybran_Select_Structure', LodCutoff = 'UnitMove_LodCutoff'},
     },
 	
-    BuildIconSortPriority = 60,
+    BuildIconSortPriority = 165,
 	
     Categories = {
         'SELECTABLE',

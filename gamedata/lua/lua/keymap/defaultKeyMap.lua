@@ -19,8 +19,9 @@ defaultKeyMap = {
     ['Alt-DownArrow']       = 'switch_layout_down',
     ['Alt-LeftArrow']       = 'switch_skin_down',
     ['Alt-RightArrow']      = 'switch_skin_up',
- 
+
     ['F1']                  = 'toggle_key_bindings',
+    ['Ctrl-Alt-F1']         = 'toggle_notify_customiser',
     ['F2']                  = 'toggle_score_screen',
     ['F3']                  = 'quick_save',
     ['F4']                  = 'toggle_diplomacy_screen',
@@ -30,6 +31,7 @@ defaultKeyMap = {
     ['F8']                  = 'ping_marker',
     ['F10']                 = 'toggle_main_menu',
     ['F11']                 = 'toggle_disconnect_screen',
+    ['F12']                 = 'show_objective_screen',
     ['Num7']                   = 'toggle_markers_screen',
 
     ['1']                   = 'group1',
@@ -45,7 +47,7 @@ defaultKeyMap = {
     ['Ctrl-1']              = 'set_group1',
     ['Ctrl-2']              = 'set_group2',
     ['Ctrl-3']              = 'set_group3',
-    ['Ctrl-4']              = 'set_group4', 
+    ['Ctrl-4']              = 'set_group4',
     ['Ctrl-5']              = 'set_group5',
     ['Ctrl-6']              = 'set_group6',
     ['Ctrl-7']              = 'set_group7',
@@ -74,8 +76,8 @@ defaultKeyMap = {
     ['Ctrl-Shift-0']        = 'fac_group0',
     ['Ctrl-A']              = 'select_air',
     ['Ctrl-S']              = 'select_naval',
-	['Ctrl-G']				= 'select_groundattack',
-	['Ctrl-T']				= 'select_transport',
+	['Ctrl-G']              = 'select_groundattack',
+	['Ctrl-T']              = 'select_transport',
     ['Ctrl-L']              = 'select_land',
     ['Ctrl-Z']              = 'select_all_units_of_same_type',
     ['Ctrl-B']              = 'select_engineers',
@@ -139,6 +141,7 @@ defaultKeyMap = {
     ['Shift-N']             = 'shift_nuke',
 
     ['B']                   = 'toggle_build_mode',
+    ['Alt-R']               = 'toggle_reclaim_labels',
 
     ['Z']                   = 'pause_unit',
 

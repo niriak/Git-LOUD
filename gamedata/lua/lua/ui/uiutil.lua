@@ -46,6 +46,8 @@ consoleFGColor          = LazyVar.Create()      -- console foreground color (tex
 consoleTextBGColor      = LazyVar.Create()      -- console text background color
 menuFontSize            = LazyVar.Create()      -- font size used on main in game escape menu 
 networkBool             = LazyVar.Create()      -- boolean whether the game is local or networked
+factionTextColor        = LazyVar.Create()      -- faction color for text foreground
+factionBackColor        = LazyVar.Create()      -- faction color for text background
  
 -- table of layouts supported by this skin, not a lazy var as we don't need updates
 layouts = nil
@@ -202,6 +204,8 @@ function SetCurrentSkin(skin)
     factionFont:Set(skins[skin].factionFont or skins['default'].factionFont)
     dialogButtonFont:Set(skins[skin].dialogButtonFont or skins['default'].dialogButtonFont)
     bodyFont:Set(skins[skin].bodyFont or skins['default'].bodyFont)
+    factionTextColor:Set(skins[skin].factionTextColor or skins['default'].factionTextColor)
+    factionBackColor:Set(skins[skin].factionBackColor or skins['default'].factionBackColor)
     fixedFont:Set(skins[skin].fixedFont or skins['default'].fixedFont)
     titleFont:Set(skins[skin].titleFont or skins['default'].titleFont)
     fontColor:Set(skins[skin].fontColor or skins['default'].fontColor)
@@ -450,6 +454,16 @@ function CreateText(parent, label, pointSize, font, dropshadow)
     return text
 end
 
+---@param parent Control
+---@param filename FileName
+---@param border? number
+---@return Bitmap
+function CreateBitmap(parent, filename, border)
+    local bitmap = Bitmap(parent)
+    bitmap:SetTexture(UIFile(filename), border)
+    return bitmap
+end
+
 function SetupEditStd(control, foreColor, backColor, highlightFore, highlightBack, fontFace, fontSize, charLimit)
     if charLimit then
         control:SetMaxChars(charLimit)
@@ -635,6 +649,18 @@ function CreateNinePatchStd(parent, texturePath)
 )
 end
 
+--- Surrounds a control with a nine-patch border
+---@param parent Control
+---@param texturePath FileName
+---@param fudgeX? number defaults to `62`
+---@param fudgeY? number defaults to `62`
+function SurroundWithNinePatch(parent, texturePath, fudgeX, fudgeY)
+    local patch = CreateNinePatchStd(parent, texturePath)
+
+    patch:Surround(parent, fudgeX or 62, fudgeY or 62)
+    LayoutHelpers.DepthUnderParent(patch, parent, 2)
+end
+
 function CreateCheckbox(parent, up, upsel, over, oversel, dis, dissel, clickCue, rollCue)
     local clickSound = clickCue or 'UI_Mini_MouseDown'
     local rollSound = rollCue or 'UI_Mini_Rollover'
@@ -660,6 +686,64 @@ function CreateDialogButtonStd(parent, filename, label, pointSize, textOffsetVer
     button.label:SetFont( dialogButtonFont, pointSize )
     button.label:SetColor( dialogButtonColor )
     return button
+end
+
+--* return the standard scrollbar
+function CreateVertScrollbarFor(attachto, offset_right, filename, offset_bottom, offset_top)
+    offset_right = offset_right or 0
+    offset_bottom = offset_bottom or 0
+    offset_top = offset_top or 0
+    local textureName = filename or '/small-vert_scroll/'
+    local scrollbg = textureName..'back_scr_mid.dds'
+    local scrollbarmid = textureName..'bar-mid_scr_over.dds'
+    local scrollbartop = textureName..'bar-top_scr_up.dds'
+    local scrollbarbot = textureName..'bar-bot_scr_up.dds'
+    if filename then
+        scrollbg = textureName..'back_scr_mid.dds'
+        scrollbarmid = textureName..'bar-mid_scr_up.dds'
+        scrollbartop = textureName..'bar-top_scr_up.dds'
+        scrollbarbot = textureName..'bar-bot_scr_up.dds'
+    end
+    local scrollbar = Scrollbar(attachto, import("/lua/maui/scrollbar.lua").ScrollAxis.Vert)
+    scrollbar:SetTextures(   SkinnableFile(scrollbg)
+                            ,SkinnableFile(scrollbarmid)
+                            ,SkinnableFile(scrollbartop)
+                            ,SkinnableFile(scrollbarbot))
+
+    local scrollUpButton = Button(    scrollbar
+                                    , SkinnableFile(textureName..'arrow-up_scr_up.dds')
+                                    , SkinnableFile(textureName..'arrow-up_scr_down.dds')
+                                    , SkinnableFile(textureName..'arrow-up_scr_over.dds')
+                                    , SkinnableFile(textureName..'arrow-up_scr_dis.dds')
+                                    , "UI_Arrow_Click")
+
+    local scrollDownButton = Button(  scrollbar
+                                    , SkinnableFile(textureName..'arrow-down_scr_up.dds')
+                                    , SkinnableFile(textureName..'arrow-down_scr_down.dds')
+                                    , SkinnableFile(textureName..'arrow-down_scr_over.dds')
+                                    , SkinnableFile(textureName..'arrow-down_scr_dis.dds')
+                                    , "UI_Arrow_Click")
+
+    LayoutHelpers.AnchorToRight(scrollbar, attachto, offset_right)
+    scrollbar.Top:Set(scrollUpButton.Bottom)
+    scrollbar.Bottom:Set(scrollDownButton.Top)
+
+    scrollUpButton.Left:Set(scrollbar.Left)
+    LayoutHelpers.AtTopIn(scrollUpButton, attachto, offset_top)
+
+    scrollDownButton.Left:Set(scrollbar.Left)
+    LayoutHelpers.AtBottomIn(scrollDownButton, attachto, offset_bottom)
+
+    scrollbar.Right:Set(scrollUpButton.Right)
+
+    scrollbar:AddButtons(scrollUpButton, scrollDownButton)
+    scrollbar:SetScrollable(attachto)
+
+    return scrollbar
+end
+
+function CreateLobbyVertScrollbar(attachto, offset_right, offset_bottom, offset_top)
+    return CreateVertScrollbarFor(attachto, offset_right, "/SCROLLBAR_VERT/", offset_bottom, offset_top)
 end
 
 function SetNewButtonStdTextures(button, filename)

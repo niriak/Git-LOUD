@@ -82,229 +82,14 @@ options = {
         key = 'gameplay',
         items = {
             {
-                title = "Zoom Wheel Sensitivity",
-                key = 'wheel_sensitivity',
-                type = 'slider',
-                default = 40,
-                set = function(key,value,startup)
-                    ConExecute("cam_ZoomAmount " .. tostring(value / 100))
-                end,
-                custom = {
-                    min = 1,
-                    max = 100,
-                    inc = 0,
-                },
+                title = 'File operations',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
             },
-            {
-                title = "Always Render Strategic Icons",
-                key = 'strat_icons_always_on',
-                type = 'toggle',
-                default = 0,
-                set = function(key,value,startup)
-                    ConExecute("ui_AlwaysRenderStrategicIcons " .. tostring(value))
-                end,
-                custom = {
-                    states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "Construction Tooltip Information",
-                tip = "Change the layout that information is displayed in the rollover window for units in the construction manager.",
-                key = 'uvd_format',
-                type = 'toggle',
-                default = 'full',
-                set = function(key,value,startup)
-                    -- needs logic to set priority (do we really want to do this though?)
-                end,
-                custom = {
-                    states = {
-                        {text = "Full", key = 'full'},
-                        {text = "Limited", key = 'limited'},
-                        {text = "Off", key = 'off'},
-                    },
-                },
-            },
-            {
-                title = "Economy Warnings",
-                key = 'econ_warnings',
-                type = 'toggle',
-                default = true,
-                custom = {
-                    states = {
-                        {text = "On", key = true,},
-                        {text = "Off", key = false,},
-                    },
-                },
-            },
-            {
-                title = "Show Waypoint ETAs",
-                key = 'display_eta',
-                type = 'toggle',
-                default = true,
-                custom = {
-                    states = {
-                        {text = "On", key = true,},
-                        {text = "Off", key = false,},
-                    },
-                },
-            },
-            {
-                title = "Multiplayer Taunts",
-                tip = "Enable or Disable displaying taunts in multiplayer.",
-                key = 'mp_taunt_head_enabled',
-                type = 'toggle',
-                default = 'true',
-                set = function(key,value,startup)
-                    -- needs logic to set priority (do we really want to do this though?)
-                end,
-                custom = {
-                    states = {
-                        {text = "On", key = 'true'},
-                        {text = "Off", key = 'false'},
-                    },
-                },
-            },
-            {
-                title = "Screen Edge Pans Main View",
-                key = 'screen_edge_pans_main_view',
-                type = 'toggle',
-                default = 1,
-                set = function(key,value,startup)
-                    ConExecute("ui_ScreenEdgeScrollView " .. tostring(value))
-                end,
-                custom = {
-                    states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "Arrow Keys Pan Main View",
-                key = 'arrow_keys_pan_main_view',
-                type = 'toggle',
-                default = 1,
-                set = function(key,value,startup)
-                    ConExecute("ui_ArrowKeysScrollView " .. tostring(value))
-                end,
-                custom = {
-                    states = {
-                        {text = "OfF", key = 0 },
-                        {text = "On", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "Pan Speed",
-                key = 'keyboard_pan_speed',
-                type = 'slider',
-                default = 90,
-                set = function(key,value,startup)
-                    ConExecute("ui_KeyboardPanSpeed " .. tostring(value))
-                end,
-                custom = {
-                    min = 1,
-                    max = 200,
-                    inc = 0,
-                },
-            },
-            {
-                title = "Accelerated Pan Speed Multiplier",
-                key = 'keyboard_pan_accelerate_multiplier',
-                type = 'slider',
-                default = 4,
-                set = function(key,value,startup)
-                    ConExecute("ui_KeyboardPanAccelerateMultiplier " .. tostring(value))
-                end,
-                custom = {
-                    min = 1,
-                    max = 10,
-                    inc = 1,
-                },
-            },
-            {
-                title = "Keyboard Rotation Speed",
-                key = 'keyboard_rotate_speed',
-                type = 'slider',
-                default = 10,
-                set = function(key,value,startup)
-                    ConExecute("ui_KeyboardRotateSpeed " .. tostring(value))
-                end,
-                custom = {
-                    min = 1,
-                    max = 100,
-                    inc = 0,
-                },
-            },
-            {
-                title = "Accelerated Keyboard Rotate Speed Multiplier",
-                key = 'keyboard_rotate_accelerate_multiplier',
-                type = 'slider',
-                default = 2,
-                set = function(key,value,startup)
-                    ConExecute("ui_KeyboardRotateAccelerateMultiplier " .. tostring(value))
-                end,
-                custom = {
-                    min = 1,
-                    max = 10,
-                    inc = 1,
-                },
-            },
-            {
-                title = "Accept Build Templates",
-                key = 'accept_build_templates',
-                type = 'toggle',
-                default = 'yes',
-                set = function(key,value,startup)
-                end,
-                custom = {
-                    states = {
-                        {text = "On", key = 'yes' },
-                        {text = "Off", key = 'no' },
-                    },
-                },
-            },
-            {
-                title = "Area Reclaim Rectangle Size",
-                key = 'area_reclaim_size',
-                type = 'slider',
-                default = 1,
-                custom = {
-                    min = 3,
-                    max = 10,
-                    inc = 1,
-                },
-            },
-        },
-    },
-    ui = {
-        title = "Interface",
-        key = 'ui',
-        items = {
-            {
-                title = "UI Scale",
-                key = 'ui_scale',
-                restart = true,
-                type = 'toggle',
-                default = 1.0,
-                custom = {
-                    states = {
-                        { text =  "80%", key = 0.8, },
-                        { text = "100%", key = 1.0, },
-                        { text = "125%", key = 1.25, },
-                        { text = "150%", key = 1.5, },
-                        { text = "175%", key = 1.75, },
-                        { text = "200%", key = 2.0, },
-                        { text = "225%", key = 2.25, },
-                        { text = "250%", key = 2.5, },
-                        { text = "275%", key = 2.75, },
-                        { text = "300%", key = 3.0, },
-                    },
-                },
-            },
+
             {
                 title = "Auto Save Game",
                 key = 'auto_save_game_interval_in_minutes',
@@ -315,7 +100,7 @@ options = {
                 end,
                 custom = {
                     states = {
-                        { text = "Off",              key =  0, },
+                        { text = "<LOC _Off>",              key =  0, },
                         { text = "Every minute",     key =  1, },
                         { text = "Every 2 minutes",  key =  2, },
                         { text = "Every 3 minutes",  key =  3, },
@@ -336,263 +121,108 @@ options = {
                 default = 1,
                 custom = {
                     states = {
-                        {text = "On", key = 1},
-                        {text = "Off", key = 0},
-                    },
-                },
-            },        
-            {
-                title = "Display Subtitles",
-                key = 'subtitles',
-                type = 'toggle',
-                default = false,
-                custom = {
-                    states = {
-                        {text = "On", key = true},
-                        {text = "Off", key = false},
+                        {text = "<LOC _On>", key = 1},
+                        {text = "<LOC _Off>", key = 0},
                     },
                 },
             },
+
             {
-                title = "Display World Border",
-                key = 'world_border',
+                title = '<LOC OPTIONS_0326>Camera controls',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0158>Screen Edge Pans Main View",
+                key = 'screen_edge_pans_main_view',
                 type = 'toggle',
-                default = true,
+                default = 1,
                 set = function(key, value, startup)
-                    import('/lua/ui/uiutil.lua').UpdateWorldBorderState(nil, value)                        
+                    ConExecute("ui_ScreenEdgeScrollView " .. tostring(value))
                 end,
                 custom = {
                     states = {
-                        {text = "On", key = true},
-                        {text = "Off", key = false},
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
                     },
                 },
             },
             {
-                title = "Display Tooltips",
-                key = 'tooltips',
-                type = 'toggle',
-                default = true,
-                custom = {
-                    states = {
-                        {text = "On", key = true},
-                        {text = "Off", key = false},
-                    },
-                },
-            },
-            {
-                title = "Tooltip Delay",
-                key = 'tooltip_delay',
+                title = "<LOC OPTIONS_0001>Zoom Wheel Sensitivity",
+                key = 'wheel_sensitivity',
                 type = 'slider',
-                default = 0,
+                default = 40,
                 set = function(key,value,startup)
+                    ConExecute("cam_ZoomAmount " .. tostring(value / 100))
                 end,
                 custom = {
-                    min = 0,
-                    max = 3,
+                    min = 1,
+                    max = 100,
                     inc = 0,
                 },
             },
             {
-                title = "Quick Exit",
-                tip = "When close box or alt-f4 are pressed, no confirmation dialog is shown",
-                key = 'quick_exit',
-                type = 'toggle',
-                default = 'false',
+                title = "<LOC OPTIONS_0160>Pan Speed",
+                key = 'keyboard_pan_speed',
+                type = 'slider',
+                default = 90,
                 set = function(key,value,startup)
+                    ConExecute("ui_KeyboardPanSpeed " .. tostring(value))
                 end,
                 custom = {
-                    states = {
-                        {text = "On", key = 'true'},
-                        {text = "Off", key = 'false'},
-                    },
+                    min = 1,
+                    max = 200,
+                    inc = 0,
                 },
             },
             {
-                title = "Lock Fullscreen Cursor To Window",
-                key = 'lock_fullscreen_cursor_to_window',
-                type = 'toggle',
-                default = 0,
+                title = "<LOC OPTIONS_0161>Accelerated Pan Speed Multiplier",
+                key = 'keyboard_pan_accelerate_multiplier',
+                type = 'slider',
+                default = 4,
                 set = function(key,value,startup)
-                    ConExecute("SC_ToggleCursorClip " .. tostring(value))
+                    ConExecute("ui_KeyboardPanAccelerateMultiplier " .. tostring(value))
                 end,
                 custom = {
-                    states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
-                    },
+                    min = 1,
+                    max = 10,
+                    inc = 1,
                 },
             },
             {
-                title = "Show Lifebars of Attached Units",
-                key = 'show_attached_unit_lifebars',
-                type = 'toggle',
-                default = true,
+                title = "<LOC OPTIONS_0174>Keyboard Rotation Speed",
+                key = 'keyboard_rotate_speed',
+                type = 'slider',
+                default = 10,
                 set = function(key,value,startup)
+                    ConExecute("ui_KeyboardRotateSpeed " .. tostring(value))
                 end,
                 custom = {
-                    states = {
-                        {text = "Off", key = false },
-                        {text = "On", key = true },
-                    },
+                    min = 1,
+                    max = 100,
+                    inc = 0,
                 },
             },
             {
-                title = "Use Factional UI Skin",
-                key = 'skin_change_on_start',
-                type = 'toggle',
-                default = 'yes',
+                title = "<LOC OPTIONS_0163>Accelerated Keyboard Rotate Speed Multiplier",
+                key = 'keyboard_rotate_accelerate_multiplier',
+                type = 'slider',
+                default = 2,
                 set = function(key,value,startup)
+                    ConExecute("ui_KeyboardRotateAccelerateMultiplier " .. tostring(value))
                 end,
                 custom = {
-                    states = {
-                        {text = "On", key = 'yes' },
-                        {text = "Off", key = 'no' },
-                    },
-                },
-            },
-			{
-				title = "Visual Alerts Mode",
-				key = "vo_VisualAlertsMode",
-				type = 'toggle',
-				default = 1,
-				custom = {
-					states = {
-						{text = "None", key = 0 },
-						{text = "Only 2D", key = 1 },
-						{text = "Only 3D", key = 2 },
-						{text = "Normal (Both)", key = 3 },
-					},
-				},
-			},
-			{
-				title = "Visual Alert Ping Sound",
-				key = "vo_PingSound",
-				type = 'toggle',
-				default = false,
-				custom = {
-					states = {
-						{text = "No", key = false },
-						{text = "Yes", key = true },
-					},
-				},
-			},
-			{
-				title = "Go-To-Alert Camera Mode",
-				tip = "Define the behavior of the camera when you press Alt-X (Go To Last Alert)",
-				key = "alertcam_mode",
-				type = 'toggle',
-				default = 2,
-				custom = {
-					states = {
-						{text = "Move to alert", key = 2 },
-						{text = "Snap to alert", key = 3 },
-						{text = "Snap to map", key = 4 },
-						{text = "Snap to map then move to alert", key = 5 },
-					},
-				},
-			},
-			{
-				title = "Go-To-Alert Camera Move Time",
-				key = "alertcam_time",
-				type = 'slider',
-				default = 1,
-				custom = {
-					min = 1,
-					max = 5,
-					inc = 1,
-				},
-			},
-			{
-				title = "Go-To-Alert Camera Target Zoom",
-				key = "alertcam_zoom",
-				type = 'slider',
-				default = 30,
-				custom = {
-					min = 11,
-					max = 480,
-					inc = 1,
-				},
-			},
-			{
-				title = "Hotbuild: Enable Cycle Preview",
-				key = 'hotbuild_cycle_preview',
-				type = 'toggle',
-				default = 1,
-				custom = {
-					states = {
-						{text = "<LOC _Off>", key = 0 },
-						{text = "<LOC _On>", key = 1 },
-					},
-				},
-			},
-			{
-				title = "Hotbuild: cycle reset time (ms)",
-				key = 'hotbuild_cycle_reset_time',
-				type = 'slider',
-				default = 1100,
-				custom = {
-					min = 100,
-					max = 5000,
-					inc = 100,
-				},
-			},
-            {
-                title = "GUI: Display more Unit Stats",
-                key = 'gui_detailed_unitview',
-                type = 'toggle',
-                default = 0,
-                custom = {
-                    states = {
-                        {text = "<LOC _Off>", key = 0 },
-                        {text = "<LOC _On>", key = 1 },
-                    },
+                    min = 1,
+                    max = 10,
+                    inc = 1,
                 },
             },
             {
-                title = "GUI: Render Custom Names",
-                key = 'gui_render_custom_names',
-                type = 'toggle',
-                default = 1,
-                set = function(key,value,startup)
-                    ConExecute("ui_RenderCustomNames " .. tostring(value))
-                end,
-                custom = {
-                    states = {
-                        {text = "<LOC _Off>", key = 0 },
-                        {text = "<LOC _On>", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "GUI: Render Enemy Lifebars",
-                key = 'gui_render_enemy_lifebars',
-                type = 'toggle',
-                default = 0,
-                set = function(key,value,startup)
-                    ConExecute("UI_ForceLifbarsOnEnemy " .. tostring(value))
-                end,
-                custom = {
-                    states = {
-                        {text = "<LOC _Off>", key = 0 },
-                        {text = "<LOC _On>", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "GUI: Single Unit Selected Rings",
-                key = 'gui_enhanced_unitrings',
-                type = 'toggle',
-                default = 1,
-                custom = {
-                    states = {
-                        {text = "<LOC _Off>", key = 0 },
-                        {text = "<LOC _On>", key = 1 },
-                    },
-                },
-            },
-            {
-                title = "GUI: Zoom Pop Distance",
+                title = "<LOC OPTIONS_0236>Zoom Pop Distance",
                 key = 'gui_zoom_pop_distance',
                 type = 'slider',
                 default = 80,
@@ -600,6 +230,21 @@ options = {
                     min = 1,
                     max = 160,
                     inc = 1,
+                },
+            },
+            {
+                title = "Arrow Keys Pan Main View",
+                key = 'arrow_keys_pan_main_view',
+                type = 'toggle',
+                default = 1,
+                set = function(key,value,startup)
+                    ConExecute("ui_ArrowKeysScrollView " .. tostring(value))
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
                 },
             },
             {
@@ -615,6 +260,161 @@ options = {
                 },
             },
             {
+                title = "Visual Alerts Mode",
+                key = "vo_VisualAlertsMode",
+                type = 'toggle',
+                default = 1,
+                custom = {
+                    states = {
+                        {text = "None", key = 0 },
+                        {text = "Only 2D", key = 1 },
+                        {text = "Only 3D", key = 2 },
+                        {text = "Normal (Both)", key = 3 },
+                    },
+                },
+            },
+            {
+                title = "Visual Alert Ping Sound",
+                key = "vo_PingSound",
+                type = 'toggle',
+                default = false,
+                custom = {
+                    states = {
+                        {text = "<LOC _No>", key = false },
+                        {text = "<LOC _Yes>", key = true },
+                    },
+                },
+            },
+            {
+                title = "Go-To-Alert Camera Mode",
+                tip = "Define the behavior of the camera when you press Alt-X (Go To Last Alert)",
+                key = "alertcam_mode",
+                type = 'toggle',
+                default = 2,
+                custom = {
+                    states = {
+                        {text = "Move to alert", key = 2 },
+                        {text = "Snap to alert", key = 3 },
+                        {text = "Snap to map", key = 4 },
+                        {text = "Snap to map then move to alert", key = 5 },
+                    },
+                },
+            },
+            {
+                title = "Go-To-Alert Camera Move Time",
+                key = "alertcam_time",
+                type = 'slider',
+                default = 1,
+                custom = {
+                    min = 1,
+                    max = 5,
+                    inc = 1,
+                },
+            },
+            {
+                title = "Go-To-Alert Camera Target Zoom",
+                key = "alertcam_zoom",
+                type = 'slider',
+                default = 30,
+                custom = {
+                    min = 11,
+                    max = 480,
+                    inc = 1,
+                },
+            },
+
+            {
+                title = '<LOC OPTIONS_0325>Build templates',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "Accept Build Templates",
+                key = 'accept_build_templates',
+                type = 'toggle',
+                default = 'yes',
+                set = function(key,value,startup)
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = 'yes' },
+                        {text = "<LOC _Off>", key = 'no' },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0237>Factory Build Queue Templates",
+                key = 'gui_templates_factory',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0239>Visible Template Names",
+                key = 'gui_visible_template_names',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0240>Template Name Cutoff",
+                key = 'gui_template_name_cutoff',
+                type = 'slider',
+                default = 10,
+                custom = {
+                    min = 0,
+                    max = 10,
+                    inc = 1,
+                },
+            },
+
+            {
+                title = 'Misc',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "Area Reclaim Rectangle Size",
+                key = 'area_reclaim_size',
+                type = 'slider',
+                default = 1,
+                custom = {
+                    min = 3,
+                    max = 10,
+                    inc = 1,
+                },
+            },
+            {
+                title = "Single Unit Selected Rings",
+                key = 'gui_enhanced_unitrings',
+                type = 'toggle',
+                default = 1,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
                 title = "Land Unit Selection Priority",
                 key = 'land_unit_select_prio',
                 type = 'toggle',
@@ -623,6 +423,244 @@ options = {
                     states = {
                         {text = "<LOC _Off>", key = 0 },
                         {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+        },
+    },
+    ui = {
+        title = "Interface",
+        key = 'ui',
+        items = {
+            {
+                title = 'HUD',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0283>UI Scale",
+                key = 'ui_scale',
+                restart = true,
+                type = 'toggle',
+                default = 1.0,
+                custom = {
+                    states = {
+                        { text =  "80%", key = 0.8, },
+                        { text = "100%", key = 1.0, },
+                        { text = "125%", key = 1.25, },
+                        { text = "150%", key = 1.5, },
+                        { text = "175%", key = 1.75, },
+                        { text = "200%", key = 2.0, },
+                        { text = "225%", key = 2.25, },
+                        { text = "250%", key = 2.5, },
+                        { text = "275%", key = 2.75, },
+                        { text = "300%", key = 3.0, },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0215>Show Waypoint ETAs",
+                key = 'display_eta',
+                type = 'toggle',
+                default = true,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = true,},
+                        {text = "<LOC _Off>", key = false,},
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0210>Show Lifebars of Attached Units",
+                key = 'show_attached_unit_lifebars',
+                type = 'toggle',
+                default = true,
+                set = function(key,value,startup)
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = false },
+                        {text = "<LOC _On>", key = true },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0243>Always Show Enemy Lifebars",
+                key = 'gui_render_enemy_lifebars',
+                type = 'toggle',
+                default = 0,
+                set = function(key,value,startup)
+                    ConExecute("UI_ForceLifbarsOnEnemy " .. tostring(value))
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0242>Always Show Custom Names",
+                key = 'gui_render_custom_names',
+                type = 'toggle',
+                default = 1,
+                set = function(key,value,startup)
+                    ConExecute("ui_RenderCustomNames " .. tostring(value))
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0109>Always Show Strategic Icons",
+                key = 'strat_icons_always_on',
+                type = 'toggle',
+                default = 0,
+                set = function(key,value,startup)
+                    ConExecute("ui_AlwaysRenderStrategicIcons " .. tostring(value))
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+
+            {
+                title = 'Building',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0228>Bigger Strategic Build Icons",
+                key = 'gui_bigger_strat_build_icons',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC OPTIONS_0254>Bigger icons", key = 1 },
+                        { text = "<LOC OPTIONS_0255>Bigger icons with TechMarker", key = 2 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0231>Draggable Build Queue",
+                key = 'gui_draggable_queue',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0281>Hotkey Labels",
+                key = 'show_hotkeylabels',
+                type = 'toggle',
+                default = true,
+                custom = {
+                    states = {
+                        { text = "<LOC _On>", key = true },
+                        { text = "<LOC _Off>", key = false },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0226>Enable Cycle Preview for Hotbuild",
+                key = 'hotbuild_cycle_preview',
+                type = 'toggle',
+                default = 1,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0227>Cycle Reset Time (ms)",
+                key = 'hotbuild_cycle_reset_time',
+                type = 'slider',
+                default = 1100,
+                custom = {
+                    min = 100,
+                    max = 5000,
+                    inc = 100,
+                },
+            },
+
+            {
+                title = 'UI',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0005>Display Tooltips",
+                key = 'tooltips',
+                type = 'toggle',
+                default = true,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = true},
+                        {text = "<LOC _Off>", key = false},
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0078>Tooltip Delay",
+                key = 'tooltip_delay',
+                type = 'slider',
+                default = 0,
+                set = function(key,value,startup)
+                end,
+                custom = {
+                    min = 0,
+                    max = 3,
+                    inc = 0,
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0211>Use Factional UI Skin",
+                key = 'skin_change_on_start',
+                type = 'toggle',
+                default = 'yes',
+                set = function(key,value,startup)
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = 'yes' },
+                        {text = "<LOC _Off>", key = 'no' },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0076>Economy Warnings",
+                key = 'econ_warnings',
+                type = 'toggle',
+                default = true,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = true,},
+                        {text = "<LOC _Off>", key = false,},
                     },
                 },
             },
@@ -636,23 +674,140 @@ options = {
                 end,
                 custom = {
                     states = {
-                        { text = "Off",         key = 0, }, 
+                        { text = "<LOC _Off>",         key = 0, }, 
                         { text = "Fast",        key = 0.15, },
-                        { text = "Medium Fast", key = 0.25, },
-                        { text = "Medium",      key = 0.5,  },
-                        { text = "Medium Slow", key = 0.75, },
+                        { text = "<LOC _Medium> Fast", key = 0.25, },
+                        { text = "<LOC _Medium>",      key = 0.5,  },
+                        { text = "<LOC _Medium> Slow", key = 0.75, },
                         { text = "Slow",        key = 1,    },
+                    },
+                },
+            },
+
+            {
+                title = '<LOC OPTIONS_0310>Additional Information',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0241>Display More Unit Stats",
+                key = 'gui_detailed_unitview',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0234>Single Unit Selected Info",
+                key = 'gui_enhanced_unitview',
+                type = 'toggle',
+                default = 0,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0107>Construction Tooltip Information",
+                tip = "<LOC OPTIONS_0108>Change the layout that information is displayed in the rollover window for units in the construction manager.",
+                key = 'uvd_format',
+                type = 'toggle',
+                default = 'full',
+                set = function(key, value, startup)
+                    -- needs logic to set priority (do we really want to do this though?)
+                end,
+                custom = {
+                    states = {
+                        { text = "<LOC _Full>", key = 'full' },
+                        { text = "<LOC _Limited>", key = 'limited' },
+                        { text = "<LOC _Off>", key = 'off' },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0244>Show Armament Build in Factory Menu",
+                key = 'gui_render_armament_detail',
+                type = 'toggle',
+                default = 1,
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>", key = 0 },
+                        { text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0246>Show Factory Queue on Hover",
+                key = 'gui_queue_on_hover_02',
+                type = 'toggle',
+                default = 'only-obs',
+                custom = {
+                    states = {
+                        { text = "<LOC _Off>Off", key = 'off' },
+                        { text = "<LOC _Obs>Only when observing", key = 'only-obs' },
+                        { text = "<LOC _Always>Always", key = 'always' },
+                    },
+                },
+            },
+
+            {
+                title = 'Misc',
+                type = 'header',
+
+                -- these are expected everywhere
+                default = '',
+                key = '',
+            },
+
+            {
+                title = "<LOC OPTIONS_0125>Quick Exit",
+                tip = "<LOC OPTIONS_0126>When close box or alt-f4 are pressed, no confirmation dialog is shown",
+                key = 'quick_exit',
+                type = 'toggle',
+                default = 'false',
+                set = function(key,value,startup)
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = 'true'},
+                        {text = "<LOC _Off>", key = 'false'},
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0102>Multiplayer Taunts",
+                tip = "<LOC OPTIONS_0103>Enable or Disable displaying taunts in multiplayer.",
+                key = 'mp_taunt_head_enabled',
+                type = 'toggle',
+                default = 'true',
+                set = function(key,value,startup)
+                    -- needs logic to set priority (do we really want to do this though?)
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = 'true'},
+                        {text = "<LOC _Off>", key = 'false'},
                     },
                 },
             },
         },
     },
     video = {
-        title = "Video",
+        title = "<LOC _Video>",
         key = 'video',
         items = {
             {
-                title = "Primary Adapter",
+                title = "<LOC OPTIONS_0010>Primary Adapter",
                 key = 'primary_adapter',
                 type = 'toggle',
                 default = '1024,768,60',
@@ -690,7 +845,7 @@ options = {
                 },
             },
             {
-                title = "Secondary Adapter",
+                title = "<LOC OPTIONS_0147>Secondary Adapter",
                 key = 'secondary_adapter',
                 type = 'toggle',
                 default = 'disabled',
@@ -715,7 +870,22 @@ options = {
                 },
             },
             {
-                title = "Fidelity Presets",
+                title = "<LOC OPTIONS_0165>Lock Fullscreen Cursor To Window",
+                key = 'lock_fullscreen_cursor_to_window',
+                type = 'toggle',
+                default = 0,
+                set = function(key,value,startup)
+                    ConExecute("SC_ToggleCursorClip " .. tostring(value))
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_001>Fidelity Presets",
                 key = 'fidelity_presets',
                 type = 'toggle',
                 default = 4,
@@ -727,10 +897,10 @@ options = {
                     aamax = 0
                     aamed = 0
                     if 0 < table.getn(aaoptions) then
-						aahigh = aaoptions[table.getn(aaoptions)]
-						aamed = aaoptions[math.ceil(table.getn(aaoptions)/2)]
-					end
-					
+                        aahigh = aaoptions[table.getn(aaoptions)]
+                        aamed = aaoptions[math.ceil(table.getn(aaoptions) / 2)]
+                    end
+
                     if 0 == value then
                         logic.SetValue('fidelity',0,true)
                         logic.SetValue('shadow_quality',0,true)
@@ -770,16 +940,16 @@ options = {
                 end,
                 custom = {
                     states = {
-                        { text = "Low", key = 0 },
-                        { text = "Medium", key = 1 },
-                        { text = "High", key = 2 },
-                        { text = "Ultra", key = 3 },
-                        { text = "Custom", key = 4 },
+                        { text = "<LOC _Low>", key = 0 },
+                        { text = "<LOC _Medium>", key = 1 },
+                        { text = "<LOC _High>", key = 2 },
+                        { text = "<LOC _Ultra>", key = 3 },
+                        { text = "<LOC _Custom>", key = 4 },
                     },
                 },
             },
             {
-                title = "Render Sky",
+                title = "<LOC OPTIONS_0168>Render Sky",
                 key = 'render_skydome',
                 type = 'toggle',
                 default = 1,
@@ -791,13 +961,28 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
                     },
                 },
             },
             {
-                title = "Fidelity",
+                title = "<LOC OPTIONS_0223>Render World Border",
+                key = 'world_border',
+                type = 'toggle',
+                default = true,
+                set = function(key, value, startup)
+                    import('/lua/ui/uiutil.lua').UpdateWorldBorderState(nil, value)                        
+                end,
+                custom = {
+                    states = {
+                        {text = "<LOC _On>", key = true},
+                        {text = "<LOC _Off>", key = false},
+                    },
+                },
+            },
+            {
+                title = "<LOC OPTIONS_0018>Fidelity",
                 key = 'fidelity',
                 type = 'toggle',
                 default = 1,
@@ -809,14 +994,14 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Low", key = 0},
-                        {text = "Medium", key = 1},
-                        {text = "High", key = 2},
+                        {text = "<LOC _Low>", key = 0},
+                        {text = "<LOC _Medium>", key = 1},
+                        {text = "<LOC _High>", key = 2},
                     },
                 },
             },
             {
-                title = "Shadow Fidelity",
+                title = "<LOC OPTIONS_0024>Shadow Fidelity",
                 key = 'shadow_quality',
                 type = 'toggle',
                 default = 1,
@@ -828,15 +1013,15 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Off", key = 0},
-                        {text = "Low", key = 1},
-                        {text = "Medium", key = 2},
-                        {text = "High", key = 3},
+                        {text = "<LOC _Off>", key = 0},
+                        {text = "<LOC _Low>", key = 1},
+                        {text = "<LOC _Medium>", key = 2},
+                        {text = "<LOC _High>", key = 3},
                     },
                 },
             },
             {
-                title = "Anti-Aliasing",
+                title = "<LOC OPTIONS_0015>Anti-Aliasing",
                 key = 'antialiasing',
                 type = 'toggle',
                 default = 0,
@@ -850,7 +1035,7 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Off", key = 0},
+                        {text = "<LOC _Off>", key = 0},
                         -- the remaining values are populated at runtime from device caps
                         -- what follows is just an example of the data which will be encountered
                         {text =  "2", key =  2},
@@ -861,7 +1046,7 @@ options = {
                 },
             },
             {
-                title = "Texture Detail",
+                title = "<LOC OPTIONS_0019>Texture Detail",
                 key = 'texture_level',
                 type = 'toggle',
                 default = 1,
@@ -873,14 +1058,14 @@ options = {
                 end,
                 custom = {
                     states = {
-                        { text = "Low", key = 2 },
-                        --{ text = "Medium", key = 1 },     -- later versions of DirectX do not always support this, can lead to crashing
-                        { text = "High", key = 0 },
+                        { text = "<LOC _Low>", key = 2 },
+                        --{ text = "<LOC _Medium>", key = 1 },     -- later versions of DirectX do not always support this, can lead to crashing
+                        { text = "<LOC _High>", key = 0 },
                     },
                 },
             },
             {
-                title = "Level Of Detail",
+                title = "<LOC OPTIONS_002>Level Of Detail",
                 key = 'level_of_detail',
                 type = 'toggle',
                 default = 1,
@@ -892,14 +1077,14 @@ options = {
                 end,
                 custom = {
                     states = {
-                        { text = "Low", key = 0 },
-                        { text = "Medium", key = 1 },
-                        { text = "High", key = 2 },
+                        { text = "<LOC _Low>", key = 0 },
+                        { text = "<LOC _Medium>", key = 1 },
+                        { text = "<LOC _High>", key = 2 },
                     },
                 },
             },
             {
-                title = "Vertical Sync",
+                title = "<LOC OPTIONS_0148>Vertical Sync",
                 key = 'vsync',
                 type = 'toggle',
                 default = 1,
@@ -910,13 +1095,13 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
                     },
                 },
             },
             {
-                title = "Bloom Render",
+                title = "<LOC OPTIONS_0169>Bloom Render",
                 key = 'bloom_render',
                 type = 'toggle',
                 default = 0,
@@ -928,18 +1113,18 @@ options = {
                 end,
                 custom = {
                     states = {
-                        {text = "Off", key = 0 },
-                        {text = "On", key = 1 },
+                        {text = "<LOC _Off>", key = 0 },
+                        {text = "<LOC _On>", key = 1 },
                     },
                 },
             }
         },
     },
     sound = {
-        title = "Sound",
+        title = "<LOC _Sound>",
         items = {
             {
-                title = "Master Volume",
+                title = "<LOC OPTIONS_0028>Master Volume",
                 key = 'master_volume',
                 type = 'slider',
                 default = 100,
@@ -968,7 +1153,7 @@ options = {
                 },
             },
             {
-                title = "FX Volume",
+                title = "<LOC OPTIONS_0026>FX Volume",
                 key = 'fx_volume',
                 type = 'slider',
                 default = 100,
@@ -1032,7 +1217,7 @@ options = {
                 },
             },
             {
-                title = "VO Volume",
+                title = "<LOC OPTIONS_0066>VO Volume",
                 key = 'vo_volume',
                 type = 'slider',
                 default = 100,

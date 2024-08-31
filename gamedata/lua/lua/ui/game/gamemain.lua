@@ -654,6 +654,17 @@ function AddOnUIDestroyedFunction(func)
 	
 end
 
+--- A cache used with ObserveSelection to prevent continious table allocations
+local cachedSelection = {
+    oldSelection = { },
+    newSelection = { },
+    added = { },
+    removed = { },
+}
+
+--- Observable to allow mods to do something with a new selection
+ObserveSelection = import("/lua/shared/observable.lua").Create()
+
 -- This function is called whenever the set of currently selected units changes
 -- See /lua/unit.lua for more information on the lua unit object
 --      oldSelection: What the selection was before
@@ -661,6 +672,13 @@ end
 --      added: Which units were added to the old selection
 --      removed: Which units where removed from the old selection
 function OnSelectionChanged(oldSelection, newSelection, added, removed)
+
+    -- populate observable and send out a notification
+    cachedSelection.oldSelection = oldSelection
+    cachedSelection.newSelection = newSelection
+    cachedSelection.added = added
+    cachedSelection.removed = removed
+    ObserveSelection:Set(cachedSelection)
 
     -- Interface option: don't allow air units to get selected alongside land
     if options.land_unit_select_prio == 1 and not IsKeyDown('Shift') then
@@ -1160,8 +1178,8 @@ defaultZoom = 1.4
 
 function SimChangeCameraZoom(newMult)
 
-    if IsQuickSaveAvailable then
-       
+    if IsQuickSaveAvailable() then
+
         defaultZoom = newMult
         local views = import('/lua/ui/game/worldview.lua').GetWorldViews()
         for _, viewControl in views do

@@ -35,76 +35,55 @@ BrewLANPath = function()
     end 
 end
 
--- Return the total time (in seconds), energy, and mass it will take for the given
--- builder to create a unit of type target_bp.
---
--- EconomyData may also be an "Enhancement" section of a unit's blueprint rather than
--- a full blueprint.
--- added rate to reduce calls - most functions calling this 
--- have already queried the rate
-function GetConstructEconomyModel(builder, EconomyData, BuildRate)
+--- Return the total time (in seconds), energy, and mass it will take for the given
+--- builder to create a unit of type target_bp.
+--- targetData may also be an "Enhancement" section of a units blueprint rather than
+--- a full blueprint.
+---
+--- Modified to calculate the cost of an upgrade. The third argument is the economy section of
+--- the unit that is currently upgrading into the new unit. We subtract that cost from the cost
+--- of the unit that is being built
+---
+--- In order to keep backwards compatibility, there is a new option in the blueprint economy section.
+--- if DifferentialUpgradeCostCalculation is set to true, the base upgrade cost will be subtracted
+---@param builder Unit
+---@param targetData UnitBlueprintEconomy
+---@param upgradeBaseData UnitBlueprintEconomy
+---@return number time
+---@return number energy
+---@return number mass
+function GetConstructEconomyModel(builder, targetData, upgradeBaseData)
+    -- 'rate' here is how fast we build relative to a unit with build rate of 1
+    local rate = builder:GetBuildRate()
+    local buildtime = targetData.BuildTime or 0.1
+    local mass = targetData.BuildCostMass or 0
+    local energy = targetData.BuildCostEnergy or 0
 
-    local builder_bp = __blueprints[builder.BlueprintID]
-    
-    -- 'BuildRate' here is how fast we build relative to a unit with build BuildRate of 1
-    local BuildRate = BuildRate or builder:GetBuildRate()
-
-    local time = EconomyData.BuildTime
-    local mass = EconomyData.BuildCostMass
-    local energy = EconomyData.BuildCostEnergy
-
-    -- apply penalties/bonuses to effective time
-    local time_mod = builder.BuildTimeModifier or 0
-	
-    time = time * (100 + time_mod) * .01
-
-    -- apply penalties/bonuses to effective energy cost
-    local energy_mod = builder.EnergyModifier or 0
-	
-    energy = energy * (100 + energy_mod) * .01
-	
-    if energy<0 then
-		energy = 0
-	end
-
-    -- apply penalties/bonuses to effective mass cost
-    local mass_mod = builder.MassModifier or 0
-	
-    mass = mass * (100 + mass_mod)*.01
-	
-    if mass<0 then
-		mass = 0
-	end
-	
-	-- from BrewLAN - accounting for discounted upgrade costs
-	-- this allows marking a blueprint so that you pay normal costs if directly built
-	-- or discounted costs if the building is being upgraded from something else
-	
-	-- JAN 2019 - while this code affects the visual costs of the upgrade - it does NOT impact the actual costs from what I can see.
-	-- originally - even in the absence of the trigger variables - it was calculating a 50% discount - I made that no discout
-    if builder_bp.BlueprintId == EconomyData.HalfPriceUpgradeFromID or builder_bp.General.UpgradesTo == EconomyData.HalfPriceUpgradeFromID or builder_bp.Economy.BuilderDiscountMult then
-	
-        local discount = EconomyData.UpgradeFromCostDiscount or builder_bp.Economy.BuilderDiscountMult or 1.0	-- if the discount is not specified then no discount is applied
-		
-		energy = energy * discount
-		mass = mass * discount
-	
-	end
-
-    if BuildRate >= 0.9 then
-
-        return ( time/BuildRate ), energy, mass
-        
-    else
-        
-        return (time/.1), energy, mass
-        
+    if upgradeBaseData and targetData.DifferentialUpgradeCostCalculation then
+        -- We cant make a differential on buildtime. Not sure why but if we do it yields incorrect
+        -- results. So just mass and energy.
+        mass = math.max(mass - upgradeBaseData.BuildCostMass, 0)
+        energy = math.max(energy - upgradeBaseData.BuildCostEnergy, 0)
     end
-    
+
+    -- Apply penalties/bonuses to effective costs
+    local time_mod = builder.BuildTimeModifier or 0
+    local energy_mod = builder.EnergyModifier or 0
+    local mass_mod = builder.MassModifier or 0
+
+    buildtime = math.max(buildtime * (100 + time_mod) * 0.01, 0.1)
+    energy = math.max(energy * (100 + energy_mod) * 0.01, 0)
+    mass = math.max(mass * (100 + mass_mod) * 0.01, 0)
+
+    return buildtime / rate, energy, mass
+end
+
+function IsRestricted(unitId, army)
+    ScenarioInfo = { Options = { RestrictedCategories = SessionGetScenarioInfo().Options.RestrictedCategories }}
+    return UnitRestricted(false, unitId)
 end
 
 function UnitRestricted(unit, unitId)
-
     if ScenarioInfo.Options.RestrictedCategories then     -- if restrictions defined
 	
 		if unit then

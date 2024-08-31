@@ -1,23 +1,12 @@
-local modpath = "/mods/hotkeyLabels/"
+-- This file is called from gamemain.lua when a game launches
+-- It assigns unit IDs and order strings to the basic key (The key without modifiers) bound to them
 
-local bt = import('/modules/buildingtab.lua')
-local construction = import('/lua/ui/game/construction.lua')
-local orders = import('/lua/ui/game/orders.lua')
-local Prefs = import('/lua/user/prefs.lua')
+local unitkeygroups = import("/lua/keymap/unitkeygroups.lua").unitkeygroups
+local construction = import("/lua/ui/game/construction.lua")
+local orders = import("/lua/ui/game/orders.lua")
+local Prefs = import("/lua/user/prefs.lua")
 
-
-local special = {       -- stupid name mismatches in game.prefs and buildingtab.lua
-    ["defenses"] = "defense",
-    ["arty"] = "mobilearty",
-    ["engystations"] = "engystation",
-    ["mobileshields"] = "mobileshield"
-}
-local ignoreGroups = {  -- don't want to check these groups, they mess up some bindings
-    "t3_armored_assault_bot",
-    "t3_siege_assault_bot",
-    "t3_tank",
-    "t3_siege_tank"
-}
+-- Turn engine string reference to certain symbols into the actual symbol
 local signs = {
     ["Comma"] = ",",
     ["Period"] = ".",
@@ -28,179 +17,210 @@ local signs = {
     ["NumStar"] = "*",
     ["NumSlash"] = "/",
     ["Quote"] = "'",
+    ["LeftBracket"] = "[", -- this key is the rightbracket for azerty
+    ["RightBracket"] = "]",
+    ["Chevron"] = "<", -- added for french keyboard
+    ["Backtick"] = "`",
 }
+
+-- Which colour do we make the label? Shift is not taken into account here
 local colours = {
-    [0] = "ffffffff",    -- white, no modifier
-    [1] = "fffafa00",    -- yellow, ctrl
-    [2] = "ffffbf80",    -- orange, alt
-    [3] = "FFe80a0a",    -- red, ctrl + alt
+    "ffffffff", -- White, no modifier
+    "fffafa00", -- Yellow, ctrl
+    "ffffbf80", -- Orange, alt
+    "FFe80a0a", -- Red, ctrl + alt
 }
+
+-- Depends on amount of characters in the key name
 local textSizes = {
-    -- depends on amount of characters in the key name
     [1] = 18,
     [2] = 14,
+    [3] = 14,
 }
+
+-- This table maps an action command to the tooltip of the button or buttons it corresponds to
 local orderDelegations = {
-        attack =                {"attack",},
-        shift_attack =          {"attack",},
-        move =                  {"move",},
-        shift_move =            {"move",},
-        assist =                {"assist",},
-        shift_assist =          {"assist",},
-        guard =                 {"assist",},
-        shift_guard =           {"assist",},
-        stop =                  {"stop",},
-        soft_stop =             {"stop",},
-        patrol =                {"patrol",},
-        shift_patrol =          {"patrol",},
-        repair =                {"repair",},
-        shift_repair =          {"repair",},
-        capture =               {"capture",},
-        shift_capture =         {"capture",},
-        reclaim =               {"reclaim",},
-        shift_reclaim =         {"reclaim",},
-        overcharge =            {"overcharge",},
+    attack =                {"attack"},
+    shift_attack =          {"attack"},
+    move =                  {"move"},
+    shift_move =            {"move"},
+    assist =                {"assist"},
+    shift_assist =          {"assist"},
+    guard =                 {"assist"},
+    shift_guard =           {"assist"},
+    stop =                  {"stop"},
+    soft_stop =             {"stop"},
+    patrol =                {"patrol"},
+    shift_patrol =          {"patrol"},
+    repair =                {"repair"},
+    shift_repair =          {"repair"},
+    capture =               {"capture"},
+    shift_capture =         {"capture"},
+    reclaim =               {"reclaim"},
+    shift_reclaim =         {"reclaim"},
+    overcharge =            {"overcharge"},
 
-        teleport =              {"teleport",},
-        dive =                  {"dive",},
-        transport =             {"transport",},
-        ferry =                 {"ferry"},
-        sacrifice =             {"sacrifice",},
-        dock =                  {"dock",},
+    teleport =              {"teleport"},
+    dive =                  {"dive"},
+    transport =             {"transport"},
+    ferry =                 {"ferry"},
+    sacrifice =             {"sacrifice"},
+    dock =                  {"dock"},
 
-        launch_tactical =       {"fire_tactical",},
-        shift_launch_tactical = {"fire_tactical",},
-        build_tactical =        {"build_tactical",},
-        build_billy =           {"build_billy",},
-        nuke =                  {"fire_nuke",},
-        shift_nuke =            {"fire_nuke",},
-        build_nuke =            {"build_nuke",},
+    launch_tactical =       {"fire_tactical"},
+    shift_launch_tactical = {"fire_tactical"},
+    build_tactical =        {"build_tactical"},
+    build_billy =           {"build_billy"},
+    nuke =                  {"fire_nuke"},
+    shift_nuke =            {"fire_nuke"},
+    build_nuke =            {"build_nuke"},
 
-        toggle_all =            {"toggle_shield","toggle_shield_dome","toggle_radar","toggle_sonar","toggle_omni",
-                                   "toggle_cloak","toggle_jamming","toggle_stealth_field","toggle_scrying",},
+    toggle_all =            {"toggle_shield","toggle_shield_dome","toggle_radar","toggle_sonar","toggle_omni",
+                                "toggle_cloak","toggle_jamming","toggle_stealth_field","toggle_scrying"},
 
-        toggle_intelshield =    {"toggle_shield","toggle_shield_dome","toggle_radar","toggle_sonar","toggle_omni",},
-        toggle_shield =         {"toggle_shield",},
-        toggle_shield_dome =    {"toggle_shield_dome",},
+    toggle_intelshield =    {"toggle_shield","toggle_shield_dome","toggle_radar","toggle_sonar","toggle_omni","toggle_scrying"},
+    toggle_shield =         {"toggle_shield"},
+    toggle_shield_dome =    {"toggle_shield_dome"},
 
-        toggle_cloakjammingstealth = {"toggle_cloak","toggle_jamming","toggle_stealth_field",},
-        toggle_cloak =          {"toggle_cloak",},
-        toggle_jamming =        {"toggle_jamming",},
-        toggle_stealth_field =  {"toggle_stealth_field",},
+    toggle_cloakjammingstealth = {"toggle_cloak","toggle_jamming","toggle_stealth_field"},
+    toggle_cloak =          {"toggle_cloak"},
+    toggle_jamming =        {"toggle_jamming"},
+    toggle_stealth_field =  {"toggle_stealth_field"},
 
-        mode =                  {"mode",},
-        --toggle_weapon =         {"mode",},    -- this one looks like it does not work
+    mode =                  {"mode"},
 
-        toggle_intel =          {"toggle_radar", "toggle_sonar", "toggle_omni",},
-        toggle_scrying =        {"toggle_scrying",},
-        scry_target =           {"scry_target",},
+    toggle_intel =          {"toggle_radar", "toggle_sonar", "toggle_omni","toggle_scrying"},
+    toggle_scrying =        {"toggle_scrying"},
+    scry_target =           {"scry_target"},
 }
 
-
+-- Called from gamemain.lua
 function init()
     local idRelations, upgradeKey, orderKeys = getKeyTables()
     construction.setIdRelations(idRelations, upgradeKey)
     orders.setOrderKeys(orderKeys)
 end
 
-
+-- Called from onSelectionChanged in gamemain.lua
 function onSelectionChanged(upgradesTo, isFactory)
     construction.setUpgradeAndAllowing(upgradesTo, isFactory)
 end
-
 
 function getKeyTables()
     local idRelations = {}
     local helpIdRelations = {}
     local otherRelations = {}
-    local upgradeKey = nil
-    local orderKeys = {}
+    local upgradeKey = false
+    local orderKeys = {
+        -- Special assignment for the attack move order because it can't be bound from the user key map
+        -- Keyed the same as the tooltip for the attack move button
+    	["attack_move"] = {
+            ["key"] = 'RMB',
+            ["colour"] = colours[3],
+        }
+    }
 
-    -- get them from the building tab
-    for groupName, groupItems in bt.buildingTab do
-        local g = groupName.lower(groupName)
-        if not isToBeIgnored(g) then
-            for _, item in groupItems do
-                local i = item.lower(item)
-                if isBlueprintString(i) then
-                    helpIdRelations[i] = g
+    -- Get them from the building tab
+    for groupName, groupItems in unitkeygroups do -- Since this file hardcodes all unit ids that can be affected by hotbuild, helpidrelations will get them all
+        local g = groupName:lower()
+        for _, item in groupItems do
+            local i = item:lower()
+
+            if __blueprints[i] then
+                if not helpIdRelations[i] then
+                    helpIdRelations[i] = {g}
                 else
-                    otherRelations[i] = g
+                    table.insert(helpIdRelations[i], g)
+                end
+            else
+                if otherRelations[i] then
+                    table.insert(otherRelations[i], g)
+                else
+                    otherRelations[i] = {g}
                 end
             end
         end
     end
 
-    -- go through buildingtab groups
-    local changed = true
-    while changed do
-        changed = false
-        for id, group in helpIdRelations do
-            if otherRelations[group] then
-                helpIdRelations[id] = otherRelations[group].lower(otherRelations[group])
-                changed = true
+    -- Go through unitkeygroups to properly map IDs
+    for id, group in pairs(helpIdRelations) do
+        for key, value in group do
+            if otherRelations[value] then -- Check if the group contained more than just unit IDs
+                for ids, values in pairs(otherRelations[value]) do
+                    table.insert(helpIdRelations[id], values:lower())
+                end
             end
         end
     end
 
-    helpIdRelations = resolveExceptions(helpIdRelations)
-
-    -- match user pref keymap
+    -- Match user pref keymap
     local savedPrefs = Prefs.GetFromCurrentProfile("UserKeyMap")
-    for key, action in savedPrefs or {} do
-        local use, keyname, colour = getKeyUse(key) 
-        if use then
-            for id, action2 in helpIdRelations do
-                if action2 == action then
+    for keyCombo, action in savedPrefs or {} do
+        local baseKey, colour = getKeyUse(keyCombo)  -- Returns the base key without modifiers, and a colour key to say which modifiers got removed (Were there)
+
+        -- Handle unit IDs
+        for id, group in pairs(helpIdRelations) do
+            for key, value in group do
+                if value == action then -- If it's an action that's assigned to a key at all, link the id to the key
                     idRelations[id] = {
-                        ["key"] = keyname,
-                        ["colour"] = colour,
-                    }
-                end
-            end
-            if orderDelegations[action] then
-                for _, o in orderDelegations[action] do
-                    orderKeys[o] = {
-                        ["key"] = keyname,
+                        ["key"] = baseKey,
                         ["colour"] = colour,
                     }
                 end
             end
         end
+
+        -- Handle orders
+        if orderDelegations[action] then
+            for _, o in orderDelegations[action] do
+                orderKeys[o] = {
+                    ["key"] = baseKey,
+                    ["colour"] = colour,
+                }
+            end
+        end
+
+        -- Handle upgrades
         if action == "upgrades" then
             upgradeKey = {
-                ["key"] = keyname,
+                ["key"] = baseKey,
                 ["colour"] = colour,
             }
         end
     end
 
-    -- rename signs
-    for id0, metagroup in {idRelations, orderKeys} do
+    -- Rename signs for Unit ID list and orders
+    for _, metagroup in {idRelations, orderKeys} do
         for id1, group in metagroup do
             if signs[group.key] then
                 metagroup[id1].key = signs[group.key]
             end
-        end    
+        end
     end
+
+    -- Handle signs for upgrades seperately
     if upgradeKey then
         if signs[upgradeKey.key] then
             upgradeKey.key = signs[upgradeKey.key]
-        end  
-    end 
+        end
+    end
 
-    -- remove unused ones (too long)
-    for id0, metagroup in {idRelations, orderKeys} do
+    -- Remove unused ones (too long)
+    for _, metagroup in {idRelations, orderKeys} do
         for id1, group in metagroup do
             group["textsize"] = textSizes[string.len(group.key)]
             if not group["textsize"] then
+                WARN('Not showing label for keybind ' .. group.key .. ' due to length')
                 metagroup[id1] = nil
             end
-        end    
-    end 
+        end
+    end
+
+    -- Handle textsize for upgrades seperately
     if upgradeKey then
         upgradeKey["textsize"] = textSizes[string.len(upgradeKey.key)]
         if not upgradeKey["textsize"] then
+            WARN('Not showing label for keybind ' .. upgradeKey.key .. ' due to length')
             upgradeKey = nil
         end
     end
@@ -208,55 +228,23 @@ function getKeyTables()
     return idRelations, upgradeKey, orderKeys
 end
 
-
-function resolveExceptions(t)
-    -- stupid exceptions
-    for id, group in t do
-        for sId, sGroup in special do
-            local g = group:lower(group)
-            if g == sId then
-                t[id] = sGroup
-            end
-        end
-    end
-    return t
-end
-
-
-function isToBeIgnored(name)
-    for _, iN in ignoreGroups do
-        if name == iN then
-            return true
-        end
-    end
-    return false
-end
-
-
+-- Determine which modifier keys are present in the keybind string
 function getKeyUse(key)
-    local colour = 0
+    local colour = 1
     if string.find(key, "Shift*") then
-        -- no colour change for shift
-        key = key.gsub(key, "Shift.", "")
+        -- No colour change for shift
+        key = key:gsub("Shift.", "")
     end
+
     if string.find(key, "Ctrl*") then
         colour = colour + 1
-        key = key.gsub(key, "Ctrl.", "")
+        key = key:gsub("Ctrl.", "")
     end
+
     if string.find(key, "Alt*") then
         colour = colour + 2
-        key = key.gsub(key, "Alt.", "")
+        key = key:gsub("Alt.", "")
     end
-    return true, key, colours[colour]
-end
 
-
-function isBlueprintString(s)
-    if s:len(s) ~= 7 then
-        return false
-    end
-    if string.find(s, "...[0-9]+") then
-        return true
-    end
-    return false
+    return key, colours[colour]
 end

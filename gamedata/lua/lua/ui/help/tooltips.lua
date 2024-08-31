@@ -523,10 +523,6 @@ Tooltips = {
         title = "Automatic Rename of Replays",
         description = "When a game ends, a copy of the replay file is saved with the map name and a timestamp",
     },
-    options_subtitles = {
-        title = "Display Subtitles",
-        description = "Toggles the display of subtitles during movies",
-    },
     options_world_border = {
         title = "Display World Border",
         description = "Toggles the display of the holographic image surrounding the world",
@@ -610,6 +606,50 @@ Tooltips = {
     options_land_unit_select_prio = {
         title = "Land Unit Selection Priority",
         description = "When on, trying to select both land and air units will select only the land units",
+    },
+    options_gui_templates_factory = {
+        title = '<LOC OPTIONS_0237>Factory Build Queue Templates',
+        description = '<LOC OPTIONS_0263>Allows creation of factory build queue templates.',
+    },
+    options_gui_visible_template_names = {
+        title = '<LOC OPTIONS_0239>Visible Template Names',
+        description = '<LOC OPTIONS_0265>Displays template name below template icon.',
+    },
+    options_gui_template_name_cutoff = {
+        title = '<LOC OPTIONS_0240>Template Name Cutoff',
+        description = '<LOC OPTIONS_0266>The first 7 characters are displayed (default). Number of characters omitted can be customized. (Needs restart for effects to be visible.)',
+    },
+    options_show_hotkeylabels = {
+        title = "<LOC OPTIONS_0281>Hotkey Labels",
+        description = "<LOC OPTIONS_0282>Displays associated keybindings on the buttons for commands and building units or structures"
+    },
+    options_gui_bigger_strat_build_icons = {
+        title = '<LOC OPTIONS_0228>Bigger Strategic Build Icons',
+        description = '<LOC OPTIONS_0253>Replaces the default strategic build icons with something more visible.',
+    },
+    options_gui_draggable_queue = {
+        title = '<LOC OPTIONS_0231>Draggable Build Queue',
+        description = '<LOC OPTIONS_0258>Allows factory build queues to be reordered with drag and drop.',
+    },
+    options_gui_draggable_queue = {
+        title = '<LOC OPTIONS_0231>Draggable Build Queue',
+        description = '<LOC OPTIONS_0258>Allows factory build queues to be reordered with drag and drop.',
+    },
+    options_gui_enhanced_unitview = {
+        title = '<LOC OPTIONS_0234>Single Unit Selected Info',
+        description = '<LOC OPTIONS_0261>Replaces fuel bar with progress bar, and causes the unitview to always be shown for a 1 unit selection.',
+    },
+    options_gui_render_armament_detail = {
+        title = '<LOC OPTIONS_0244>Show Armament Build in Factory Menu',
+        description = '<LOC tooltipui0692>Shows detailed information about the weapons a unit has from the build menu',
+    },
+    options_gui_queue_on_hover_02 = {
+        title = '<LOC OPTIONS_0246>Show Factory Queue on Hover',
+        description = '<LOC OPTIONS_0249>Shows Factory queue above unit description when hover over unit with mouse.',
+    },
+    options_main_menu_animation_duration = {
+        title = 'Main menu animations',
+        description = 'Shows animations in the main menu.',
     },
 
     -- **********************
