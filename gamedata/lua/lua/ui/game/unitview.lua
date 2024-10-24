@@ -402,7 +402,8 @@ function UpdateWindow(info)
 
         -- always hide veterancy stars initially
         for i = 1, 5 do
-            controls.vetIcons[i]:Hide()
+            controls.vetIcons[i]:SetAlpha(0.1)
+            controls.vetIcons[i]:SetTexture(UIUtil.UIFile(Factions.Factions[Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)]].VeteranIcon))
         end
 
         -- Control the veterancy stars
@@ -420,8 +421,7 @@ function UpdateWindow(info)
                 local threshold = bp.Veteran[LOUDFORMAT('Level%d', i)]
 
                 if experience >= threshold then
-                    controls.vetIcons[i]:Show()
-                    controls.vetIcons[i]:SetTexture(UIUtil.UIFile(Factions.Factions[Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)]].VeteranIcon))
+                    controls.vetIcons[i]:SetAlpha(1.0)
                     lowerThreshold = threshold
                 elseif not upperThreshold then
                     upperThreshold = threshold
@@ -562,8 +562,6 @@ function UpdateWindow(info)
         -- code taken from below --
 
         --- replace fuel bar with progress bar when when upgrading
-        controls.fuelBar:Hide()
-
         if info.workProgress > 0 then
             controls.fuelBar:Show()
             controls.fuelBar:SetValue(info.workProgress)
