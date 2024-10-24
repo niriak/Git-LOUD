@@ -370,6 +370,11 @@ function UIFile(filespec)
         return nil
     end
 
+    -- veteran icons are stored differently
+    if filespec == '/game/veteran-logo_bmp/veteran_bmp.dds' then
+        filespec = '/game/veteran-logo_bmp/'..visitingSkin..'-veteran_bmp.dds'
+    end
+
     -- if current skin is default, then don't bother trying to look for it, just append the default dir
     if visitingSkin == 'default' then
 	

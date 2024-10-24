@@ -13,13 +13,13 @@ local iconPositions = {
     [2] = {Left =  64, Top =  4},
     [3] = {Left = 124, Top =  4},
 
-    [4] = {Left =   0, Top = 18},
-    [5] = {Left =  60, Top = 18},
-    [6] = {Left = 120, Top = 18},
+    [4] = {Left =   4, Top = 24},
+    [5] = {Left =  64, Top = 24},
+    [6] = {Left = 124, Top = 24},
 
-    [7] = {Left =   0, Top = 36},
-    [8] = {Left =  60, Top = 36},
-    [9] = {Left = 120, Top = 36},
+    [7] = {Left =   4, Top = 44},
+    [8] = {Left =  64, Top = 44},
+    [9] = {Left = 124, Top = 44},
 }
 
 --local iconPositions = {
@@ -45,9 +45,22 @@ local iconTextures = {
     UIUtil.UIFile('/game/unit_view_icons/build.dds'),
 }
 
+function UnsetLayout()
+    LOG("unitview_mini.UnsetLayout()")
+    if controls.stats then
+        controls.stats:Hide()
+        controls.stats:Destroy()
+        controls.stats = false
+    end
+
+    controls.shieldBar:Hide()
+    controls.shieldText:Hide()
+    controls.fuelBar:Hide()
+end
+
 function SetLayout()
-    LOG("mydebug SetLayout()")
-    controls.bg:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/build-over-back_bmp2.dds'))
+    LOG("unitview_mini.SetLayout()")
+    controls.bg:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/build-over-back_bmp.dds'))
     LayoutHelpers.AtLeftIn(controls.bg, controls.parent)
     LayoutHelpers.AtBottomIn(controls.bg, controls.parent)
 
@@ -75,25 +88,20 @@ function SetLayout()
     LayoutHelpers.AtLeftTopIn(controls.stratIcon, controls.icon)
 
     -- Veterancy
-    LayoutHelpers.Below(controls.vetIcons[1], controls.icon, 3)
+    LayoutHelpers.Below(controls.vetIcons[1], controls.icon, 2)
     LayoutHelpers.AtLeftIn(controls.vetIcons[1], controls.icon, -5)
     for index = 2, 5 do
         local i = index
         LayoutHelpers.RightOf(controls.vetIcons[i], controls.vetIcons[i-1], -3)
     end
 
-    controls.vetBar.Width:Set(controls.icon.Width)
-    LayoutHelpers.SetHeight(controls.vetBar, 2)
-    LayoutHelpers.Below(controls.vetBar, controls.icon, 2)
-
     controls.vetBar.Left:Set(controls.icon.Left)
     controls.vetBar.Width:Set(controls.icon.Width)
     LayoutHelpers.SetHeight(controls.vetBar, 2)
-    LayoutHelpers.AnchorToBottom(controls.vetBar, controls.vetIcons[1])
+    --- Do not use vetIcons for positioning, as these may not have been initialized yet
+    LayoutHelpers.AnchorToBottom(controls.vetBar, controls.icon, 17)
     controls.vetBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
-    controls.vetBar:SetAlpha(0.3, true)
     controls.vetBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/fuelbar.dds'))
-    controls.vetBar._bar:SetAlpha(0.3, true)
 
     LayoutHelpers.CenteredBelow(controls.nextVet, controls.vetBar, 1)
     controls.nextVet:SetDropShadow(true)
@@ -112,33 +120,38 @@ function SetLayout()
     controls.health:SetDropShadow(true)
 
     -- Shield
---    if not controls.shieldBar:IsHidden() then
-        controls.shieldBar.Width:Set(controls.healthBar.Width)
-        LayoutHelpers.SetHeight(controls.shieldBar, 4)
-        LayoutHelpers.Below(controls.shieldBar, controls.healthBar, 1)
-        controls.shieldBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
-        controls.shieldBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/shieldbar.dds'))
-        LayoutHelpers.CenteredBelow(controls.shieldText, controls.shieldBar, 2)
---    end
+    LayoutHelpers.Reset(controls.shieldBar)
+    controls.shieldBar.Width:Set(controls.healthBar.Width)
+    controls.shieldBar.Height:Set(controls.healthBar.Height)
+    LayoutHelpers.Below(controls.shieldBar, controls.healthBar, 1)
+
+    controls.shieldBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
+    controls.shieldBar:SetBorder(1)
+    controls.shieldBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/shieldbar.dds'))
+    controls.shieldBar:Hide()
+
+    LayoutHelpers.AtCenterIn(controls.shieldText, controls.shieldBar)
+    controls.shieldText:SetDropShadow(true)
+    controls.shieldText:Hide()
 
     -- Fuel
---    if not controls.fuelBar:IsHidden() then
-        controls.fuelBar.Width:Set(controls.healthBar.Width)
-        LayoutHelpers.SetHeight(controls.fuelBar, 4)
-        LayoutHelpers.Below(controls.fuelBar, controls.healthBar, 1)
-        controls.fuelBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
-        controls.fuelBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/fuelbar.dds'))
---    end
+    controls.fuelBar.Width:Set(controls.healthBar.Width)
+    LayoutHelpers.SetHeight(controls.fuelBar, 4)
+    LayoutHelpers.Below(controls.fuelBar, controls.healthBar, 1)
+    controls.fuelBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
+    controls.fuelBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/fuelbar.dds'))
+    controls.fuelBar:Hide()
 
     -- Stats
     if controls.stats then
         controls.stats:Destroy()
     end
     controls.stats = Bitmap(controls.bg)
-    controls.stats:SetSolidColor('55000000')
+    controls.stats:SetSolidColor('33000000')
     controls.stats.Left:Set(controls.healthBar.Left)
     controls.stats.Width:Set(controls.healthBar.Width)
-    LayoutHelpers.AtBottomIn(controls.stats, controls.bg, 20)
+    controls.stats.Height:Set(controls.healthBar.Width)
+    LayoutHelpers.AtBottomIn(controls.stats, controls.bg, 12)
 
     for index = 1, table.getn(controls.statGroups) do
         local i = index
@@ -151,30 +164,12 @@ function SetLayout()
         controls.statGroups[i].value.Depth:Set(controls.statGroups[i].icon.Depth)
     end
 
---    local statGroups = {}
---    for index = 1, table.getn(iconOrder) do
---        local i = iconOrder[index];
---        if controls.statGroups[i].value and not controls.statGroups[i].value:IsHidden() then
---            controls.statGroups[i].icon:SetTexture(iconTextures[i])
---            table.insert(statGroups, controls.statGroups[i])
---        end
---    end
---    for k,v in ipairs(statGroups) do
---        LOG("foo "..k.." = "..v.value:GetText())
---    end
---    for index = 1, table.getn(statGroups) do
---        local i = index
---        LayoutHelpers.AtLeftTopIn(statGroups[i].icon, controls.positions, iconPositions[i].Left, iconPositions[i].Top)
---        LayoutHelpers.RightOf(statGroups[i].value, statGroups[i].icon, 5)
---        LayoutHelpers.AtVerticalCenterIn(statGroups[i].value, statGroups[i].icon)
---        statGroups[i].value:SetDropShadow(true)
---    end
-
     -- Action
     LayoutHelpers.AtLeftTopIn(controls.actionIcon, controls.bg, 261, 34)
     LayoutHelpers.SetDimensions(controls.actionIcon, 48, 48)
     LayoutHelpers.Below(controls.actionText, controls.actionIcon)
     LayoutHelpers.AtHorizontalCenterIn(controls.actionText, controls.actionIcon)
+    controls.actionText:SetDropShadow(true)
 
     -- Abilities
     LayoutHelpers.AnchorToRight(controls.abilities, controls.bg, 19)
@@ -249,52 +244,24 @@ end
 
 function UpdateStatusBars(controls)
     -- Show text "Veterancy" only until first star
---    controls.vetTitle:SetHidden(controls.vetBar:IsHidden() or not controls.vetIcons[1]:IsHidden())
-    controls.vetTitle:SetHidden(true)
+    controls.vetTitle:SetHidden(controls.vetBar:IsHidden() or not controls.vetIcons[1]:IsHidden())
 
-    -- Override hidden stars to be shown in transparent
---    for index = 1, 5 do
---        local i = index
---        if controls.vetIcons[i]:IsHidden() then
---            controls.vetIcons[i]:SetAlpha(0.3)
---            controls.vetIcons[i]:Show()
---        end
---    end
-
-    if options.gui_detailed_unitview ~= 0 then
-        -- fuel/build
-        if controls.shieldBar:IsHidden() then
-            LayoutHelpers.AtLeftTopIn(controls.fuelBar, controls.shieldBar)
-        else
-            LayoutHelpers.CenteredBelow(controls.fuelBar, controls.shieldBar, 1)
-        end
-
-        -- shield text
-        if controls.fuelBar:IsHidden() then
-            LayoutHelpers.CenteredBelow(controls.shieldText, controls.shieldBar, 0)
-        else
-            LayoutHelpers.CenteredBelow(controls.shieldText, controls.fuelBar, 0)
-        end
-
-        -- stats
-        if not controls.shieldText:IsHidden() then
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.shieldText, 1)
-        elseif not controls.fuelBar:IsHidden() then
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.fuelBar, 1)
-        else
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.healthBar, 1)
-        end
+    -- fuel/build
+    if controls.shieldBar:IsHidden() then
+        LayoutHelpers.AtLeftTopIn(controls.fuelBar, controls.shieldBar)
     else
-        if not controls.fuelBar:IsHidden() then
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.fuelBar, 1)
-        elseif not controls.shieldBar:IsHidden() then
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.shieldBar, 1)
-        else
-            LayoutHelpers.AnchorToBottom(controls.stats, controls.healthBar, 1)
-        end
+        LayoutHelpers.CenteredBelow(controls.fuelBar, controls.shieldBar, 1)
     end
 
     -- Stats
+    if not controls.fuelBar:IsHidden() then
+        LayoutHelpers.AnchorToBottom(controls.stats, controls.fuelBar, 1)
+    elseif not controls.shieldBar:IsHidden() then
+        LayoutHelpers.AnchorToBottom(controls.stats, controls.shieldBar, 1)
+    else
+        LayoutHelpers.AnchorToBottom(controls.stats, controls.healthBar, 1)
+    end
+
     local statGroups = {}
     for index = 1, table.getn(iconOrder) do
         local i = iconOrder[index];

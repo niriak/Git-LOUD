@@ -25,6 +25,9 @@ local iconTextures = {
     UIUtil.UIFile('/game/unit_view_icons/build.dds'),
 }
 
+function UnsetLayout()
+end
+
 function SetLayout()
     controls.bg:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/build-over-back_bmp.dds'))
     LayoutHelpers.AtLeftIn(controls.bg, controls.parent)

@@ -1,4 +1,5 @@
 local Bitmap = import('bitmap.lua').Bitmap
+local ScaleNumber = import('layouthelpers.lua').ScaleNumber
 local lazyvar = import('/lua/lazyvar.lua')
 
 local LOUDFLOOR = math.floor
@@ -21,6 +22,7 @@ StatusBar = Class(Bitmap)
         self._negative = negative
         self._stretch = stretchTextures or false
         self._bar = Bitmap(self, bar)
+        self._border = 0
 
         if self._vertical then
             if self._negative then
@@ -55,18 +57,22 @@ StatusBar = Class(Bitmap)
                     return LOUDFLOOR(self.Right() - (rangePercent * (self.Right() - self.Left())))
                 end)
             else
-                self._bar.Left:Set(self.Left)
+                self._bar.Left:Set(function() return self.Left() + self._border end)
                 self._bar.Right:Set(function()
                     local rangePercent = self:_CalcRangePercent()
                     if not self._stretch then
                         self._bar:SetUV(1 - rangePercent, 0, 1, 1)
                     end
-                    return LOUDFLOOR(self.Left() + (rangePercent * (self.Right() - self.Left())))
+                    return LOUDFLOOR(self.Left() + self._border + (rangePercent * (self.Right() - self.Left() - 2 * self._border)))
                 end)
             end
-            self._bar.Top:Set(self.Top)
-            self._bar.Height:Set(self.Height)
+            self._bar.Top:Set(function() return self.Top() + self._border end)
+            self._bar.Height:Set(function() return self.Height() - 2 * self._border end)
         end        
+    end,
+
+    SetBorder = function(self, value)
+        self._border = ScaleNumber(value)
     end,
 
     SetValue = function(self, value)

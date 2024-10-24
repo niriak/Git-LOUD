@@ -23,6 +23,7 @@ local LOUDFORMAT    = string.format
 local LOUDGETN      = table.getn
 local LOUDLOWER     = string.lower
 local LOUDMAX       = math.max
+local LOUDMIN       = math.min
 local LOUDROUND     = math.round
 
 --local rolloverInfo = false
@@ -209,7 +210,7 @@ local statFuncs = {
 	--- shield % HP
 	function(info, bp)
 	    if info.shieldRatio > 0 then
-	        return LOUDFORMAT('%d%%', LOUDFLOOR(info.shieldRatio * 100))
+	        return LOUDFORMAT('%d%%', LOUDFLOOR(LOUDMIN(100, info.shieldRatio * 100)))
 	    else
 	        return false
 	    end
@@ -402,8 +403,7 @@ function UpdateWindow(info)
 
         -- always hide veterancy stars initially
         for i = 1, 5 do
-            controls.vetIcons[i]:SetAlpha(0.1)
-            controls.vetIcons[i]:SetTexture(UIUtil.UIFile(Factions.Factions[Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)]].VeteranIcon))
+            controls.vetIcons[i]:Hide()
         end
 
         -- Control the veterancy stars
@@ -421,7 +421,9 @@ function UpdateWindow(info)
                 local threshold = bp.Veteran[LOUDFORMAT('Level%d', i)]
 
                 if experience >= threshold then
-                    controls.vetIcons[i]:SetAlpha(1.0)
+                    controls.vetIcons[i]:Show()
+--                    controls.vetIcons[i]:SetTexture(UIUtil.UIFile(Factions.Factions[Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)]].VeteranIcon))
+                    controls.vetIcons[i]:SetTexture(UIUtil.UIFile("/game/veteran-logo_bmp/veteran_bmp.dds"))
                     lowerThreshold = threshold
                 elseif not upperThreshold then
                     upperThreshold = threshold
@@ -433,7 +435,8 @@ function UpdateWindow(info)
             if upperThreshold then
                 controls.vetTitle:SetText('Veterancy')
                 controls.vetBar:SetValue((experience - lowerThreshold) / (upperThreshold - lowerThreshold))
-                controls.nextVet:SetText(experience .. '/' .. LOUDFORMAT('%d', upperThreshold))
+                -- Show required kills for next level as a negative number
+                controls.nextVet:SetText(LOUDFORMAT('%d', experience - upperThreshold))
                 controls.vetBar:Show()
             end
         end
@@ -640,6 +643,10 @@ function ShowROBox()
 end
 
 function SetLayout(layout)
+    if unitViewLayout then
+        unitViewLayout:UnsetLayout()
+    end
+
     unitViewLayout = import(UIUtil.GetLayoutFilename('unitview'))
     unitViewLayout.SetLayout()
 end
@@ -653,6 +660,7 @@ function SetupUnitViewLayout(mapGroup, orderControl)
 end
 
 function CreateUI()
+    LOG("unitview.CreateUI")
 
     controls.bg         = Bitmap(controls.parent)
     controls.bracket    = Bitmap(controls.bg)
@@ -710,7 +718,7 @@ function CreateUI()
     controls.bg:SetNeedsFrameUpdate(true)
 
     if options.gui_detailed_unitview ~= 0 then
-        controls.shieldText = UIUtil.CreateText(controls.bg, '', 13, UIUtil.bodyFont)
+        controls.shieldText = UIUtil.CreateText(controls.shieldBar, '', 13, UIUtil.bodyFont)
     end
 
     controls.bg.OnFrame = function(self, delta)
