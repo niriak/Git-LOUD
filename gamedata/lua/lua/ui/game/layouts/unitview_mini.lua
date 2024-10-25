@@ -88,20 +88,25 @@ function SetLayout()
     LayoutHelpers.AtLeftTopIn(controls.stratIcon, controls.icon)
 
     -- Veterancy
-    LayoutHelpers.Below(controls.vetIcons[1], controls.icon, 2)
-    LayoutHelpers.AtLeftIn(controls.vetIcons[1], controls.icon, -5)
+    LayoutHelpers.AtLeftIn(controls.vetIcons[1], controls.icon, 2)
+    LayoutHelpers.AnchorToBottom(controls.vetIcons[1], controls.icon, 2)
+    LayoutHelpers.SetDimensions(controls.vetIcons[1], 9, 9)
     for index = 2, 5 do
         local i = index
-        LayoutHelpers.RightOf(controls.vetIcons[i], controls.vetIcons[i-1], -3)
+        LayoutHelpers.RightOf(controls.vetIcons[i], controls.vetIcons[i-1], 0)
+        controls.vetIcons[i].Width:Set(controls.vetIcons[1].Width)
+        controls.vetIcons[i].Height:Set(controls.vetIcons[1].Height)
     end
 
     controls.vetBar.Left:Set(controls.icon.Left)
     controls.vetBar.Width:Set(controls.icon.Width)
     LayoutHelpers.SetHeight(controls.vetBar, 2)
     --- Do not use vetIcons for positioning, as these may not have been initialized yet
-    LayoutHelpers.AnchorToBottom(controls.vetBar, controls.icon, 17)
-    controls.vetBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
-    controls.vetBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/fuelbar.dds'))
+    LayoutHelpers.AnchorToBottom(controls.vetBar, controls.icon, 12)
+--    controls.vetBar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/healthbar_bg.dds'))
+    controls.vetBar:SetSolidColor(UIUtil.transparentPanelColor)
+--    controls.vetBar._bar:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/fuelbar.dds'))
+    controls.vetBar._bar:SetSolidColor(UIUtil.fontColor)
 
     LayoutHelpers.CenteredBelow(controls.nextVet, controls.vetBar, 1)
     controls.nextVet:SetDropShadow(true)
@@ -131,6 +136,7 @@ function SetLayout()
     controls.shieldBar:Hide()
 
     LayoutHelpers.AtCenterIn(controls.shieldText, controls.shieldBar)
+    controls.shieldText:SetColor(UIUtil.fontOverColor)
     controls.shieldText:SetDropShadow(true)
     controls.shieldText:Hide()
 

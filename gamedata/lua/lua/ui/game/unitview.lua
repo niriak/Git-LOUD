@@ -332,8 +332,7 @@ function UpdateWindow(info)
                 elseif i == 3 then
                     local value, iconType, color = statFuncs[i](info, bp)
 					controls.statGroups[i].value:SetText(value)
-                    controls.statGroups[i].icon:SetTexture(UIUtil.UIFile(Factions.Factions[
-                        Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)] ].VeteranIcon))
+                    controls.statGroups[i].icon:SetTexture(UIUtil.UIFile(UIUtil.UIFile("/game/veteran-logo_bmp/veteran_bmp.dds")))
 
                 elseif i == 5 then
                     local text, iconType = statFuncs[i](info, bp)
@@ -422,7 +421,6 @@ function UpdateWindow(info)
 
                 if experience >= threshold then
                     controls.vetIcons[i]:Show()
---                    controls.vetIcons[i]:SetTexture(UIUtil.UIFile(Factions.Factions[Factions.FactionIndexMap[LOUDLOWER(bp.General.FactionName)]].VeteranIcon))
                     controls.vetIcons[i]:SetTexture(UIUtil.UIFile("/game/veteran-logo_bmp/veteran_bmp.dds"))
                     lowerThreshold = threshold
                 elseif not upperThreshold then
@@ -436,7 +434,7 @@ function UpdateWindow(info)
                 controls.vetTitle:SetText('Veterancy')
                 controls.vetBar:SetValue((experience - lowerThreshold) / (upperThreshold - lowerThreshold))
                 -- Show required kills for next level as a negative number
-                controls.nextVet:SetText(LOUDFORMAT('%d', experience - upperThreshold))
+                controls.nextVet:SetText(LOUDFORMAT('Left: %d', upperThreshold - experience))
                 controls.vetBar:Show()
             end
         end
