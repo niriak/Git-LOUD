@@ -434,7 +434,7 @@ function UpdateWindow(info)
                 controls.vetTitle:SetText('Veterancy')
                 controls.vetBar:SetValue((experience - lowerThreshold) / (upperThreshold - lowerThreshold))
                 -- Show required kills for next level as a negative number
-                controls.nextVet:SetText(LOUDFORMAT('Left: %d', upperThreshold - experience))
+                controls.nextVet:SetText(LOUDFORMAT('%d / %d -%d', experience, upperThreshold, upperThreshold - experience))
                 controls.vetBar:Show()
             end
         end
@@ -500,7 +500,6 @@ function UpdateWindow(info)
             controls.actionText:Show()
 
         else
-
             controls.actionIcon:Hide()
             controls.actionText:Hide()
 
@@ -620,7 +619,6 @@ function UpdateEnhancementIcons(info)
     for slot, enhancement in controls.enhancements do
 
         if unit == nil or
-            (not unit:IsInCategory('COMMAND') and not unit:IsInCategory('SUBCOMMANDER')) or
             existingEnhancements == nil or existingEnhancements[slot] == nil then
             enhancement:Hide()
             continue
@@ -676,7 +674,7 @@ function CreateUI()
     controls.fuelBar    = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
     controls.health     = UIUtil.CreateText(controls.healthBar, '', 14, UIUtil.bodyFont)
     controls.vetBar     = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
-    controls.nextVet    = UIUtil.CreateText(controls.vetBar, '', 10, UIUtil.bodyFont)
+    controls.nextVet    = UIUtil.CreateText(controls.vetBar, '', 9, UIUtil.bodyFont)
     controls.vetTitle   = UIUtil.CreateText(controls.vetBar, 'Veterancy', 10, UIUtil.bodyFont)
 
     controls.statGroups = {}
