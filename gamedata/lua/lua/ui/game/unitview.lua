@@ -561,7 +561,7 @@ function UpdateWindow(info)
 
         -- code taken from below --
 
-        --- replace fuel bar with progress bar when when upgrading
+        --- replace fuel bar with progress bar when upgrading
         if info.workProgress > 0 then
             controls.fuelBar:Show()
             controls.fuelBar:SetValue(info.workProgress)

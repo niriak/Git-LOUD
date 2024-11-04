@@ -16,7 +16,8 @@ local Scrollbar     = import('/lua/maui/scrollbar.lua').Scrollbar
 local Bitmap        = import('/lua/maui/bitmap.lua').Bitmap
 local Cursor        = import('/lua/maui/cursor.lua').Cursor
 local Prefs         = import('/lua/user/prefs.lua')
-local Border        = import('/lua/maui/border.lua').Border
+local Border        = import("/lua/maui/border.lua").Border
+local CBorder       = import("/lua/ui/controls/border.lua").Border
 local ItemList      = import('/lua/maui/itemlist.lua').ItemList
 local Layouts       = import('/lua/skins/layouts.lua')
 local InputDialog   = import("/lua/ui/controls/popups/inputdialog.lua").InputDialog
@@ -1218,7 +1219,7 @@ end
  -- @param fudgeY As fudgeX, but in the Y direction.
  --
  function SurroundWithBorder(control, texturePath, fudgeX, fudgeY)
-    local border = Border(control,
+    local border = CBorder(control,
         SkinnableFile(texturePath .. 'topLeft.dds'),
         SkinnableFile(texturePath .. 'topRight.dds'),
         SkinnableFile(texturePath .. 'bottomLeft.dds'),
