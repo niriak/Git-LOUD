@@ -64,29 +64,8 @@ end
 function SetLayout()
     LOG("unitview_mini.SetLayout()")
 
-    LayoutHelpers.AtLeftIn(controls.bg, controls.parent)
-    LayoutHelpers.AtBottomIn(controls.bg, controls.parent)
-    LayoutHelpers.SetDimensions(controls.bg, 362, 144)
-
-    if controls.bg.border then controls.bg.border:Destroy() end
-    controls.bg.border = UIUtil.CreateNinePatchStd(controls.bg, '/game/unit-view-panel/unit-view-panel_brd_')
-    controls.bg.border:Surround(controls.bg, 32, 32)
-    LayoutHelpers.DepthUnderParent(controls.bg.border, controls.bg)
-
-    controls.bracket:SetTexture(UIUtil.UIFile('/game/unit-build-over-panel/bracket-unit_bmp.dds'))
-    LayoutHelpers.AtLeftTopIn(controls.bracket, controls.bg, -18, -2)
-
-    if controls.bracketMid then
-        controls.bracketMid:Destroy()
-        controls.bracketMid = false
-    end
-    if controls.bracketMax then
-        controls.bracketMax:Destroy()
-        controls.bracketMax = false
-    end
-
     -- Name
-    LayoutHelpers.AtLeftTopIn(controls.name, controls.bg, 18, 18)
+    LayoutHelpers.AtLeftTopIn(controls.name, controls.bg, 18, 10)
     LayoutHelpers.AtRightIn(controls.name, controls.bg, 22)
     controls.name:SetClipToWidth(true)
     controls.name:SetDropShadow(true)
@@ -333,21 +312,7 @@ function SetBG(controls)
 end
 
 function PositionWindow()
-    if consControl:IsHidden() then
-        LayoutHelpers.AtBottomIn(controls.bg, controls.parent)
-        LayoutHelpers.AtBottomIn(controls.abilities, controls.bg, 24)
-    else
-        if ordersControls.bg then
-            LayoutHelpers.AtBottomIn(controls.bg, controls.parent, 120)
-            LayoutHelpers.AtBottomIn(controls.abilities, controls.bg, 42)
-        else
-            -- Replay? Anyway, the orders control does not exist so the construction control is all the way to the left.
-            -- The construction control is taller than the orders control, so we have to move unit view higher.
-            LayoutHelpers.AtBottomIn(controls.bg, controls.parent, 140)
-            LayoutHelpers.AtLeftIn(controls.bg, controls.parent, 18)
-        end
-    end
-    LayoutHelpers.AtLeftIn(controls.bg, controls.parent, 17)
+    -- Nothing to do
 end
 
 function UpdateStatusBars(controls)

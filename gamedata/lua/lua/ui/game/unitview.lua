@@ -3,6 +3,7 @@
 --* Summary: Rollover unit view control
 
 local Bitmap                = import('/lua/maui/bitmap.lua').Bitmap
+local EditableGroup         = import('/lua/ui/controls/editablegroup.lua').EditableGroup
 local Factions              = import('/lua/factions.lua')
 local GetEnhancementPrefix  = import("/lua/ui/game/construction.lua").GetEnhancementPrefix
 local GetEnhancements       = import('/lua/enhancementcommon.lua').GetEnhancements
@@ -293,7 +294,7 @@ function UpdateWindow(info)
             description = LOCF("Tech %d %s", techLevel, bp.Description)
         end
 
-        LayoutHelpers.AtTopIn(controls.name, controls.bg, 10)
+--        LayoutHelpers.AtTopIn(controls.name, controls.bg, 10)
         controls.name:SetFont(UIUtil.bodyFont, 14)
 
         local name = ''
@@ -313,7 +314,7 @@ function UpdateWindow(info)
         local scale = controls.name.Width() / controls.name.TextAdvance()
 
         if scale < 1 then
-            LayoutHelpers.AtTopIn(controls.name, controls.bg, 10 / scale)
+--            LayoutHelpers.AtTopIn(controls.name, controls.bg, 10 / scale)
             controls.name:SetFont(UIUtil.bodyFont, 14 * scale)
         end
 
@@ -648,7 +649,7 @@ function SetLayout(layout)
 end
 
 function SetupUnitViewLayout(mapGroup, orderControl)
-    controls.parent = mapGroup
+    controls.parent = GetFrame(0)
     controls.orderPanel = orderControl
     unitViewLayout = import(UIUtil.GetLayoutFilename('unitview')) -- SetLayout() will set this too but let's make sure CreateUI() does not use nil, even though it only sets up an OnFrame function.
     CreateUI()
@@ -658,22 +659,29 @@ end
 function CreateUI()
     LOG("unitview.CreateUI")
 
-    controls.bg         = Bitmap(controls.parent)
-    controls.bracket    = Bitmap(controls.bg)
-    controls.name       = UIUtil.CreateText(controls.bg, '', 14, UIUtil.bodyFont)
-    controls.icon       = Bitmap(controls.bg)
-    controls.stratIcon  = Bitmap(controls.bg)
+    local location = {
+        Top = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(393) end,
+        Left = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(8) end,
+        Right = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(430) end,
+        Bottom = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(238) end
+    }
+    controls.bg = EditableGroup(controls.parent, false, false, 'unit_view_window', location)
+
+    local parent = controls.bg:GetClientGroup()
+    controls.name       = UIUtil.CreateText(parent, '', 14, UIUtil.bodyFont)
+    controls.icon       = Bitmap(parent)
+    controls.stratIcon  = Bitmap(parent)
     controls.vetIcons   = {}
 
     for i = 1, 5 do
-        controls.vetIcons[i] = Bitmap(controls.bg)
+        controls.vetIcons[i] = Bitmap(parent)
     end
 
-    controls.healthBar  = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
-    controls.shieldBar  = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
-    controls.fuelBar    = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
+    controls.healthBar  = StatusBar(parent, 0, 1, false, false, nil, nil, true)
+    controls.shieldBar  = StatusBar(parent, 0, 1, false, false, nil, nil, true)
+    controls.fuelBar    = StatusBar(parent, 0, 1, false, false, nil, nil, true)
     controls.health     = UIUtil.CreateText(controls.healthBar, '', 14, UIUtil.bodyFont)
-    controls.vetBar     = StatusBar(controls.bg, 0, 1, false, false, nil, nil, true)
+    controls.vetBar     = StatusBar(parent, 0, 1, false, false, nil, nil, true)
     controls.nextVet    = UIUtil.CreateText(controls.vetBar, '', 9, UIUtil.bodyFont)
     controls.vetTitle   = UIUtil.CreateText(controls.vetBar, 'Veterancy', 10, UIUtil.bodyFont)
 
@@ -681,20 +689,20 @@ function CreateUI()
 
     for i = 1, LOUDGETN(statFuncs) do
         controls.statGroups[i] = {}
-        controls.statGroups[i].icon = Bitmap(controls.bg)
+        controls.statGroups[i].icon = Bitmap(parent)
         controls.statGroups[i].value = UIUtil.CreateText(controls.statGroups[i].icon, '', 12, UIUtil.bodyFont)
 
         if i == 1 then
-            controls.statGroups[i].color = Bitmap(controls.bg)
+            controls.statGroups[i].color = Bitmap(parent)
             LayoutHelpers.FillParent(controls.statGroups[i].color, controls.statGroups[i].icon)
             controls.statGroups[i].color.Depth:Set(function() return controls.statGroups[i].icon.Depth() - 1 end)
         end
     end
 
-    controls.actionIcon = Bitmap(controls.bg)
-    controls.actionText = UIUtil.CreateText(controls.bg, '', 14, UIUtil.bodyFont)
+    controls.actionIcon = Bitmap(parent)
+    controls.actionText = UIUtil.CreateText(parent, '', 14, UIUtil.bodyFont)
     
-    controls.abilities = Group(controls.bg)
+    controls.abilities = Group(parent)
     controls.abilityText = {}
 
     controls.abilityBG = {}
@@ -708,8 +716,6 @@ function CreateUI()
     controls.abilityBG.BL   = Bitmap(controls.abilities)
     controls.abilityBG.BR   = Bitmap(controls.abilities)
     controls.abilityBG.BM   = Bitmap(controls.abilities)
-    
-    controls.bg:DisableHitTest(true)
     
     controls.bg:SetNeedsFrameUpdate(true)
 
@@ -748,22 +754,22 @@ function CreateUI()
 
     -- This section is for the small icons showing what active enhancements an ACU has
     controls.enhancements = {}
-    controls.enhancements['LCH'] = Bitmap(controls.bg)
-    controls.enhancements['Command'] = Bitmap(controls.bg)
-    controls.enhancements['RCH'] = Bitmap(controls.bg)
-    controls.enhancements['Back'] = Bitmap(controls.bg)
+    controls.enhancements['LCH'] = Bitmap(parent)
+    controls.enhancements['Command'] = Bitmap(parent)
+    controls.enhancements['RCH'] = Bitmap(parent)
+    controls.enhancements['Back'] = Bitmap(parent)
 
-    LayoutHelpers.AtLeftTopIn(controls.enhancements['LCH'], controls.bg, 10, -30)
-    LayoutHelpers.AtLeftTopIn(controls.enhancements['Command'], controls.bg, 42, -30)
-    LayoutHelpers.AtLeftTopIn(controls.enhancements['RCH'], controls.bg, 74, -30)
-    LayoutHelpers.AtLeftTopIn(controls.enhancements['Back'], controls.bg, 106, -30)
+    LayoutHelpers.AtLeftTopIn(controls.enhancements['LCH'], parent, 10, -30)
+    LayoutHelpers.AtLeftTopIn(controls.enhancements['Command'], parent, 42, -30)
+    LayoutHelpers.AtLeftTopIn(controls.enhancements['RCH'], parent, 74, -30)
+    LayoutHelpers.AtLeftTopIn(controls.enhancements['Back'], parent, 106, -30)
 
     -- from GAZ UI - SCU Manager
-    controls.SCUType = Bitmap(controls.bg)
+    controls.SCUType = Bitmap(parent)
     LayoutHelpers.AtRightIn(controls.SCUType, controls.icon)
     LayoutHelpers.AtBottomIn(controls.SCUType, controls.icon)
 
     -- these are available but not implemented - showing storage values --
-	--controls.StorageMass = UIUtil.CreateText(controls.bg, '', 12, UIUtil.bodyFont)
-	--controls.StorageEnergy = UIUtil.CreateText(controls.bg, '', 12, UIUtil.bodyFont)
+	--controls.StorageMass = UIUtil.CreateText(parent, '', 12, UIUtil.bodyFont)
+	--controls.StorageEnergy = UIUtil.CreateText(parent, '', 12, UIUtil.bodyFont)
 end
