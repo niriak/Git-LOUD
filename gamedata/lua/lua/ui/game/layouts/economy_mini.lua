@@ -50,7 +50,8 @@ function LayoutResourceGroup(group, groupType)
     LayoutHelpers.SetHeight(group.icon, 36)
     LayoutHelpers.AtVerticalCenterIn(group.icon, group)
 
-    LayoutHelpers.FillParent(group.warningBG, group, 0, -2)
+    LayoutHelpers.AtCenterIn(group.warningBG, group, 0, -2)
+--    LayoutHelpers.FillParent(group.warningBG, group, 50, -2)
 
 --    LayoutHelpers.SetDimensions(group.storageBar, 100, 10)
     LayoutHelpers.SetHeight(group.storageBar, 10)
@@ -114,17 +115,5 @@ end
 function InitAnimation()
     local GUI = import("/lua/ui/game/economy.lua").GUI
     GUI.bg:Show()
-    GUI.bg:SetNeedsFrameUpdate(true)
-
-    local alpha = 0
-    GUI.bg.OnFrame = function(self, delta)
-        alpha = alpha + delta/3
-        if alpha >= 1 then
-            self:SetAlpha(1)
-            self:SetNeedsFrameUpdate(false)
-            LOG("custom finished")
-        else
-            self:SetAlpha(alpha)
-        end
-    end
+--    GUI.bg:InitAnimation()
 end

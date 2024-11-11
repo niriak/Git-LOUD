@@ -659,13 +659,26 @@ end
 function CreateUI()
     LOG("unitview.CreateUI")
 
-    local location = {
-        Top = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(393) end,
-        Left = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(8) end,
-        Right = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(430) end,
-        Bottom = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(238) end
-    }
-    controls.bg = EditableGroup(controls.parent, false, false, 'unit_view_window', location)
+    controls.bg = EditableGroup(controls.parent, false, false, 'unit_view_window',
+        {
+            Top = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(393) end,
+            Left = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(8) end,
+            Right = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(430) end,
+            Bottom = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(238) end
+        },
+        {
+            tl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
+            tm = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_top.dds'),
+            tr = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topRight.dds'),
+            ml = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_left.dds'),
+             m = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_center.dds'),
+            mr = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_right.dds'),
+            bl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomLeft.dds'),
+            bm = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottom.dds'),
+            br = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomRight.dds'),
+            borderColor = 'ff415055',
+        }
+    )
 
     local parent = controls.bg:GetClientGroup()
     controls.name       = UIUtil.CreateText(parent, '', 14, UIUtil.bodyFont)

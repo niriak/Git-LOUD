@@ -89,7 +89,7 @@ function CreateUI()
             bl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomLeft.dds'),
             bm = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottom.dds'),
             br = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomRight.dds'),
-            borderColor = '00000000',
+            borderColor = 'ff415055',
         }
     )
     GUI.bg:Hide()

@@ -16,16 +16,7 @@ local Prefs = import("/lua/user/prefs.lua")
 -- default style set
 styles = {
     backgrounds = {
-        notitle = {
-            tl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
-            tr = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topRight.dds'),
-            tm = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_top.dds'),
-            ml = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_left.dds'),
-             m = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_center.dds'),
-            mr = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_right.dds'),
-            bl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomLeft.dds'),
-            bm = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottom.dds'),
-            br = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomRight.dds'),
+        transparent = {
             borderColor = 'ff415055',
         },
     },
@@ -118,7 +109,7 @@ EditableGroup = ClassUI(Group) {
         self.mr.Top:Set(self.tr.Bottom)
         self.mr.Bottom:Set(self.br.Top)
 
-        local texturekey = 'notitle'
+        local texturekey = 'transparent'
         if textureTable then
             texturekey = prefID
             styles.backgrounds[prefID] = textureTable
@@ -470,6 +461,22 @@ EditableGroup = ClassUI(Group) {
 
     OnDestroy = function(self)
         self._resizeGroup:Destroy()
+    end,
+
+    InitAnimation = function(self)
+        self:Show()
+        self:SetNeedsFrameUpdate(true)
+
+        local alpha = 0
+        self.OnFrame = function(self, delta)
+            alpha = alpha + delta/3
+            if alpha >= 1 then
+                self:SetAlpha(1)
+                self:SetNeedsFrameUpdate(false)
+            else
+                self:SetAlpha(alpha)
+            end
+        end
     end,
 
     -- The following are functions that can be overloaded
