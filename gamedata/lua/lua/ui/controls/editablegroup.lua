@@ -401,7 +401,6 @@ EditableGroup = ClassUI(Group) {
     ---@param alpha number
     ---@param affectChildren boolean
     SetAlpha = function(self, alpha, affectChildren)
-        LOG("custom editablegroup:SetAlpha.alpha=",alpha)
         affectChildren = affectChildren or false
         Group.SetAlpha(self, alpha, affectChildren)
 

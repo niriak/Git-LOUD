@@ -26,53 +26,16 @@ function SetLayout()
     local GUI = import("/lua/ui/game/economy.lua").GUI
     local parent = import("/lua/ui/game/economy.lua").savedParent
 
-    GUI.collapseArrow:SetTexture(UIUtil.UIFile('/game/tab-l-btn/tab-close_btn_up.dds'))
-    GUI.collapseArrow:SetNewTextures(UIUtil.UIFile('/game/tab-l-btn/tab-close_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-l-btn/tab-open_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-l-btn/tab-close_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-l-btn/tab-open_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-l-btn/tab-close_btn_dis.dds'),
-        UIUtil.UIFile('/game/tab-l-btn/tab-open_btn_dis.dds'))
-    LayoutHelpers.AtLeftTopIn(GUI.collapseArrow, GetFrame(0), -3, 22)
-    GUI.collapseArrow.Depth:Set(function() return GUI.bg.Depth() + 10 end)
-
     GUI.bg.panel:SetTexture(UIUtil.UIFile('/game/resource-panel/resources_panel_bmp.dds'))
-    LayoutHelpers.AtLeftTopIn(GUI.bg.panel, GUI.bg)
-
-    GUI.bg.Height:Set(GUI.bg.panel.Height)
-    GUI.bg.Width:Set(GUI.bg.panel.Width)
-    LayoutHelpers.AtLeftTopIn(GUI.bg, parent, 16, 3)
-    GUI.bg:DisableHitTest()
-
-    GUI.bg.leftBracket:SetTexture(UIUtil.UIFile('/game/filter-ping-panel/bracket-left_bmp.dds'))
-    GUI.bg.leftBracketGlow:SetTexture(UIUtil.UIFile('/game/filter-ping-panel/bracket-energy-l_bmp.dds'))
-
-    LayoutHelpers.AnchorToLeft(GUI.bg.leftBracket, GUI.bg.panel, -10)
-    LayoutHelpers.AtLeftIn(GUI.bg.leftBracketGlow, GUI.bg.leftBracket, 12)
-
-    GUI.bg.leftBracket.Depth:Set(GUI.bg.panel.Depth)
-    LayoutHelpers.DepthUnderParent(GUI.bg.leftBracketGlow, GUI.bg.leftBracket)
-
-    LayoutHelpers.AtVerticalCenterIn(GUI.bg.leftBracket, GUI.bg.panel)
-    LayoutHelpers.AtVerticalCenterIn(GUI.bg.leftBracketGlow, GUI.bg.panel)
-
-    GUI.bg.rightGlowTop:SetTexture(UIUtil.UIFile('/game/bracket-right-energy/bracket_bmp_t.dds'))
-    GUI.bg.rightGlowMiddle:SetTexture(UIUtil.UIFile('/game/bracket-right-energy/bracket_bmp_m.dds'))
-    GUI.bg.rightGlowBottom:SetTexture(UIUtil.UIFile('/game/bracket-right-energy/bracket_bmp_b.dds'))
-
-    LayoutHelpers.AtTopIn(GUI.bg.rightGlowTop, GUI.bg, 2)
-    LayoutHelpers.AnchorToRight(GUI.bg.rightGlowTop, GUI.bg, -12)
-    LayoutHelpers.AtBottomIn(GUI.bg.rightGlowBottom, GUI.bg, 2)
-    GUI.bg.rightGlowBottom.Left:Set(GUI.bg.rightGlowTop.Left)
-    GUI.bg.rightGlowMiddle.Top:Set(GUI.bg.rightGlowTop.Bottom)
-    GUI.bg.rightGlowMiddle.Bottom:Set(function() return math.max(GUI.bg.rightGlowTop.Bottom(), GUI.bg.rightGlowBottom.Top()) end)
-    GUI.bg.rightGlowMiddle.Right:Set(function() return GUI.bg.rightGlowTop.Right() end)
+    LayoutHelpers.FillParent(GUI.bg.panel, GUI.bg)
 
     LayoutResourceGroup(GUI.mass, 'mass')
     LayoutResourceGroup(GUI.energy, 'energy')
 
     LayoutHelpers.AtLeftTopIn(GUI.mass, GUI.bg, 14, 9)
+    LayoutHelpers.AtRightIn(GUI.mass, GUI.bg, 20)
     LayoutHelpers.Below(GUI.energy, GUI.mass, 4)
+    GUI.energy.Right:Set(GUI.mass.Right)
 end
 
 function LayoutResourceGroup(group, groupType)
@@ -87,9 +50,11 @@ function LayoutResourceGroup(group, groupType)
     LayoutHelpers.SetHeight(group.icon, 36)
     LayoutHelpers.AtVerticalCenterIn(group.icon, group)
 
-    LayoutHelpers.AtCenterIn(group.warningBG, group, 0, -2)
+    LayoutHelpers.FillParent(group.warningBG, group, 0, -2)
 
-    LayoutHelpers.SetDimensions(group.storageBar, 100, 10)
+--    LayoutHelpers.SetDimensions(group.storageBar, 100, 10)
+    LayoutHelpers.SetHeight(group.storageBar, 10)
+    LayoutHelpers.AtRightIn(group.storageBar, group, 180)
     group.storageBar._bar:SetTexture(UIUtil.UIFile(style[groupType].barTexture))
     LayoutHelpers.AtLeftTopIn(group.storageBar, group, 22, 2)
 
@@ -107,7 +72,7 @@ function LayoutResourceGroup(group, groupType)
     group.storageTooltipGroup.Top:Set(group.storageBar.Top)
     group.storageTooltipGroup.Bottom:Set(group.maxStorage.Bottom)
 
-    LayoutHelpers.RightOf(group.rate, group.storageBar, 4)
+    LayoutHelpers.AtRightIn(group.rate, group, 100)
     LayoutHelpers.AtVerticalCenterIn(group.rate, group)
 
     LayoutHelpers.AtRightIn(group.income, group, 2)
@@ -139,60 +104,27 @@ end
 
 function TogglePanelAnimation(state)
     local GUI = import("/lua/ui/game/economy.lua").GUI
-    local savedParent = import("/lua/ui/game/economy.lua").savedParent
-    if UIUtil.GetAnimationPrefs() then
-        if state or GUI.bg:IsHidden() then
-            PlaySound(Sound({Cue = "UI_Score_Window_Open", Bank = "Interface"}))
-            GUI.bg:Show()
-            GUI.bg:SetNeedsFrameUpdate(true)
-            GUI.bg.OnFrame = function(self, delta)
-                local newLeft = self.Left() + (1000*delta)
-                if newLeft > savedParent.Left()+14 then
-                    newLeft = savedParent.Left()+14
-                    self:SetNeedsFrameUpdate(false)
-                end
-                self.Left:Set(newLeft)
-            end
-            GUI.collapseArrow:SetCheck(false, true)
-        else
-            PlaySound(Sound({Cue = "UI_Score_Window_Close", Bank = "Interface"}))
-            GUI.bg:SetNeedsFrameUpdate(true)
-            GUI.bg.OnFrame = function(self, delta)
-                local newLeft = self.Left() - (1000*delta)
-                if newLeft < savedParent.Left()-self.Width() then
-                    newLeft = savedParent.Left()-self.Width()
-                    self:SetNeedsFrameUpdate(false)
-                    self:Hide()
-                end
-                self.Left:Set(newLeft)
-            end
-            GUI.collapseArrow:SetCheck(true, true)
-        end
+    if state or GUI.bg:IsHidden() then
+        GUI.bg:Show()
     else
-        if state or GUI.bg:IsHidden() then
-            GUI.bg:Show()
-            GUI.collapseArrow:SetCheck(false, true)
-        else
-            GUI.bg:Hide()
-            GUI.collapseArrow:SetCheck(true, true)
-        end
+        GUI.bg:Hide()
     end
 end
 
 function InitAnimation()
     local GUI = import("/lua/ui/game/economy.lua").GUI
-    local savedParent = import("/lua/ui/game/economy.lua").savedParent
     GUI.bg:Show()
-    GUI.bg.Left:Set(savedParent.Left()-GUI.bg.Width())
     GUI.bg:SetNeedsFrameUpdate(true)
+
+    local alpha = 0
     GUI.bg.OnFrame = function(self, delta)
-        local newLeft = self.Left() + (1000*delta)
-        if newLeft > savedParent.Left()+14 then
-            newLeft = savedParent.Left()+14
+        alpha = alpha + delta/3
+        if alpha >= 1 then
+            self:SetAlpha(1)
             self:SetNeedsFrameUpdate(false)
+            LOG("custom finished")
+        else
+            self:SetAlpha(alpha)
         end
-        self.Left:Set(newLeft)
     end
-    GUI.collapseArrow:Show()
-    GUI.collapseArrow:SetCheck(false, true)
 end

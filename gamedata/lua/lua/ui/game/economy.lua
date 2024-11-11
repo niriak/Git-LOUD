@@ -20,6 +20,7 @@
 local Bitmap            = import("/lua/maui/bitmap.lua").Bitmap
 local Button            = import("/lua/maui/button.lua").Button
 local Checkbox          = import("/lua/maui/checkbox.lua").Checkbox
+local EditableGroup     = import('/lua/ui/controls/editablegroup.lua').EditableGroup
 local GameMain          = import("/lua/ui/game/gamemain.lua")
 local Group             = import("/lua/maui/group.lua").Group
 local LayoutHelpers     = import("/lua/maui/layouthelpers.lua")
@@ -71,22 +72,34 @@ end
 
 function CreateUI()
 
-    GUI.bg                  = Group(savedParent)
-    GUI.bg.panel            = Bitmap(GUI.bg)
-    GUI.bg.leftBracket      = Bitmap(GUI.bg)
-    GUI.bg.leftBracketGlow  = Bitmap(GUI.bg)
+    GUI.bg = EditableGroup(GetFrame(0), false, false, 'economy_window',
+        {
+            Left   = 100,
+            Top    = 100,
+            Right  = 400,
+            Bottom = 200
+        },
+        {
+            tl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
+            tr = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topRight.dds'),
+            tm = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_top.dds'),
+            ml = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_left.dds'),
+             m = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_center.dds'),
+            mr = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_right.dds'),
+            bl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomLeft.dds'),
+            bm = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottom.dds'),
+            br = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomRight.dds'),
+            borderColor = '00000000',
+        }
+    )
+    GUI.bg:Hide()
 
-    GUI.bg.rightGlowTop     = Bitmap(GUI.bg)
-    GUI.bg.rightGlowMiddle  = Bitmap(GUI.bg)
-    GUI.bg.rightGlowBottom  = Bitmap(GUI.bg)
-
-    GUI.collapseArrow       = Checkbox(savedParent)
-
-    Tooltip.AddCheckboxTooltip(GUI.collapseArrow, 'econ_collapse')
+    local parent = GUI.bg:GetClientGroup()
+    GUI.bg.panel            = Bitmap(parent)
 
     local function CreateResourceGroup(warningBitmap)
 
-        local group = Group(GUI.bg)
+        local group = Group(parent)
 
         GUI.group = group
 
@@ -249,10 +262,6 @@ function CommonLogic()
 
     GUI.bg.OnDestroy = function(self)
         GameMain.RemoveBeatFunction(_BeatFunction)
-    end
-
-    GUI.collapseArrow.OnCheck = function(self, checked)
-        ToggleEconPanel()
     end
 
     return GUI.mass, GUI.energy
