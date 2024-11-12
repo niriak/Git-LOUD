@@ -76,10 +76,10 @@ function CreateUI()
 
     GUI.bg = UIGroup(savedParent, false, false, 'economy_window',
         {
-            Left   = 100,
-            Top    = 100,
-            Right  = 400,
-            Bottom = 200
+            Left   =  10,
+            Top    =  10,
+            Right  = 340,
+            Bottom =  80
         },
         {
             tl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),

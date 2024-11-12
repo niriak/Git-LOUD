@@ -27,12 +27,8 @@ function SetLayout()
     local parent = import("/lua/ui/game/economy.lua").savedParent
 
     GUI.bg.panel:SetTexture(UIUtil.UIFile('/game/resource-panel/resources_panel_bmp.dds'))
-LayoutHelpers.AtLeftTopIn(GUI.bg.panel, GUI.bg)
---    LayoutHelpers.FillParent(GUI.bg.panel, GUI.bg)
+    LayoutHelpers.FillParent(GUI.bg.panel, GUI.bg)
 
-GUI.bg.Height:Set(GUI.bg.panel.Height)
-GUI.bg.Width:Set(GUI.bg.panel.Width)
-LayoutHelpers.AtLeftTopIn(GUI.bg, parent, 16, 3)
     GUI.bg:DisableHitTest()
 
     LayoutResourceGroup(GUI.mass, 'mass')
@@ -56,12 +52,11 @@ function LayoutResourceGroup(group, groupType)
     LayoutHelpers.SetHeight(group.icon, 36)
     LayoutHelpers.AtVerticalCenterIn(group.icon, group)
 
-    LayoutHelpers.AtCenterIn(group.warningBG, group, 0, -2)
---    LayoutHelpers.FillParent(group.warningBG, group, 50, -2)
+--    LayoutHelpers.AtCenterIn(group.warningBG, group, 0, -2)
+    LayoutHelpers.OffsetIn(group.warningBG, group, -10, -2, -16, -2)
 
-LayoutHelpers.SetDimensions(group.storageBar, 100, 10)
---    LayoutHelpers.SetHeight(group.storageBar, 10)
---    LayoutHelpers.AtRightIn(group.storageBar, group, 180)
+    LayoutHelpers.SetHeight(group.storageBar, 10)
+    LayoutHelpers.AtRightIn(group.storageBar, group, 180)
     group.storageBar._bar:SetTexture(UIUtil.UIFile(style[groupType].barTexture))
     LayoutHelpers.AtLeftTopIn(group.storageBar, group, 22, 2)
 
@@ -79,8 +74,7 @@ LayoutHelpers.SetDimensions(group.storageBar, 100, 10)
     group.storageTooltipGroup.Top:Set(group.storageBar.Top)
     group.storageTooltipGroup.Bottom:Set(group.maxStorage.Bottom)
 
-LayoutHelpers.RightOf(group.rate, group.storageBar, 4)
---    LayoutHelpers.AtRightIn(group.rate, group, 100)
+    LayoutHelpers.AtRightIn(group.rate, group, 100)
     LayoutHelpers.AtVerticalCenterIn(group.rate, group)
 
     LayoutHelpers.AtRightIn(group.income, group, 2)
@@ -112,8 +106,6 @@ end
 
 function InitAnimation()
     local GUI = import("/lua/ui/game/economy.lua").GUI
-    local savedParent = import("/lua/ui/game/economy.lua").savedParent
-    GUI.bg:Show()
---    GUI.bg:InitAnimation()
-    GUI.bg.Left:Set(savedParent.Left()+14)
+--    GUI.bg:Show()
+    GUI.bg:InitAnimation()
 end

@@ -663,10 +663,10 @@ function CreateUI()
 
     controls.bg = UIGroup(controls.parent, false, false, 'unit_view_window',
         {
-            Top = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(393) end,
-            Left = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(8) end,
-            Right = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(430) end,
-            Bottom = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(238) end
+            Left   =  10,
+            Top    = 740,
+            Right  = 380,
+            Bottom = 880
         },
         {
             tl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
