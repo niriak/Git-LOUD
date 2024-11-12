@@ -23,13 +23,11 @@ styles = {
     cursorFunc = UIUtil.GetCursor,
 }
 
----@class Window : Group
----@field ClientGroup Control
-EditableGroup = ClassUI(Group) {
+---@class UIGroup : Group
+UIGroup = Class(Group) {
+
     __init = function(self, parent, lockSize, lockPosition, prefID, defaultPosition, textureTable)
         Group.__init(self, parent, tostring(prefID))
-
-        self:DisableHitTest()
 
         self._resizeGroup = Group(self, 'window resize group')
         LayoutHelpers.FillParent(self._resizeGroup, self)
@@ -57,6 +55,8 @@ EditableGroup = ClassUI(Group) {
         self._lockSize = lockSize or false
         self._xMin = 0
         self._yMin = 0
+        self._isEditable = false
+        self._enableHitTest = true
 
         --Set alpha of resize controls to 0 so that they still get resize events, but are not seen
 
@@ -128,7 +128,7 @@ EditableGroup = ClassUI(Group) {
         self.window_tr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tr)
         self.window_tm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tm)
         self.window_ml = Bitmap(self._windowGroup, styles.backgrounds[texturekey].ml)
-        self.window_m = Bitmap(self._windowGroup, styles.backgrounds[texturekey].m)
+        self.window_m  = Bitmap(self._windowGroup, styles.backgrounds[texturekey].m)
         self.window_mr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].mr)
         self.window_bl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bl)
         self.window_bm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bm)
@@ -136,46 +136,56 @@ EditableGroup = ClassUI(Group) {
 
         self.window_tl.Top:Set(self.Top)
         self.window_tl.Left:Set(self.Left)
+        LayoutHelpers.DepthUnderParent(self.window_tl, self._windowGroup)
 
         self.window_tr.Top:Set(self.Top)
         self.window_tr.Right:Set(self.Right)
+        LayoutHelpers.DepthUnderParent(self.window_tr, self._windowGroup)
 
         self.window_bl.Bottom:Set(self.Bottom)
         self.window_bl.Left:Set(self.Left)
+        LayoutHelpers.DepthUnderParent(self.window_bl, self._windowGroup)
 
         self.window_br.Bottom:Set(self.Bottom)
         self.window_br.Right:Set(self.Right)
+        LayoutHelpers.DepthUnderParent(self.window_br, self._windowGroup)
 
         self.window_tm.Left:Set(self.window_tl.Right)
         self.window_tm.Right:Set(self.window_tr.Left)
         self.window_tm.Top:Set(self.window_tl.Top)
+        LayoutHelpers.DepthUnderParent(self.window_tm, self._windowGroup)
 
         self.window_bm.Left:Set(self.window_bl.Right)
         self.window_bm.Right:Set(self.window_br.Left)
         self.window_bm.Top:Set(self.window_bl.Top)
+        LayoutHelpers.DepthUnderParent(self.window_bm, self._windowGroup)
 
         self.window_ml.Left:Set(self.window_tl.Left)
         self.window_ml.Top:Set(self.window_tl.Bottom)
         self.window_ml.Bottom:Set(self.window_bl.Top)
+        LayoutHelpers.DepthUnderParent(self.window_ml, self._windowGroup)
 
         self.window_mr.Right:Set(self.window_tr.Right)
         self.window_mr.Top:Set(self.window_tr.Bottom)
         self.window_mr.Bottom:Set(self.window_br.Top)
+        LayoutHelpers.DepthUnderParent(self.window_mr, self._windowGroup)
 
         self.window_m.Top:Set(self.window_tm.Bottom)
         self.window_m.Left:Set(self.window_ml.Right)
         self.window_m.Right:Set(self.window_mr.Left)
         self.window_m.Bottom:Set(self.window_bm.Top)
+        LayoutHelpers.DepthUnderParent(self.window_m, self._windowGroup)
 
-        self.ClientGroup = Group(self, 'window client group')
-        LayoutHelpers.Layouter(self.ClientGroup)
+        self._moveGroup = Group(self, 'window move group')
+        LayoutHelpers.Layouter(self._moveGroup)
             :Top(self.tm.Bottom)
             :Left(self.ml.Right)
             :Height(function() return self.bm.Top() - self.tm.Bottom() end)
             :Width(function() return self.mr.Left() - self.ml.Right() end)
             :Right(self.mr.Left)
             :Bottom(self.bm.Top)
-            :Over(self.window_m)
+            :Over(self, 100)
+        self._moveGroup:DisableHitTest()
 
         self.StartSizing = function(event, xControl, yControl)
             local drag = Dragger()
@@ -269,7 +279,7 @@ EditableGroup = ClassUI(Group) {
             self.RolloverHandler(control, event, self.Left, nil, 'W_E', 'ml')
         end
 
-        self.ClientGroup.HandleEvent = function(control, event)
+        self._moveGroup.HandleEvent = function(control, event)
             if not self._sizeLock then
                 if event.Type == 'ButtonPress' then
                     if self._lockPosition then return end
@@ -343,6 +353,7 @@ EditableGroup = ClassUI(Group) {
         -- attempt to retrieve location of window in preference file
         local location = Prefs.GetFromCurrentProfile(prefID)
         if location then
+            LayoutHelpers.Reset(self)
 
             -- old version in preference file that doesn't support UI scaling
             if not (location.width and location.height) then 
@@ -386,6 +397,8 @@ EditableGroup = ClassUI(Group) {
                 self.Right:Set(defaultPosition.Right)
             end
         end
+
+        self:SetEditable(false)
     end,
 
     ---@param self Window
@@ -439,7 +452,11 @@ EditableGroup = ClassUI(Group) {
     end,
 
     GetClientGroup = function(self)
-        return self.ClientGroup
+--        return self._moveGroup
+        return self
+--        local result = Group(self)
+--        LayoutHelpers.FillParent(result, self)
+--        return result
     end,
 
     SetSizeLock = function(self, locked)
@@ -463,21 +480,63 @@ EditableGroup = ClassUI(Group) {
         self._resizeGroup:Destroy()
     end,
 
-    InitAnimation = function(self)
-        self:Show()
-        self:SetNeedsFrameUpdate(true)
+    EnableHitTest = function(self, affectChildren)
+        affectChildren = affectChildren or false
+        Group.EnableHitTest(self, affectChildren)
 
-        local alpha = 0
-        self.OnFrame = function(self, delta)
-            alpha = alpha + delta/3
-            if alpha >= 1 then
-                self:SetAlpha(1)
-                self:SetNeedsFrameUpdate(false)
-            else
-                self:SetAlpha(alpha)
-            end
+        self._resizeGroup:DisableHitTest()
+        self._windowGroup:DisableHitTest()
+
+        if not self._isEditable then
+            self._moveGroup:DisableHitTest()
         end
     end,
+
+    DisableHitTest = function(self, affectChildren)
+        affectChildren = affectChildren or false
+        Group.DisableHitTest(self, affectChildren)
+
+        if self._isEditable then
+            self._moveGroup:EnableHitTest()
+        end
+    end,
+
+    SetEditable = function(self, isEditable)
+        self._sizeLock = not isEditable
+        self._isEditable = isEditable
+
+        if isEditable then
+            self._windowGroup:DisableHitTest()
+            self._resizeGroup:DisableHitTest()
+            self._moveGroup:EnableHitTest()
+
+            self._resizeGroup:Show()
+            self._moveGroup:Show()
+        else
+            self._windowGroup:DisableHitTest()
+            self._resizeGroup:DisableHitTest()
+            self._moveGroup:DisableHitTest()
+
+            self._resizeGroup:Hide()
+            self._moveGroup:Hide()
+        end
+    end,
+
+--    InitAnimation = function(self)
+--        self:Show()
+--        self:SetNeedsFrameUpdate(true)
+--
+--        local alpha = 0
+--        self.OnFrame = function(self, delta)
+--            alpha = alpha + delta/3
+--            if alpha >= 1 then
+--                self:SetAlpha(1)
+--                self:SetNeedsFrameUpdate(false)
+--            else
+--                self:SetAlpha(alpha)
+--            end
+--        end
+--    end,
 
     -- The following are functions that can be overloaded
     OnResize = function(self, x, y, firstFrame) end,

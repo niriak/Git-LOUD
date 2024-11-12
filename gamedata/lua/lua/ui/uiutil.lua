@@ -84,6 +84,16 @@ local currentSkin = LazyVar.Create()
 
 currentLayout = false
 changeLayoutFunction = false    -- set this function to get called with the new layout name when layout changes
+uiEditable = false
+
+function IsUIEditable()
+    return uiEditable
+end
+
+function SetUIEditable(isEditable)
+    uiEditable = isEditable
+    if changeLayoutFunction then changeLayoutFunction(currentLayout) end
+end
 
 --* layout control, sets current layout preference
 function SetCurrentLayout(layout)

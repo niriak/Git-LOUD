@@ -78,6 +78,11 @@ local menus = {
                 tooltip = 'esc_options',
             },
             {
+                action = 'SetupUI',
+                label = '<LOC _HUD>Setup UI',
+                tooltip = 'esc_setup_ui',
+            },
+            {
                 action = 'RestartGame',
                 label = '<LOC _Restart_Game>Restart Game',
                 tooltip = 'esc_restart',
@@ -272,6 +277,10 @@ local actions = {
 	
     Options = function()
         import('/lua/ui/dialogs/options.lua').CreateDialog(GetFrame(0))
+    end,
+
+    SetupUI = function()
+        UIUtil.SetUIEditable(not UIUtil.IsUIEditable())
     end,
 }
 

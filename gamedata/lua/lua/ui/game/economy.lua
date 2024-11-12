@@ -20,13 +20,13 @@
 local Bitmap            = import("/lua/maui/bitmap.lua").Bitmap
 local Button            = import("/lua/maui/button.lua").Button
 local Checkbox          = import("/lua/maui/checkbox.lua").Checkbox
-local EditableGroup     = import('/lua/ui/controls/editablegroup.lua').EditableGroup
 local GameMain          = import("/lua/ui/game/gamemain.lua")
 local Group             = import("/lua/maui/group.lua").Group
 local LayoutHelpers     = import("/lua/maui/layouthelpers.lua")
 local Prefs             = import("/lua/user/prefs.lua")
 local StatusBar         = import("/lua/maui/statusbar.lua").StatusBar
 local Tooltip           = import("/lua/ui/game/tooltip.lua")
+local UIGroup           = import("/lua/ui/controls/uigroup.lua").UIGroup
 local UIUtil            = import("/lua/ui/uiutil.lua")
 
 local options           = Prefs.GetFromCurrentProfile('options')
@@ -54,6 +54,8 @@ end
 
 function SetLayout(layout)
 	import(UIUtil.GetLayoutFilename('economy')).SetLayout()
+    GUI.bg:SetEditable(UIUtil.IsUIEditable())
+
 	GameMain.RemoveBeatFunction(_BeatFunction)
 	ConfigureBeatFunction()
 	GameMain.AddBeatFunction(_BeatFunction, true)
@@ -72,7 +74,7 @@ end
 
 function CreateUI()
 
-    GUI.bg = EditableGroup(GetFrame(0), false, false, 'economy_window',
+    GUI.bg = UIGroup(savedParent, false, false, 'economy_window',
         {
             Left   = 100,
             Top    = 100,
@@ -92,14 +94,12 @@ function CreateUI()
             borderColor = 'ff415055',
         }
     )
-    GUI.bg:Hide()
 
-    local parent = GUI.bg:GetClientGroup()
-    GUI.bg.panel            = Bitmap(parent)
+    GUI.bg.panel            = Bitmap(GUI.bg)
 
     local function CreateResourceGroup(warningBitmap)
 
-        local group = Group(parent)
+        local group = Group(GUI.bg)
 
         GUI.group = group
 
@@ -512,13 +512,6 @@ function ConfigureBeatFunction()
         massUpdateFunction()
         energyUpdateFunction()
     end
-end
-
-function ToggleEconPanel(state)
-    if import("/lua/ui/game/gamemain.lua").gameUIHidden and state ~= nil then
-        return
-    end
-    import(UIUtil.GetLayoutFilename('economy')).TogglePanelAnimation(state)
 end
 
 function InitialAnimation()

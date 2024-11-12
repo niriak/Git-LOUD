@@ -3,7 +3,6 @@
 --* Summary: Rollover unit view control
 
 local Bitmap                = import('/lua/maui/bitmap.lua').Bitmap
-local EditableGroup         = import('/lua/ui/controls/editablegroup.lua').EditableGroup
 local Factions              = import('/lua/factions.lua')
 local GetEnhancementPrefix  = import("/lua/ui/game/construction.lua").GetEnhancementPrefix
 local GetEnhancements       = import('/lua/enhancementcommon.lua').GetEnhancements
@@ -12,6 +11,7 @@ local Group                 = import('/lua/maui/group.lua').Group
 local LayoutHelpers         = import('/lua/maui/layouthelpers.lua')
 local Prefs                 = import('/lua/user/prefs.lua')
 local StatusBar             = import('/lua/maui/statusbar.lua').StatusBar
+local UIGroup               = import('/lua/ui/controls/uigroup.lua').UIGroup
 local UIUtil                = import('/lua/ui/uiutil.lua')
 
 --local veterancyDefaults     = import('/lua/game.lua').VeteranDefault
@@ -646,6 +646,8 @@ function SetLayout(layout)
 
     unitViewLayout = import(UIUtil.GetLayoutFilename('unitview'))
     unitViewLayout.SetLayout()
+
+    controls.bg:SetEditable(UIUtil.IsUIEditable())
 end
 
 function SetupUnitViewLayout(mapGroup, orderControl)
@@ -659,7 +661,7 @@ end
 function CreateUI()
     LOG("unitview.CreateUI")
 
-    controls.bg = EditableGroup(controls.parent, false, false, 'unit_view_window',
+    controls.bg = UIGroup(controls.parent, false, false, 'unit_view_window',
         {
             Top = function() return controls.parent.Bottom() - LayoutHelpers.ScaleNumber(393) end,
             Left = function() return controls.parent.Left() + LayoutHelpers.ScaleNumber(8) end,
