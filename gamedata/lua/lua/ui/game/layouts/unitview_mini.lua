@@ -246,6 +246,8 @@ function SetLayout()
     )
     controls.enhancement.border:LayoutAroundControl(controls.enhancement)
 
+--    controls.bg:DisableHitTest(true)
+
     SetBG(controls)
     UpdateStatusBars(controls)
 end

@@ -92,7 +92,9 @@ end
 
 function SetUIEditable(isEditable)
     uiEditable = isEditable
-    if changeLayoutFunction then changeLayoutFunction(currentLayout) end
+    if changeLayoutFunction and currentLayout then
+        changeLayoutFunction(currentLayout)
+    end
 end
 
 --* layout control, sets current layout preference

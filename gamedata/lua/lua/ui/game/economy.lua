@@ -94,6 +94,7 @@ function CreateUI()
             borderColor = 'ff415055',
         }
     )
+    GUI.bg:DisableHitTest()
 
     GUI.bg.panel            = Bitmap(GUI.bg)
 

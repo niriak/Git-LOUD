@@ -32,12 +32,7 @@ UIGroup = Class(Group) {
         self._resizeGroup = Group(self, 'window resize group')
         LayoutHelpers.FillParent(self._resizeGroup, self)
         LayoutHelpers.DepthOverParent(self._resizeGroup, self, 100)
-        self._resizeGroup:DisableHitTest()
-        self._pref = prefID
-
-        self._windowGroup = Group(self, 'window texture group')
-        LayoutHelpers.FillParent(self._windowGroup, self)
-        self._windowGroup:DisableHitTest()
+        self._resizeGroup:DisableHitTest(true)
 
         self.tl = Bitmap(self._resizeGroup)
         self.tr = Bitmap(self._resizeGroup)
@@ -48,6 +43,7 @@ UIGroup = Class(Group) {
         self.ml = Bitmap(self._resizeGroup)
         self.mr = Bitmap(self._resizeGroup)
 
+        self._pref = prefID
         self._borderSize = 5
         self._cornerSize = 8
         self._sizeLock = false
@@ -124,6 +120,10 @@ UIGroup = Class(Group) {
         self.ml:SetSolidColor(styles.backgrounds[texturekey].borderColor)
         self.mr:SetSolidColor(styles.backgrounds[texturekey].borderColor)
 
+        self._windowGroup = Group(self, 'window texture group')
+        LayoutHelpers.FillParent(self._windowGroup, self)
+        self._windowGroup:DisableHitTest()
+
         self.window_tl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tl)
         self.window_tr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tr)
         self.window_tm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tm)
@@ -185,7 +185,6 @@ UIGroup = Class(Group) {
             :Right(self.mr.Left)
             :Bottom(self.bm.Top)
             :Over(self, 100)
-        self._moveGroup:DisableHitTest()
 
         self.StartSizing = function(event, xControl, yControl)
             local drag = Dragger()
@@ -329,28 +328,28 @@ UIGroup = Class(Group) {
 
         local OldHeightOnDirty = parent.Height.OnDirty
         local OldWidthOnDirty = parent.Width.OnDirty
-        parent.Height.OnDirty = function(var)
-            if self.Bottom() > parent.Bottom() then
-                local Height = math.min(self.Height(), parent.Height())
-                self.Bottom:Set(parent.Bottom())
-                self.Top:Set(self.Bottom() - Height)
-            end
-            if OldHeightOnDirty then
-                OldHeightOnDirty(var)
-            end
-            self:SaveWindowLocation()
-        end
-        parent.Width.OnDirty = function(var)
-            if self.Right() > parent.Right() then
-                local Width = math.min(self.Width(), parent.Width())
-                self.Right:Set(parent.Right())
-                self.Left:Set(self.Right() - Width)
-            end
-            if OldWidthOnDirty then
-                OldWidthOnDirty(var)
-            end
-            self:SaveWindowLocation()
-        end
+--        parent.Height.OnDirty = function(var)
+--            if self.Bottom() > parent.Bottom() then
+--                local Height = math.min(self.Height(), parent.Height())
+--                self.Bottom:Set(parent.Bottom())
+--                self.Top:Set(self.Bottom() - Height)
+--            end
+--            if OldHeightOnDirty then
+--                OldHeightOnDirty(var)
+--            end
+--            self:SaveWindowLocation()
+--        end
+--        parent.Width.OnDirty = function(var)
+--            if self.Right() > parent.Right() then
+--                local Width = math.min(self.Width(), parent.Width())
+--                self.Right:Set(parent.Right())
+--                self.Left:Set(self.Right() - Width)
+--            end
+--            if OldWidthOnDirty then
+--                OldWidthOnDirty(var)
+--            end
+--            self:SaveWindowLocation()
+--        end
 
         -- attempt to retrieve location of window in preference file
         local location = Prefs.GetFromCurrentProfile(prefID)
@@ -431,14 +430,6 @@ UIGroup = Class(Group) {
         self.window_br:SetTexture(textures.br)
     end,
 
-    GetClientGroup = function(self)
---        return self._moveGroup
-        return self
---        local result = Group(self)
---        LayoutHelpers.FillParent(result, self)
---        return result
-    end,
-
     SetSizeLock = function(self, locked)
         self._lockSize = locked
     end,
@@ -461,41 +452,57 @@ UIGroup = Class(Group) {
     end,
 
     EnableHitTest = function(self, affectChildren)
-        affectChildren = affectChildren or false
-        Group.EnableHitTest(self, affectChildren)
-
-        self._resizeGroup:DisableHitTest()
-        self._windowGroup:DisableHitTest()
-
-        if not self._isEditable then
-            self._moveGroup:DisableHitTest()
-        end
+--        affectChildren = affectChildren or false
+--        Group.EnableHitTest(self, affectChildren)
+--
+--        self._resizeGroup:DisableHitTest()
+--        self._windowGroup:DisableHitTest()
+--
+--        if not self._isEditable then
+--            self._moveGroup:DisableHitTest()
+--        end
     end,
 
     DisableHitTest = function(self, affectChildren)
-        affectChildren = affectChildren or false
-        Group.DisableHitTest(self, affectChildren)
-
-        if self._isEditable then
-            self._moveGroup:EnableHitTest()
-        end
+--        affectChildren = affectChildren or false
+--        Group.DisableHitTest(self, affectChildren)
+--
+--        self._resizeGroup:DisableHitTest()
+--        self._windowGroup:DisableHitTest()
+--
+--        if self._isEditable then
+--            self._moveGroup:EnableHitTest()
+--        end
     end,
+
+--    Show = function(self)
+--        Group.Show(self)
+--        self._resizeGroup:Hide()
+--        self._moveGroup:Hide()
+--    end,
+
+--    SetHidden = function(self, isHidden)
+--        isHidden = isHidden or false
+--        Group.SetHidden(self, isHidden)
+--        self._resizeGroup:Hide()
+--        self._moveGroup:Hide()
+--    end,
 
     SetEditable = function(self, isEditable)
 --        self._sizeLock = not isEditable
         self._isEditable = isEditable
 
         if isEditable then
-            self._windowGroup:DisableHitTest()
-            self._resizeGroup:DisableHitTest()
-            self._moveGroup:EnableHitTest()
+            self._windowGroup:DisableHitTest(true)
+            self._resizeGroup:DisableHitTest(true)
+            self._moveGroup:EnableHitTest(true)
 
             self._resizeGroup:Show()
             self._moveGroup:Show()
         else
-            self._windowGroup:DisableHitTest()
-            self._resizeGroup:DisableHitTest()
-            self._moveGroup:DisableHitTest()
+            self._windowGroup:DisableHitTest(true)
+            self._resizeGroup:DisableHitTest(true)
+            self._moveGroup:DisableHitTest(true)
 
             self._resizeGroup:Hide()
             self._moveGroup:Hide()
