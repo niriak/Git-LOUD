@@ -19,6 +19,7 @@ local Prefs = import('/lua/user/prefs.lua')
 local miniMap = import('/lua/ui/game/minimap.lua')
 local UIMain = import('/lua/ui/uimain.lua')
 local Borders = import('/lua/ui/game/borders.lua')
+local UIGroup = import('/lua/ui/controls/uigroup.lua').UIGroup
 
 local filters = import('/lua/ui/game/rangeoverlayparams.lua').RangeOverlayParams
 local worldView = import('/lua/ui/game/borders.lua').GetMapGroup()
@@ -185,17 +186,20 @@ end
 function Create(parent)
     savedParent = parent
     
-    controls.bg = Group(savedParent)
+    controls.bg = UIGroup(savedParent, true, false, 'multifunction',
+        {
+            Left   =  10,
+            Top    = 100,
+            Right  = 188,
+            Bottom = 170
+        }
+    )
     
     controls.bg.panel = Bitmap(savedParent)
-    controls.bg.leftBrace = Bitmap(savedParent)
     controls.bg.leftGlow = Bitmap(savedParent)
     controls.bg.rightGlowTop = Bitmap(savedParent)
     controls.bg.rightGlowMiddle = Bitmap(savedParent)
     controls.bg.rightGlowBottom = Bitmap(savedParent)
-    
-    controls.collapseArrow = Checkbox(savedParent)
-    Tooltip.AddCheckboxTooltip(controls.collapseArrow, 'mfd_collapse')
     
     local function CreateOverlayBtn(buttonData)
         local btn = false
@@ -292,6 +296,7 @@ end
 
 function SetLayout(layout)
     import(UIUtil.GetLayoutFilename('multifunction')).SetLayout()
+    controls.bg:SetEditable(UIUtil.IsEditUI())
     CommonLogic()
 end
 
@@ -310,9 +315,6 @@ function CommonLogic()
     for i, control in controls.pingBtns do
         local index = i
         control.OnClick = PingClickHandler
-    end
-    controls.collapseArrow.OnCheck = function(self, checked)
-        ToggleMFDPanel()
     end
 end
 
@@ -1041,7 +1043,6 @@ function ToggleMFDPanel(state)
                 end
                 self.Left:Set(newLeft)
             end
-            controls.collapseArrow:SetCheck(false, true)
         else
             PlaySound(Sound({Cue = "UI_Score_Window_Close", Bank = "Interface"}))
             controls.bg:SetNeedsFrameUpdate(true)
@@ -1054,15 +1055,12 @@ function ToggleMFDPanel(state)
                 end
                 self.Left:Set(newLeft)
             end
-            controls.collapseArrow:SetCheck(true, true)
         end
     else
         if state or GUI.bg:IsHidden() then
             controls.bg:Show()
-            controls.collapseArrow:SetCheck(false, true)
         else
             controls.bg:Hide()
-            controls.collapseArrow:SetCheck(true, true)
         end
     end
 end
@@ -1074,19 +1072,7 @@ function Expand()
 end
 
 function InitialAnimation()
-    controls.bg:Show()
-    controls.bg.Left:Set(savedParent.Left()-controls.bg.Width())
-    controls.bg:SetNeedsFrameUpdate(true)
-    controls.bg.OnFrame = function(self, delta)
-        local newLeft = self.Left() + (1000*delta)
-        if newLeft > savedParent.Left()+LayoutHelpers.ScaleNumber(15) then
-            newLeft = savedParent.Left()+LayoutHelpers.ScaleNumber(15)
-            self:SetNeedsFrameUpdate(false)
-        end
-        self.Left:Set(newLeft)
-    end
-    controls.collapseArrow:Show()
-    controls.collapseArrow:SetCheck(false, true)
+    controls.bg:InitAnimation()
 end
 
 function UpdateMinimapState(minimap)

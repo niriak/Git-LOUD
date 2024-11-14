@@ -74,7 +74,7 @@ end
 
 function CreateUI()
 
-    GUI.bg = UIGroup(savedParent, false, false, 'economy_window',
+    GUI.bg = UIGroup(savedParent, false, false, 'economy',
         {
             Left   =  10,
             Top    =  10,

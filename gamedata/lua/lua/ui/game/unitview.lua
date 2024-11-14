@@ -659,9 +659,7 @@ function SetupUnitViewLayout(mapGroup, orderControl)
 end
 
 function CreateUI()
-    LOG("unitview.CreateUI")
-
-    controls.bg = UIGroup(controls.parent, false, false, 'unit_view_window',
+    controls.bg = UIGroup(controls.parent, false, false, 'unitview',
         {
             Left   =  10,
             Top    = 740,

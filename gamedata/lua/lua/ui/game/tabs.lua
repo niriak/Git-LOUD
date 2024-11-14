@@ -359,7 +359,7 @@ end
 function Create(parent)
     savedParent = parent
     
-    controls.parent = UIGroup(savedParent, true, false, 'tabs_window',
+    controls.parent = UIGroup(savedParent, true, false, 'tabs',
         {
             All = function(self)
                 LayoutHelpers.AtHorizontalCenterIn(self, GetFrame(0))

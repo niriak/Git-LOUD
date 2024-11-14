@@ -30,7 +30,7 @@ UIGroup = Class(Group) {
         Group.__init(self, parent, tostring(prefID))
         parent = GetFrame(0)
 
-        self._pref = prefID
+        self._pref = prefID..'_uigroup'
         self._borderSize = 5
         self._cornerSize = 8
         self._sizeLock = false
@@ -345,7 +345,7 @@ UIGroup = Class(Group) {
         end
 
         -- attempt to retrieve location of window in preference file
-        local location = Prefs.GetFromCurrentProfile(prefID)
+        local location = Prefs.GetFromCurrentProfile(self._pref)
         if location then
             local top = location.top 
             local left = location.left 
@@ -401,7 +401,7 @@ UIGroup = Class(Group) {
 
     SaveWindowLocation = function(self)
         if self._pref then
-            LOG("custom SaveWindowLocation " .. tostring(self.Left()) .. "x" .. tostring(self.Top()) .. " of window '" .. self._pref .. "'")
+--            LOG("custom SaveWindowLocation " .. tostring(self.Left()) .. "x" .. tostring(self.Top()) .. " of window '" .. self._pref .. "'")
             Prefs.SetToCurrentProfile(
                 self._pref, 
                 {
