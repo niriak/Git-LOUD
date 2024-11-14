@@ -362,8 +362,8 @@ function Create(parent)
     controls.parent = UIGroup(savedParent, true, false, 'tabs',
         {
             All = function(self)
-                LayoutHelpers.AtHorizontalCenterIn(self, GetFrame(0))
-                LayoutHelpers.AtTopIn(self, GetFrame(0))
+                LayoutHelpers.AtHorizontalCenterIn(self, parent)
+                LayoutHelpers.AtTopIn(self, parent)
             end,
         },
         {

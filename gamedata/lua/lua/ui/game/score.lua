@@ -16,6 +16,7 @@ local Grid = import('/lua/maui/grid.lua').Grid
 local Prefs = import('/lua/user/prefs.lua')
 local IntegerSlider = import('/lua/maui/slider.lua').IntegerSlider
 local Tooltip = import('/lua/ui/game/tooltip.lua')
+local UIGroup               = import('/lua/ui/controls/uigroup.lua').UIGroup
 
 controls = {}
 savedParent = false
@@ -34,37 +35,19 @@ function CreateScoreUI(parent)
 
     savedParent = GetFrame(0)
     
-    controls.bg = Group(savedParent)
+    controls.bg = UIGroup(savedParent, true, false, 'score',
+        {
+            All = function(self, parent)
+                LayoutHelpers.AtRightTopIn(self, parent, 10, 10)
+            end
+        }
+    )
     controls.bg.Depth:Set(10)
-    
-    controls.collapseArrow = Checkbox(savedParent)
-	
-    controls.collapseArrow.OnCheck = function(self, checked)
-	
-		ToggleScoreControl(not checked)
-    end
-	
-    Tooltip.AddCheckboxTooltip(controls.collapseArrow, 'score_collapse')
     
     controls.bgTop = Bitmap(controls.bg)
     controls.bgBottom = Bitmap(controls.bg)
     controls.bgStretch = Bitmap(controls.bg)
     controls.armyGroup = Group(controls.bg)
-    
-    controls.leftBracketMin = Bitmap(controls.bg)
-    controls.leftBracketMax = Bitmap(controls.bg)
-    controls.leftBracketMid = Bitmap(controls.bg)
-    
-    controls.rightBracketMin = Bitmap(controls.bg)
-    controls.rightBracketMax = Bitmap(controls.bg)
-    controls.rightBracketMid = Bitmap(controls.bg)
-    
-    controls.leftBracketMin:DisableHitTest()
-    controls.leftBracketMax:DisableHitTest()
-    controls.leftBracketMid:DisableHitTest()
-    controls.rightBracketMin:DisableHitTest()
-    controls.rightBracketMax:DisableHitTest()
-    controls.rightBracketMid:DisableHitTest()
     
     controls.bg:DisableHitTest(true)
     
@@ -98,26 +81,6 @@ function CreateScoreUI(parent)
     if contractOnCreate then
         Contract()
     end
-    
-    controls.bg:SetNeedsFrameUpdate(true)
-	
-    controls.bg.OnFrame = function(self, delta)
-	
-        local newRight = self.Right() + (1000*delta)
-		
-        if newRight > savedParent.Right() + self.Width() then
-		
-            newRight = savedParent.Right() + self.Width()
-            self:Hide()
-            self:SetNeedsFrameUpdate(false)
-			
-        end
-		
-        self.Right:Set(newRight)
-    end
-	
-    controls.collapseArrow:SetCheck(true, true)
-	
 end
 
 function SetLayout()
@@ -125,6 +88,7 @@ function SetLayout()
     if controls.bg then
 	
         import(UIUtil.GetLayoutFilename('score')).SetLayout()
+        controls.bg:SetEditable(UIUtil.IsEditUI())
 		
     end
 	
@@ -440,7 +404,6 @@ function ToggleScoreControl(state)
             local sound = Sound({Cue = "UI_Score_Window_Open", Bank = "Interface",})
             PlaySound(sound)
 			
-            controls.collapseArrow:SetCheck(false, true)
             controls.bg:Show()
             controls.bg:SetNeedsFrameUpdate(true)
 			
@@ -484,8 +447,6 @@ function ToggleScoreControl(state)
 				
             end
 			
-            controls.collapseArrow:SetCheck(true, true)
-			
         end
 		
     else
@@ -498,8 +459,6 @@ function ToggleScoreControl(state)
             local sound = Sound({Cue = "UI_Score_Window_Open", Bank = "Interface",})
             PlaySound(sound)
 			
-            controls.collapseArrow:SetCheck(false, true)
-			
         else
 		
             Prefs.SetToCurrentProfile("scoreoverlay", false)
@@ -508,7 +467,6 @@ function ToggleScoreControl(state)
             PlaySound(sound)
 			
             controls.bg:Hide()
-            controls.collapseArrow:SetCheck(true, true)
 			
         end
 		
@@ -521,7 +479,6 @@ function Expand()
     if needExpand then
 	
         controls.bg:Show()
-        controls.collapseArrow:Show()
 		
         local sound = Sound({Cue = "UI_Score_Window_Open", Bank = "Interface",})
         PlaySound(sound)
@@ -542,7 +499,6 @@ function Contract()
             PlaySound(sound)
 			
             controls.bg:Hide()
-            controls.collapseArrow:Hide()
 			
             needExpand = true
 			
@@ -562,36 +518,7 @@ end
 
 
 function InitialAnimation(state)
-
-    controls.bg.Right:Set(savedParent.Right() + controls.bg.Width())
-    controls.bg:Hide()
-	
-    if Prefs.GetFromCurrentProfile("scoreoverlay") != false then
-	
-        controls.collapseArrow:SetCheck(false, true)
-		
-        controls.bg:Show()
-        controls.bg:SetNeedsFrameUpdate(true)
-		
-        controls.bg.OnFrame = function(self, delta)
-		
-            local newRight = self.Right() - (1000*delta)
-			
-            if newRight < savedParent.Right() - 3 then
-			
-                self.Right:Set(function() return savedParent.Right() - 18 end)
-                self:SetNeedsFrameUpdate(false)
-				
-            else
-			
-                self.Right:Set(newRight)
-				
-            end
-			
-        end
-		
-    end
-	
+    controls.bg:InitAnimation()
 end
 
 function NoteGameSpeedChanged(newSpeed)

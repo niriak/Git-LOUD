@@ -362,7 +362,7 @@ UIGroup = Class(Group) {
         elseif defaultPosition then
             -- call the provided function that sets all coords
             if defaultPosition.All then
-                defaultPosition.All(self)
+                defaultPosition.All(self, parent)
 
             -- Scale only if it's a number, else it's already scaled lazyvar
             elseif type(defaultPosition.Left) == 'number' then
