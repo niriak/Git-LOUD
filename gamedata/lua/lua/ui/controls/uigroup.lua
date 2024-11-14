@@ -28,20 +28,7 @@ UIGroup = Class(Group) {
 
     __init = function(self, parent, lockSize, lockPosition, prefID, defaultPosition, textureTable)
         Group.__init(self, parent, tostring(prefID))
-
-        self._resizeGroup = Group(self, 'window resize group')
-        LayoutHelpers.FillParent(self._resizeGroup, self)
-        LayoutHelpers.DepthOverParent(self._resizeGroup, self, 100)
-        self._resizeGroup:DisableHitTest(true)
-
-        self.tl = Bitmap(self._resizeGroup)
-        self.tr = Bitmap(self._resizeGroup)
-        self.bl = Bitmap(self._resizeGroup)
-        self.br = Bitmap(self._resizeGroup)
-        self.tm = Bitmap(self._resizeGroup)
-        self.bm = Bitmap(self._resizeGroup)
-        self.ml = Bitmap(self._resizeGroup)
-        self.mr = Bitmap(self._resizeGroup)
+        parent = GetFrame(0)
 
         self._pref = prefID
         self._borderSize = 5
@@ -54,146 +41,154 @@ UIGroup = Class(Group) {
         self._isEditable = false
         self._enableHitTest = true
 
-        --Set alpha of resize controls to 0 so that they still get resize events, but are not seen
-
-        self.tl:SetAlpha(0)
-        self.tr:SetAlpha(0)
-        self.bl:SetAlpha(0)
-        self.br:SetAlpha(0)
-        self.tm:SetAlpha(0)
-        self.bm:SetAlpha(0)
-        self.ml:SetAlpha(0)
-        self.mr:SetAlpha(0)
-
-        self.tl.Height:Set(self._cornerSize)
-        self.tl.Width:Set(self._cornerSize)
-        self.tl.Top:Set(self.Top)
-        self.tl.Left:Set(self.Left)
-
-        self.tr.Height:Set(self._cornerSize)
-        self.tr.Width:Set(self._cornerSize)
-        self.tr.Top:Set(self.Top)
-        self.tr.Right:Set(self.Right)
-
-        self.bl.Height:Set(self._cornerSize)
-        self.bl.Width:Set(self._cornerSize)
-        self.bl.Bottom:Set(self.Bottom)
-        self.bl.Left:Set(self.Left)
-
-        self.br.Height:Set(self._cornerSize)
-        self.br.Width:Set(self._cornerSize)
-        self.br.Bottom:Set(self.Bottom)
-        self.br.Right:Set(self.Right)
-
-        self.tm.Height:Set(self._borderSize)
-        self.tm.Left:Set(self.tl.Right)
-        self.tm.Right:Set(self.tr.Left)
-        self.tm.Top:Set(self.tl.Top)
-
-        self.bm.Height:Set(self._borderSize)
-        self.bm.Left:Set(self.bl.Right)
-        self.bm.Right:Set(self.br.Left)
-        self.bm.Top:Set(self.bl.Top)
-
-        self.ml.Width:Set(self._borderSize)
-        self.ml.Left:Set(self.tl.Left)
-        self.ml.Top:Set(self.tl.Bottom)
-        self.ml.Bottom:Set(self.bl.Top)
-
-        self.mr.Width:Set(self._borderSize)
-        self.mr.Right:Set(self.tr.Right)
-        self.mr.Top:Set(self.tr.Bottom)
-        self.mr.Bottom:Set(self.br.Top)
-
         local texturekey = 'transparent'
         if textureTable then
             texturekey = prefID
             styles.backgrounds[prefID] = textureTable
         end
 
-        self.tl:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.tr:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.bl:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.br:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.tm:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.bm:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.ml:SetSolidColor(styles.backgrounds[texturekey].borderColor)
-        self.mr:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        -- WINDOW GROUP
 
         self._windowGroup = Group(self, 'window texture group')
         LayoutHelpers.FillParent(self._windowGroup, self)
         self._windowGroup:DisableHitTest()
 
-        self.window_tl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tl)
-        self.window_tr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tr)
-        self.window_tm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tm)
-        self.window_ml = Bitmap(self._windowGroup, styles.backgrounds[texturekey].ml)
-        self.window_m  = Bitmap(self._windowGroup, styles.backgrounds[texturekey].m)
-        self.window_mr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].mr)
-        self.window_bl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bl)
-        self.window_bm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bm)
-        self.window_br = Bitmap(self._windowGroup, styles.backgrounds[texturekey].br)
+        self._window_tl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tl)
+        self._window_tr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tr)
+        self._window_tm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].tm)
+        self._window_ml = Bitmap(self._windowGroup, styles.backgrounds[texturekey].ml)
+        self._window_m  = Bitmap(self._windowGroup, styles.backgrounds[texturekey].m)
+        self._window_mr = Bitmap(self._windowGroup, styles.backgrounds[texturekey].mr)
+        self._window_bl = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bl)
+        self._window_bm = Bitmap(self._windowGroup, styles.backgrounds[texturekey].bm)
+        self._window_br = Bitmap(self._windowGroup, styles.backgrounds[texturekey].br)
 
-        self.window_tl.Top:Set(self.Top)
-        self.window_tl.Left:Set(self.Left)
-        LayoutHelpers.DepthUnderParent(self.window_tl, self._windowGroup)
+        self._window_tl.Top:Set(self.Top)
+        self._window_tl.Left:Set(self.Left)
+        LayoutHelpers.DepthUnderParent(self._window_tl, self._windowGroup)
 
-        self.window_tr.Top:Set(self.Top)
-        self.window_tr.Right:Set(self.Right)
-        LayoutHelpers.DepthUnderParent(self.window_tr, self._windowGroup)
+        self._window_tr.Top:Set(self.Top)
+        self._window_tr.Right:Set(self.Right)
+        LayoutHelpers.DepthUnderParent(self._window_tr, self._windowGroup)
 
-        self.window_bl.Bottom:Set(self.Bottom)
-        self.window_bl.Left:Set(self.Left)
-        LayoutHelpers.DepthUnderParent(self.window_bl, self._windowGroup)
+        self._window_bl.Bottom:Set(self.Bottom)
+        self._window_bl.Left:Set(self.Left)
+        LayoutHelpers.DepthUnderParent(self._window_bl, self._windowGroup)
 
-        self.window_br.Bottom:Set(self.Bottom)
-        self.window_br.Right:Set(self.Right)
-        LayoutHelpers.DepthUnderParent(self.window_br, self._windowGroup)
+        self._window_br.Bottom:Set(self.Bottom)
+        self._window_br.Right:Set(self.Right)
+        LayoutHelpers.DepthUnderParent(self._window_br, self._windowGroup)
 
-        self.window_tm.Left:Set(self.window_tl.Right)
-        self.window_tm.Right:Set(self.window_tr.Left)
-        self.window_tm.Top:Set(self.window_tl.Top)
-        LayoutHelpers.DepthUnderParent(self.window_tm, self._windowGroup)
+        self._window_tm.Left:Set(self._window_tl.Right)
+        self._window_tm.Right:Set(self._window_tr.Left)
+        self._window_tm.Top:Set(self._window_tl.Top)
+        LayoutHelpers.DepthUnderParent(self._window_tm, self._windowGroup)
 
-        self.window_bm.Left:Set(self.window_bl.Right)
-        self.window_bm.Right:Set(self.window_br.Left)
-        self.window_bm.Top:Set(self.window_bl.Top)
-        LayoutHelpers.DepthUnderParent(self.window_bm, self._windowGroup)
+        self._window_bm.Left:Set(self._window_bl.Right)
+        self._window_bm.Right:Set(self._window_br.Left)
+        self._window_bm.Top:Set(self._window_bl.Top)
+        LayoutHelpers.DepthUnderParent(self._window_bm, self._windowGroup)
 
-        self.window_ml.Left:Set(self.window_tl.Left)
-        self.window_ml.Top:Set(self.window_tl.Bottom)
-        self.window_ml.Bottom:Set(self.window_bl.Top)
-        LayoutHelpers.DepthUnderParent(self.window_ml, self._windowGroup)
+        self._window_ml.Left:Set(self._window_tl.Left)
+        self._window_ml.Top:Set(self._window_tl.Bottom)
+        self._window_ml.Bottom:Set(self._window_bl.Top)
+        LayoutHelpers.DepthUnderParent(self._window_ml, self._windowGroup)
 
-        self.window_mr.Right:Set(self.window_tr.Right)
-        self.window_mr.Top:Set(self.window_tr.Bottom)
-        self.window_mr.Bottom:Set(self.window_br.Top)
-        LayoutHelpers.DepthUnderParent(self.window_mr, self._windowGroup)
+        self._window_mr.Right:Set(self._window_tr.Right)
+        self._window_mr.Top:Set(self._window_tr.Bottom)
+        self._window_mr.Bottom:Set(self._window_br.Top)
+        LayoutHelpers.DepthUnderParent(self._window_mr, self._windowGroup)
 
-        self.window_m.Top:Set(self.window_tm.Bottom)
-        self.window_m.Left:Set(self.window_ml.Right)
-        self.window_m.Right:Set(self.window_mr.Left)
-        self.window_m.Bottom:Set(self.window_bm.Top)
-        LayoutHelpers.DepthUnderParent(self.window_m, self._windowGroup)
+        self._window_m.Top:Set(self._window_tm.Bottom)
+        self._window_m.Left:Set(self._window_ml.Right)
+        self._window_m.Right:Set(self._window_mr.Left)
+        self._window_m.Bottom:Set(self._window_bm.Top)
+        LayoutHelpers.DepthUnderParent(self._window_m, self._windowGroup)
 
-        self._moveGroup = Group(self, 'window move group')
-        LayoutHelpers.Layouter(self._moveGroup)
-            :Top(self.tm.Bottom)
-            :Left(self.ml.Right)
-            :Height(function() return self.bm.Top() - self.tm.Bottom() end)
-            :Width(function() return self.mr.Left() - self.ml.Right() end)
-            :Right(self.mr.Left)
-            :Bottom(self.bm.Top)
-            :Over(self, 100)
+        -- RESIZE GROUP
+
+        self._resizeGroup = Group(self, 'window resize group')
+        LayoutHelpers.FillParent(self._resizeGroup, self)
+        LayoutHelpers.DepthOverParent(self._resizeGroup, self, 100)
+        self._resizeGroup:DisableHitTest(true)
+
+        self._resize_tl = Bitmap(self._resizeGroup)
+        self._resize_tr = Bitmap(self._resizeGroup)
+        self._resize_bl = Bitmap(self._resizeGroup)
+        self._resize_br = Bitmap(self._resizeGroup)
+        self._resize_tm = Bitmap(self._resizeGroup)
+        self._resize_bm = Bitmap(self._resizeGroup)
+        self._resize_ml = Bitmap(self._resizeGroup)
+        self._resize_mr = Bitmap(self._resizeGroup)
+
+        --Set alpha of resize controls to 0 so that they still get resize events, but are not seen
+
+        self._resize_tl:SetAlpha(0)
+        self._resize_tr:SetAlpha(0)
+        self._resize_bl:SetAlpha(0)
+        self._resize_br:SetAlpha(0)
+        self._resize_tm:SetAlpha(0)
+        self._resize_bm:SetAlpha(0)
+        self._resize_ml:SetAlpha(0)
+        self._resize_mr:SetAlpha(0)
+
+        self._resize_tl.Height:Set(self._cornerSize)
+        self._resize_tl.Width:Set(self._cornerSize)
+        self._resize_tl.Top:Set(self.Top)
+        self._resize_tl.Left:Set(self.Left)
+
+        self._resize_tr.Height:Set(self._cornerSize)
+        self._resize_tr.Width:Set(self._cornerSize)
+        self._resize_tr.Top:Set(self.Top)
+        self._resize_tr.Right:Set(self.Right)
+
+        self._resize_bl.Height:Set(self._cornerSize)
+        self._resize_bl.Width:Set(self._cornerSize)
+        self._resize_bl.Bottom:Set(self.Bottom)
+        self._resize_bl.Left:Set(self.Left)
+
+        self._resize_br.Height:Set(self._cornerSize)
+        self._resize_br.Width:Set(self._cornerSize)
+        self._resize_br.Bottom:Set(self.Bottom)
+        self._resize_br.Right:Set(self.Right)
+
+        self._resize_tm.Height:Set(self._borderSize)
+        self._resize_tm.Left:Set(self._resize_tl.Right)
+        self._resize_tm.Right:Set(self._resize_tr.Left)
+        self._resize_tm.Top:Set(self._resize_tl.Top)
+
+        self._resize_bm.Height:Set(self._borderSize)
+        self._resize_bm.Left:Set(self._resize_bl.Right)
+        self._resize_bm.Right:Set(self._resize_br.Left)
+        self._resize_bm.Top:Set(self._resize_bl.Top)
+
+        self._resize_ml.Width:Set(self._borderSize)
+        self._resize_ml.Left:Set(self._resize_tl.Left)
+        self._resize_ml.Top:Set(self._resize_tl.Bottom)
+        self._resize_ml.Bottom:Set(self._resize_bl.Top)
+
+        self._resize_mr.Width:Set(self._borderSize)
+        self._resize_mr.Right:Set(self._resize_tr.Right)
+        self._resize_mr.Top:Set(self._resize_tr.Bottom)
+        self._resize_mr.Bottom:Set(self._resize_br.Top)
+
+        self._resize_tl:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_tr:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_bl:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_br:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_tm:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_bm:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_ml:SetSolidColor(styles.backgrounds[texturekey].borderColor)
+        self._resize_mr:SetSolidColor(styles.backgrounds[texturekey].borderColor)
 
         self.StartSizing = function(event, xControl, yControl)
             local drag = Dragger()
             local x_max = true
             local y_max = true
-            if event.MouseX < self.tl.Right() then
+            if event.MouseX < self._resize_tl.Right() then
                 x_max = false
             end
-            if event.MouseY < self.tl.Bottom() then
+            if event.MouseY < self._resize_tl.Bottom() then
                 y_max = false
             end
             drag.OnMove = function(dragself, x, y)
@@ -201,7 +196,7 @@ UIGroup = Class(Group) {
                     local newX
                     if x_max then
                         newX = math.min(math.max(x, self.Left() + self._xMin), parent.Right())
-                        newX = math.max(newX, self.Left() + (2*self.window_tl.Width()))
+                        newX = math.max(newX, self.Left() + (2*self._window_tl.Width()))
                     else
                         newX = math.min(math.max(x, 0), self.Right() - self._xMin)
                     end
@@ -211,7 +206,7 @@ UIGroup = Class(Group) {
                     local newY
                     if y_max then
                         newY = math.min(math.max(y, self.Top() + self._yMin), parent.Bottom())
-                        newY = math.max(newY, self.Top() + self.window_bm.Height() + self.window_tm.Height())
+                        newY = math.max(newY, self.Top() + self._window_bm.Height() + self._window_tm.Height())
                     else
                         newY = math.min(math.max(y, 0), self.Bottom() - self._yMin)
                     end
@@ -226,8 +221,8 @@ UIGroup = Class(Group) {
                 self._sizeLock = false
                 self._resizeGroup:SetAlpha(0, true)
                 GetCursor():Reset()
---                LayoutHelpers.ResetWidth(self)
---                LayoutHelpers.ResetHeight(self)
+                LayoutHelpers.ResetWidth(self)
+                LayoutHelpers.ResetHeight(self)
                 drag:Destroy()
                 self:SaveWindowLocation()
                 self:OnResizeSet()
@@ -240,7 +235,8 @@ UIGroup = Class(Group) {
             PostDragger(self:GetRootFrame(), event.KeyCode, drag)
         end
 
-        self.RolloverHandler = function(control, event, xControl, yControl, cursor, controlID)
+        self._RolloverHandler = function(control, event, xControl, yControl, cursor, controlID)
+--            LOG ("custom _RolloverHandler.controlID=" .. controlID ..", event.type=" .. event.Type)
             if self._lockSize then return end
             if not self._sizeLock then
                 if event.Type == 'MouseEnter' then
@@ -255,34 +251,51 @@ UIGroup = Class(Group) {
             end
         end
 
-        self.br.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Right, self.Bottom, 'NW_SE', 'br')
+        self._resize_br.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Right, self.Bottom, 'NW_SE', 'br')
         end
-        self.bl.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Left, self.Bottom, 'NE_SW', 'bl')
+        self._resize_bl.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Left, self.Bottom, 'NE_SW', 'bl')
         end
-        self.bm.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, nil, self.Bottom, 'N_S', 'bm')
+        self._resize_bm.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, nil, self.Bottom, 'N_S', 'bm')
         end
-        self.tr.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Right, self.Top, 'NE_SW', 'tr')
+        self._resize_tr.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Right, self.Top, 'NE_SW', 'tr')
         end
-        self.tl.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Left, self.Top, 'NW_SE', 'tl')
+        self._resize_tl.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Left, self.Top, 'NW_SE', 'tl')
         end
-        self.tm.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, nil, self.Top, 'N_S', 'tm')
+        self._resize_tm.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, nil, self.Top, 'N_S', 'tm')
         end
-        self.mr.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Right, nil, 'W_E', 'mr')
+        self._resize_mr.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Right, nil, 'W_E', 'mr')
         end
-        self.ml.HandleEvent = function(control, event)
-            self.RolloverHandler(control, event, self.Left, nil, 'W_E', 'ml')
+        self._resize_ml.HandleEvent = function(control, event)
+            self._RolloverHandler(control, event, self.Left, nil, 'W_E', 'ml')
         end
 
-        self._moveGroup.HandleEvent = function(control, event)
+        -- REPOSITION GROUP
+
+        self._repositionGroup = Group(self, 'window reposition group')
+        LayoutHelpers.Layouter(self._repositionGroup)
+            :Top(self._resize_tm.Bottom)
+            :Left(self._resize_ml.Right)
+            :Height(function() return self._resize_bm.Top() - self._resize_tm.Bottom() end)
+            :Width(function() return self._resize_mr.Left() - self._resize_ml.Right() end)
+            :Right(self._resize_mr.Left)
+            :Bottom(self._resize_bm.Top)
+            :Over(self, 101)
+
+        self._repositionGroup.HandleEvent = function(control, event)
+--            LOG ("custom _repositionGroup.HandleEvent.event.Type=" .. event.Type)
             if not self._sizeLock then
-                if event.Type == 'ButtonPress' then
+                if event.Type == 'MouseEnter' then
+                    GetCursor():SetTexture(styles.cursorFunc('MOVE_WINDOW'))
+                elseif event.Type == 'MouseExit' then
+                    GetCursor():Reset()
+                elseif event.Type == 'ButtonPress' then
                     if self._lockPosition then return end
                     local drag = Dragger()
                     local offX = event.MouseX - self.Left()
@@ -298,7 +311,7 @@ UIGroup = Class(Group) {
                         self.Bottom:Set(tempBottom)
                         self:OnMove(x, y, not self._sizeLock)
                         if not self._sizeLock then
-                            GetCursor():SetTexture(styles.cursorFunc('MOVE_WINDOW'))
+--                            GetCursor():SetTexture(styles.cursorFunc('MOVE_WINDOW'))
                             self._sizeLock = true
                         end
                     end
@@ -317,39 +330,19 @@ UIGroup = Class(Group) {
                     PostDragger(self:GetRootFrame(), event.KeyCode, drag)
                 end
             end
+        end
+
+        -- MISC
+        self.HandleEvent = function(control, event)
             if event.Type == 'WheelRotation' then
                 self:OnMouseWheel(event.WheelRotation)
             end
         end
+
         self.OnHide = function(control, hidden)
             control._resizeGroup:SetHidden(hidden)
             control:OnHideWindow(control, hidden)
         end
-
-        local OldHeightOnDirty = parent.Height.OnDirty
-        local OldWidthOnDirty = parent.Width.OnDirty
---        parent.Height.OnDirty = function(var)
---            if self.Bottom() > parent.Bottom() then
---                local Height = math.min(self.Height(), parent.Height())
---                self.Bottom:Set(parent.Bottom())
---                self.Top:Set(self.Bottom() - Height)
---            end
---            if OldHeightOnDirty then
---                OldHeightOnDirty(var)
---            end
---            self:SaveWindowLocation()
---        end
---        parent.Width.OnDirty = function(var)
---            if self.Right() > parent.Right() then
---                local Width = math.min(self.Width(), parent.Width())
---                self.Right:Set(parent.Right())
---                self.Left:Set(self.Right() - Width)
---            end
---            if OldWidthOnDirty then
---                OldWidthOnDirty(var)
---            end
---            self:SaveWindowLocation()
---        end
 
         -- attempt to retrieve location of window in preference file
         local location = Prefs.GetFromCurrentProfile(prefID)
@@ -367,8 +360,12 @@ UIGroup = Class(Group) {
             LayoutHelpers.ResetRight(self)
             LayoutHelpers.ResetBottom(self)
         elseif defaultPosition then
+            -- call the provided function that sets all coords
+            if defaultPosition.All then
+                defaultPosition.All(self)
+
             -- Scale only if it's a number, else it's already scaled lazyvar
-            if type(defaultPosition.Left) == 'number' then
+            elseif type(defaultPosition.Left) == 'number' then
                 self.Left:Set(LayoutHelpers.ScaleNumber(defaultPosition.Left))
                 self.Top:Set(LayoutHelpers.ScaleNumber(defaultPosition.Top))
                 self.Bottom:Set(LayoutHelpers.ScaleNumber(defaultPosition.Bottom))
@@ -419,15 +416,15 @@ UIGroup = Class(Group) {
     end,
 
     ApplyWindowTextures = function(self, textures)
-        self.window_tl:SetTexture(textures.tl)
-        self.window_tr:SetTexture(textures.tr)
-        self.window_tm:SetTexture(textures.tm)
-        self.window_ml:SetTexture(textures.ml)
-        self.window_m:SetTexture(textures.m)
-        self.window_mr:SetTexture(textures.mr)
-        self.window_bl:SetTexture(textures.bl)
-        self.window_bm:SetTexture(textures.bm)
-        self.window_br:SetTexture(textures.br)
+        self._window_tl:SetTexture(textures.tl)
+        self._window_tr:SetTexture(textures.tr)
+        self._window_tm:SetTexture(textures.tm)
+        self._window_ml:SetTexture(textures.ml)
+        self._window_m:SetTexture(textures.m)
+        self._window_mr:SetTexture(textures.mr)
+        self._window_bl:SetTexture(textures.bl)
+        self._window_bm:SetTexture(textures.bm)
+        self._window_br:SetTexture(textures.br)
     end,
 
     SetSizeLock = function(self, locked)
@@ -459,7 +456,7 @@ UIGroup = Class(Group) {
 --        self._windowGroup:DisableHitTest()
 --
 --        if not self._isEditable then
---            self._moveGroup:DisableHitTest()
+--            self._repositionGroup:DisableHitTest()
 --        end
     end,
 
@@ -471,21 +468,21 @@ UIGroup = Class(Group) {
 --        self._windowGroup:DisableHitTest()
 --
 --        if self._isEditable then
---            self._moveGroup:EnableHitTest()
+--            self._repositionGroup:EnableHitTest()
 --        end
     end,
 
 --    Show = function(self)
 --        Group.Show(self)
 --        self._resizeGroup:Hide()
---        self._moveGroup:Hide()
+--        self._repositionGroup:Hide()
 --    end,
 
 --    SetHidden = function(self, isHidden)
 --        isHidden = isHidden or false
 --        Group.SetHidden(self, isHidden)
 --        self._resizeGroup:Hide()
---        self._moveGroup:Hide()
+--        self._repositionGroup:Hide()
 --    end,
 
     SetEditable = function(self, isEditable)
@@ -493,19 +490,21 @@ UIGroup = Class(Group) {
         self._isEditable = isEditable
 
         if isEditable then
-            self._windowGroup:DisableHitTest(true)
-            self._resizeGroup:DisableHitTest(true)
-            self._moveGroup:EnableHitTest(true)
-
-            self._resizeGroup:Show()
-            self._moveGroup:Show()
+            if not self._lockSize then
+                self._resizeGroup:EnableHitTest(true)
+                self._resizeGroup:DisableHitTest(false)
+                self._resizeGroup:Show()
+            end
+            if not self._lockPosition then
+                self._repositionGroup:EnableHitTest(true)
+                self._repositionGroup:Show()
+            end
         else
-            self._windowGroup:DisableHitTest(true)
             self._resizeGroup:DisableHitTest(true)
-            self._moveGroup:DisableHitTest(true)
+            self._repositionGroup:DisableHitTest(true)
 
             self._resizeGroup:Hide()
-            self._moveGroup:Hide()
+            self._repositionGroup:Hide()
         end
     end,
 

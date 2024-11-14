@@ -30,7 +30,7 @@ defaultKeyMap = {
     ['F8']                  = 'ping_marker',
     ['F10']                 = 'toggle_main_menu',
     ['F11']                 = 'toggle_disconnect_screen',
-    ['Num7']                   = 'toggle_markers_screen',
+    ['Num7']                = 'toggle_markers_screen',
 
     ['1']                   = 'group1',
     ['2']                   = 'group2',
@@ -161,6 +161,7 @@ defaultKeyMap = {
     ['Shift-PageDown']      = 'chat_line_down',
 
     ['NumSlash']            = 'show_fps',
+    ['Ctrl-Shift-U']        = 'toggle_edit_ui',
 }
 
 AYVModKeyMap = {

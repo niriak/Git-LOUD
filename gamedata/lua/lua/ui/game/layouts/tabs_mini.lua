@@ -4,17 +4,6 @@ local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
 function SetLayout()
     local controls = import('/lua/ui/game/tabs.lua').controls
 
-    controls.collapseArrow:SetTexture(UIUtil.UIFile('/game/tab-t-btn/tab-close_btn_up.dds'))
-    controls.collapseArrow:SetNewTextures(UIUtil.UIFile('/game/tab-t-btn/tab-close_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-t-btn/tab-open_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-t-btn/tab-close_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-t-btn/tab-open_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-t-btn/tab-close_btn_dis.dds'),
-        UIUtil.UIFile('/game/tab-t-btn/tab-open_btn_dis.dds'))
-    LayoutHelpers.AtTopIn(controls.collapseArrow, GetFrame(0), -3)
-    LayoutHelpers.AtHorizontalCenterIn(controls.collapseArrow, controls.parent)
-    controls.collapseArrow.Depth:Set(function() return controls.bgTop.Depth() + 10 end)
-
     controls.bgTop.center:SetTexture(UIUtil.UIFile('/game/options-panel/options_brd_horz_um.dds'))
     controls.bgTop.left:SetTexture(UIUtil.UIFile('/game/options-panel/options_brd_ul.dds'))
     controls.bgTop.right:SetTexture(UIUtil.UIFile('/game/options-panel/options_brd_ur.dds'))
@@ -69,8 +58,8 @@ function SetLayout()
 
     controls.parent.Width:Set(controls.bgTop.Width)
     controls.parent.Height:Set(function() return controls.bgTop.Height() + controls.bgBottom.Height() end)
-    LayoutHelpers.AtHorizontalCenterIn(controls.parent, GetFrame(0))
-    LayoutHelpers.AtTopIn(controls.parent, GetFrame(0))
+--    LayoutHelpers.AtHorizontalCenterIn(controls.parent, GetFrame(0))
+--    LayoutHelpers.AtTopIn(controls.parent, GetFrame(0))
     controls.bgTop.defWidth = LayoutHelpers.ScaleNumber(180)
     controls.bgTop.Width:Set(controls.bgTop.defWidth)
 end

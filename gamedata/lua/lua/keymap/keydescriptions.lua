@@ -12,7 +12,8 @@ keyDescriptions = {
     ['toggle_markers_screen'] = "Toggle AI Marker Debug Utilities Screen",
     ['toggle_profiler'] = 'Toggle Profiler',
     ['toggle_profiler_window'] = 'Toggle Profiler Window',
-    
+    ['toggle_edit_ui'] = 'Toggle edit UI',
+
     ['group1'] = 'Recall Group 1',
     ['group2'] = 'Recall Group 2',
     ['group3'] = 'Recall Group 3',

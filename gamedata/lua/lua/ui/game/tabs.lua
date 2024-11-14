@@ -7,6 +7,7 @@ local Checkbox = import('/lua/maui/checkbox.lua').Checkbox
 local Button = import('/lua/maui/button.lua').Button
 local GameMain = import('/lua/ui/game/gamemain.lua')
 local Tooltip = import('/lua/ui/game/tooltip.lua')
+local UIGroup = import('/lua/ui/controls/uigroup.lua').UIGroup
 
 local savedParent = false
 local animationLock = false
@@ -76,11 +77,6 @@ local menus = {
                 action = 'Options',
                 label = '<LOC _Options>',
                 tooltip = 'esc_options',
-            },
-            {
-                action = 'SetupUI',
-                label = '<LOC _HUD>Setup UI',
-                tooltip = 'esc_setup_ui',
             },
             {
                 action = 'RestartGame',
@@ -278,10 +274,6 @@ local actions = {
     Options = function()
         import('/lua/ui/dialogs/options.lua').CreateDialog(GetFrame(0))
     end,
-
-    SetupUI = function()
-        UIUtil.SetUIEditable(not UIUtil.IsUIEditable())
-    end,
 }
 
 function EndGame()
@@ -367,15 +359,31 @@ end
 function Create(parent)
     savedParent = parent
     
-    controls.parent = Group(savedParent)
+    controls.parent = UIGroup(savedParent, true, false, 'tabs_window',
+        {
+            All = function(self)
+                LayoutHelpers.AtHorizontalCenterIn(self, GetFrame(0))
+                LayoutHelpers.AtTopIn(self, GetFrame(0))
+            end,
+        },
+        {
+            tl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
+            tr = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topRight.dds'),
+            tm = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_top.dds'),
+            ml = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_left.dds'),
+             m = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_center.dds'),
+            mr = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_right.dds'),
+            bl = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomLeft.dds'),
+            bm = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottom.dds'),
+            br = nil,--UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_bottomRight.dds'),
+            borderColor = 'ff415055',
+        }
+    )
     controls.parent.Depth:Set(100)
     
     controls.bgTop = CreateStretchBar(controls.parent, true)
     controls.bgBottom = CreateStretchBar(controls.parent)
     controls.bgBottom.Width:Set(controls.bgTop.Width)
-    
-    controls.collapseArrow = Checkbox(savedParent)
-    Tooltip.AddCheckboxTooltip(controls.collapseArrow, 'menu_collapse')
     
     controls.tabContainer = Group(controls.bgTop)
     controls.tabContainer:DisableHitTest()
@@ -411,6 +419,8 @@ end
 
 function SetLayout()
     import(UIUtil.GetLayoutFilename('tabs')).SetLayout()
+    controls.parent:SetEditable(UIUtil.IsEditUI())
+
     if activeTab then
         CreateStretchBG()
         controls.bgTop.Width:Set(controls.contentGroup.Width)
@@ -500,9 +510,6 @@ function CommonLogic()
             end
         end
     end
-    controls.collapseArrow.OnCheck = function(self, checked)
-        ToggleTabDisplay()
-    end
 end
 
 local alphaFadeTime = 0.25
@@ -510,8 +517,6 @@ local heightResizeTime = 0.25
 local widthResizeTime = 0.075
 
 function BuildContent(contentID)
-    ToggleTabDisplay(true)
-    controls.collapseArrow:SetCheck(false, true)
     if controls.contentGroup then
         CollapseWindow(function() BuildContent(contentID) end)
         return
@@ -844,58 +849,8 @@ function ToggleScore()
     import('/lua/ui/game/score.lua').ToggleScoreControl()
 end
 
-function ToggleTabDisplay(state)
-    if import('/lua/ui/game/gamemain.lua').gameUIHidden and state != nil then
-        return
-    end
-    if UIUtil.GetAnimationPrefs() then
-        if state or controls.parent:IsHidden() then
-            PlaySound(Sound({Cue = "UI_Score_Window_Open", Bank = "Interface"}))
-            controls.parent:Show()
-            controls.parent:SetNeedsFrameUpdate(true)
-            controls.parent.OnFrame = function(self, delta)
-                local newTop = self.Top() + (500*delta)
-                if newTop > savedParent.Top() then
-                    newTop = savedParent.Top()
-                    self:SetNeedsFrameUpdate(false)
-                end
-                self.Top:Set(newTop)
-            end
-        else
-            PlaySound(Sound({Cue = "UI_Score_Window_Close", Bank = "Interface"}))
-            local function CollapseTab()
-                controls.parent:SetNeedsFrameUpdate(true)
-                controls.parent.OnFrame = function(self, delta)
-                    local newTop = self.Top() - (500*delta)
-                    if newTop < savedParent.Top()-self.Height() then
-                        newTop = savedParent.Top()-self.Height()
-                        self:Hide()
-                        self:SetNeedsFrameUpdate(false)
-                    end
-                    self.Top:Set(newTop)
-                end
-                controls.collapseArrow:SetCheck(true, true)
-            end
-            if controls.contentGroup then
-                CollapseWindow(CollapseTab)
-                return
-            end
-            CollapseTab()
-        end
-    else
-        if state or controls.parent:IsHidden() then
-            controls.parent:Show()
-            controls.collapseArrow:SetCheck(false, true)
-        else
-            controls.parent:Hide()
-            controls.collapseArrow:SetCheck(true, true)
-        end
-    end
-end
-
 function Contract()
     controls.parent:Hide()
-    controls.collapseArrow:Hide()
     if pauseGlow.Top then
         pauseGlow.Top:Hide()
     end
@@ -903,25 +858,14 @@ end
 
 function Expand()
     controls.parent:Show()
-    controls.collapseArrow:Show()
     if pauseGlow.Top then
         pauseGlow.Top:Show()
     end
 end
 
 function InitialAnimation()
-    controls.collapseArrow:Show()
-    controls.parent.Top:Set(savedParent.Top()-controls.parent.Height())
     controls.parent:Show()
-    controls.parent:SetNeedsFrameUpdate(true)
-    controls.parent.OnFrame = function(self, delta)
-        local newTop = self.Top() + (500*delta)
-        if newTop > savedParent.Top() then
-            newTop = savedParent.Top()
-            self:SetNeedsFrameUpdate(false)
-        end
-        self.Top:Set(newTop)
-    end
+--    controls.parent:InitAnimation()
 end
 
 function TabAnnouncement(tabID, text)

@@ -54,7 +54,7 @@ end
 
 function SetLayout(layout)
 	import(UIUtil.GetLayoutFilename('economy')).SetLayout()
-    GUI.bg:SetEditable(UIUtil.IsUIEditable())
+    GUI.bg:SetEditable(UIUtil.IsEditUI())
 
 	GameMain.RemoveBeatFunction(_BeatFunction)
 	ConfigureBeatFunction()
