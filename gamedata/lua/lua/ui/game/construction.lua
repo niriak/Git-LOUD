@@ -20,6 +20,7 @@ local SpecialGrid       = import('/lua/ui/controls/specialgrid.lua').SpecialGrid
 local StatusBar         = import('/lua/maui/statusbar.lua').StatusBar
 local Tooltip           = import('/lua/ui/game/tooltip.lua')
 local Templates         = import('/lua/ui/game/build_templates.lua')
+local UIGroup           = import("/lua/ui/controls/uigroup.lua").UIGroup
 local UIUtil            = import('/lua/ui/uiutil.lua')
 local UnitViewDetail    = import('/lua/ui/game/unitviewdetail.lua')
 
@@ -155,7 +156,13 @@ end
 
 function CreateUI()
 
-    controls.constructionGroup = Group(controlClusterGroup)
+    controls.constructionGroup = UIGroup(controlClusterGroup, false, false, 'construction',
+        { All = function(self, parent)
+            LayoutHelpers.AnchorToRight(self, ordersControl, -6)
+            LayoutHelpers.AtRightIn(self, parent, 18)
+            self.Bottom:Set(parent.Bottom)
+            LayoutHelpers.SetHeight(self, 200)
+          end })
     
     controls.minBG = Bitmap(controls.constructionGroup)
     controls.maxBG = Bitmap(controls.constructionGroup)
@@ -188,12 +195,6 @@ function CreateUI()
     controls.secondaryPageMax = Button(controls.secondaryChoices)
     controls.secondaryPageMinIcon = Button(controls.secondaryChoices)
     controls.secondaryPageMaxIcon = Button(controls.secondaryChoices)
-    controls.leftBracketMin = Bitmap(controls.constructionGroup)
-    controls.leftBracketMax = Bitmap(controls.constructionGroup)
-    controls.leftBracketMid = Bitmap(controls.constructionGroup)
-    controls.rightBracketMin = Bitmap(controls.constructionGroup)
-    controls.rightBracketMax = Bitmap(controls.constructionGroup)
-    controls.rightBracketMid = Bitmap(controls.constructionGroup)
     controls.extraBtn1 = Checkbox(controls.minBG)
     controls.extraBtn1.icon = Bitmap(controls.extraBtn1)
     controls.extraBtn1.icon.OnTexture = UIUtil.UIFile('/game/construct-sm_btn/pause_on.dds')
@@ -3385,6 +3386,7 @@ function SetLayout(layout)
     end
 
     import(UIUtil.GetLayoutFilename('construction')).SetLayout()
+    controls.constructionGroup:SetEditable(UIUtil.IsEditUI())
     CommonLogic()
 end
 

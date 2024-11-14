@@ -47,14 +47,6 @@ function SetLayout()
     local controls = import('/lua/ui/game/construction.lua').controls
     local ordersControl = import('/lua/ui/game/construction.lua').ordersControl
     local controlClusterGroup = import('/lua/ui/game/construction.lua').controlClusterGroup
-    LayoutHelpers.AtTopIn(controls.constructionGroup, controlClusterGroup, 12)
-    controls.constructionGroup.Bottom:Set(controlClusterGroup.Bottom)
-    if ordersControl then
-        LayoutHelpers.AnchorToRight(controls.constructionGroup, ordersControl, -6)
-    else
-        controls.constructionGroup.Left:Set(controlClusterGroup.Left)
-    end
-    LayoutHelpers.AtRightIn(controls.constructionGroup, controlClusterGroup, 18)
 
     controls.minBG:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_l.dds'))
     LayoutHelpers.AtBottomIn(controls.minBG, controls.constructionGroup, 4)
@@ -62,32 +54,6 @@ function SetLayout()
     LayoutHelpers.ResetRight(controls.minBG)
     LayoutHelpers.ResetTop(controls.minBG)
     LayoutHelpers.SetDimensions(controls.minBG, controls.minBG.BitmapWidth, controls.minBG.BitmapHeight)
-
-    controls.leftBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_t.dds'))
-    LayoutHelpers.AtLeftIn(controls.leftBracketMin, controls.constructionGroup, 4)
-    LayoutHelpers.AtTopIn(controls.leftBracketMin, controls.constructionGroup, 21)
-
-    controls.leftBracketMax:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_b.dds'))
-    controls.leftBracketMax.Left:Set(controls.leftBracketMin.Left)
-    LayoutHelpers.AtBottomIn(controls.leftBracketMax, controls.constructionGroup, 2)
-
-    controls.leftBracketMid:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_m.dds'))
-    controls.leftBracketMid.Left:Set(controls.leftBracketMin.Left)
-    controls.leftBracketMid.Bottom:Set(controls.leftBracketMax.Top)
-    controls.leftBracketMid.Top:Set(controls.leftBracketMin.Bottom)
-
-    controls.rightBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_t.dds'))
-    LayoutHelpers.AtRightIn(controls.rightBracketMin, controls.maxBG, -21)
-    LayoutHelpers.AtTopIn(controls.rightBracketMin, controls.maxBG, -6)
-
-    controls.rightBracketMax:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_b.dds'))
-    LayoutHelpers.AtRightIn(controls.rightBracketMax, controls.maxBG, -21)
-    LayoutHelpers.AtBottomIn(controls.rightBracketMax, controls.maxBG, -5)
-
-    controls.rightBracketMid:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_m.dds'))
-    LayoutHelpers.AtRightIn(controls.rightBracketMid, controls.maxBG, -14)
-    controls.rightBracketMid.Bottom:Set(controls.rightBracketMax.Top)
-    controls.rightBracketMid.Top:Set(controls.rightBracketMin.Bottom)
 
     controls.maxBG:SetTexture(UIUtil.UIFile('/game/construct-panel/construct-panel_bmp_r.dds'))
     LayoutHelpers.AtBottomIn(controls.maxBG, controls.minBG, 1)
