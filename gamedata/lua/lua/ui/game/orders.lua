@@ -13,6 +13,7 @@ local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
 local Prefs         = import('/lua/user/prefs.lua')
 local Tooltip       = import('/lua/ui/game/tooltip.lua')
 local TooltipInfo   = import('/lua/ui/help/tooltips.lua')
+local UIGroup       = import("/lua/ui/controls/uigroup.lua").UIGroup
 local UIMain        = import('/lua/ui/uimain.lua')
 local UIUtil        = import('/lua/ui/uiutil.lua')
 
@@ -1687,22 +1688,17 @@ function CreateControls()
         controls.mouseoverDisplay = false
     end
     if not controls.bg then
-        controls.bg = Bitmap(controls.controlClusterGroup)
+        controls.bg = UIGroup(controls.controlClusterGroup, true, false, 'orders',
+            { All = function(self, parent)
+                    LayoutHelpers.AtLeftIn(self, parent, 17)
+                    LayoutHelpers.AtBottomIn(self, parent)
+                    LayoutHelpers.ResetRight(self)
+                    LayoutHelpers.ResetTop(self)
+                end })
+
     end
     if not controls.orderButtonGrid then
         CreateOrderButtonGrid()
-    end
-    if not controls.bracket then
-        controls.bracket = Bitmap(controls.bg)
-        controls.bracket:DisableHitTest()
-    end
-    if not controls.bracketMax then
-        controls.bracketMax = Bitmap(controls.bg)
-        controls.bracketMax:DisableHitTest()
-    end
-    if not controls.bracketMid then
-        controls.bracketMid = Bitmap(controls.bg)
-        controls.bracketMid:DisableHitTest()
     end
     local count = 0
     controls.bg:SetNeedsFrameUpdate(true)
@@ -1726,6 +1722,7 @@ function SetLayout(layout)
 
     CreateControls()
     import(UIUtil.GetLayoutFilename('orders')).SetLayout()
+    controls.bg:SetEditable(UIUtil.IsEditUI())
 
     -- created greyed out orders on setup
     CreateCommonOrders({}, true)

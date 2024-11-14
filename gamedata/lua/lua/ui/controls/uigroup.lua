@@ -485,6 +485,10 @@ UIGroup = Class(Group) {
 --        self._repositionGroup:Hide()
 --    end,
 
+    SetTexture = function(self, texture)
+        self._window_m:SetTexture(texture)
+    end,
+
     SetEditable = function(self, isEditable)
 --        self._sizeLock = not isEditable
         self._isEditable = isEditable
