@@ -648,6 +648,7 @@ function SetLayout(layout)
     unitViewLayout.SetLayout()
 
     controls.bg:SetEditable(UIUtil.IsEditUI())
+    controls.abilities:SetEditable(UIUtil.IsEditUI())
 end
 
 function SetupUnitViewLayout(mapGroup, orderControl)
@@ -714,7 +715,14 @@ function CreateUI()
     controls.actionIcon = Bitmap(controls.bg)
     controls.actionText = UIUtil.CreateText(controls.bg, '', 14, UIUtil.bodyFont)
     
-    controls.abilities = Group(controls.bg)
+    controls.abilities = UIGroup(controls.bg, true, false, 'abilities',
+            { All = function(self, parent)
+                LayoutHelpers.AnchorToRight(self, parent, 19)
+                LayoutHelpers.AtBottomIn(self, parent, 50)
+--                LayoutHelpers.SetDimensions(self, 200, 50)
+--                LayoutHelpers.ResetTop(self)
+--                LayoutHelpers.ResetRight(self)
+              end })
     controls.abilityText = {}
 
     controls.abilityBG = {}

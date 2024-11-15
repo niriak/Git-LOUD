@@ -28,7 +28,6 @@ UIGroup = Class(Group) {
 
     __init = function(self, parent, lockSize, lockPosition, prefID, defaultPosition, textureTable)
         Group.__init(self, parent, tostring(prefID))
-        parent = GetFrame(0)
 
         self._pref = prefID..'_uigroup'
         self._borderSize = 5
@@ -191,6 +190,7 @@ UIGroup = Class(Group) {
             if event.MouseY < self._resize_tl.Bottom() then
                 y_max = false
             end
+            local parent = GetFrame(0)
             drag.OnMove = function(dragself, x, y)
                 if xControl then
                     local newX
@@ -302,6 +302,7 @@ UIGroup = Class(Group) {
                     local offY = event.MouseY - self.Top()
                     local height = self.Height()
                     local width = self.Width()
+                    local parent = GetFrame(0)
                     drag.OnMove = function(dragself, x, y)
                         self.Left:Set(math.min(math.max(x-offX, parent.Left()), parent.Right() - self.Width()))
                         self.Top:Set(math.min(math.max(y-offY, parent.Top()), parent.Bottom() - self.Height()))
@@ -385,8 +386,18 @@ UIGroup = Class(Group) {
     ---@param alpha number
     ---@param affectChildren boolean
     SetAlpha = function(self, alpha, affectChildren)
+--        WARN("SetAlpha pref=" .. self._pref .. ", alpha=" .. tostring(alpha) .. ", affectChildren=" .. tostring(affectChildren) .. ", _SetAlpha=" .. tostring(self._SetAlpha))
         affectChildren = affectChildren or false
-        Group.SetAlpha(self, alpha, affectChildren)
+        Group.SetAlpha(self, alpha, false)
+
+        if affectChildren then
+            -- Workaround for Group.SetAlpha() NOT calling an overriden SetAlpha() function on children?!
+            -- Group.SetAlpha(self, alpha, affectChildren)
+            if self._SetAlpha then return end
+            self._SetAlpha = true
+            Group.ApplyFunction(self, function(control) control:SetAlpha(alpha, affectChildren) end)
+            self._SetAlpha = false
+        end
 
         -- guarantee that the resize bars remain transparent
         self._resizeGroup:SetAlpha(0, true)
@@ -448,7 +459,7 @@ UIGroup = Class(Group) {
         self._resizeGroup:Destroy()
     end,
 
-    EnableHitTest = function(self, affectChildren)
+--    EnableHitTest = function(self, affectChildren)
 --        affectChildren = affectChildren or false
 --        Group.EnableHitTest(self, affectChildren)
 --
@@ -458,9 +469,9 @@ UIGroup = Class(Group) {
 --        if not self._isEditable then
 --            self._repositionGroup:DisableHitTest()
 --        end
-    end,
+--    end,
 
-    DisableHitTest = function(self, affectChildren)
+--    DisableHitTest = function(self, affectChildren)
 --        affectChildren = affectChildren or false
 --        Group.DisableHitTest(self, affectChildren)
 --
@@ -470,14 +481,14 @@ UIGroup = Class(Group) {
 --        if self._isEditable then
 --            self._repositionGroup:EnableHitTest()
 --        end
-    end,
+--    end,
 
 --    Show = function(self)
 --        Group.Show(self)
 --        self._resizeGroup:Hide()
 --        self._repositionGroup:Hide()
 --    end,
-
+--
 --    SetHidden = function(self, isHidden)
 --        isHidden = isHidden or false
 --        Group.SetHidden(self, isHidden)

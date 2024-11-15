@@ -221,8 +221,8 @@ function SetLayout()
     controls.actionText:SetDropShadow(true)
 
     -- Abilities
-    LayoutHelpers.AnchorToRight(controls.abilities, controls.bg, 19)
-    LayoutHelpers.AtBottomIn(controls.abilities, controls.bg, 50)
+--    LayoutHelpers.AnchorToRight(controls.abilities, controls.bg, 19)
+--    LayoutHelpers.AtBottomIn(controls.abilities, controls.bg, 50)
     LayoutHelpers.SetDimensions(controls.abilities, 200, 50)
 
     -- Enhancements
