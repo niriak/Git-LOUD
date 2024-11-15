@@ -34,7 +34,20 @@ UIGroup = Class(Group) {
         self._cornerSize = 8
         self._sizeLock = false
         self._lockPosition = lockPosition or false
-        self._lockSize = lockSize or false
+        
+        if lockSize then
+            if lockSize.Type != "table" then
+                lockSize = {}
+            end
+            if not lockSize.growHorz then
+                lockSize.growHorz = "right"
+            end
+            if not lockSize.growVert then
+                lockSize.growHorz = "down"
+            end
+        end
+
+        self._lockSize = lockSize
         self._xMin = 0
         self._yMin = 0
         self._isEditable = false
@@ -360,6 +373,17 @@ UIGroup = Class(Group) {
             self.Height:Set(LayoutHelpers.ScaleNumber(height))
             LayoutHelpers.ResetRight(self)
             LayoutHelpers.ResetBottom(self)
+
+            if self._lockSize then
+                if self._lockSize.growHorz == "left" then
+                    self.Right:Set(self.Left() + self.Width())
+                    LayoutHelpers.ResetLeft(self)
+                end
+                if self._lockSize.growVert == "up" then
+                    self.Bottom:Set(self.Top() + self.Height())
+                    LayoutHelpers.ResetTop(self)
+                end
+            end
         elseif defaultPosition then
             -- call the provided function that sets all coords
             if defaultPosition.All then
@@ -413,16 +437,19 @@ UIGroup = Class(Group) {
     SaveWindowLocation = function(self)
         if self._pref then
 --            LOG("custom SaveWindowLocation " .. tostring(self.Left()) .. "x" .. tostring(self.Top()) .. " of window '" .. self._pref .. "'")
-            Prefs.SetToCurrentProfile(
-                self._pref, 
-                {
-                    -- invert the scale on these numbers, that allows us to apply the scale again when we read it from the preference file
-                    left = LayoutHelpers.InvScaleNumber(self.Left()),
-                    top = LayoutHelpers.InvScaleNumber(self.Top()),
-                    width = LayoutHelpers.InvScaleNumber(self.Width()),
-                    height = LayoutHelpers.InvScaleNumber(self.Height())
-                }
-            )
+            local settings = {
+                -- invert the scale on these numbers, that allows us to apply the scale again when we read it from the preference file
+                left = LayoutHelpers.InvScaleNumber(self.Left()),
+                top = LayoutHelpers.InvScaleNumber(self.Top()),
+                width = LayoutHelpers.InvScaleNumber(self.Width()),
+                height = LayoutHelpers.InvScaleNumber(self.Height())
+            }
+            if self._lockSize then
+                settings["growHorz"] = self._lockSize.growHorz
+                settings["growVert"] = self._lockSize.growVert
+            end
+
+            Prefs.SetToCurrentProfile(self._pref, settings)
         end
     end,
 

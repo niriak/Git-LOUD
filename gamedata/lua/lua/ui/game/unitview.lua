@@ -715,7 +715,7 @@ function CreateUI()
     controls.actionIcon = Bitmap(controls.bg)
     controls.actionText = UIUtil.CreateText(controls.bg, '', 14, UIUtil.bodyFont)
     
-    controls.abilities = UIGroup(controls.bg, true, false, 'abilities',
+    controls.abilities = UIGroup(controls.bg, { growVert = "up" }, false, 'abilities',
             { All = function(self, parent)
                 LayoutHelpers.AnchorToRight(self, parent, 19)
                 LayoutHelpers.AtBottomIn(self, parent, 50)
