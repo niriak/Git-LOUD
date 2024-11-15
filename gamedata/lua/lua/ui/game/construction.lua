@@ -158,10 +158,10 @@ function CreateUI()
 
     controls.constructionGroup = UIGroup(controlClusterGroup, false, false, 'construction',
         { All = function(self, parent)
+            LayoutHelpers.AtTopIn(self, parent, 12)
+            self.Bottom:Set(parent.Bottom)
             LayoutHelpers.AnchorToRight(self, ordersControl, -6)
             LayoutHelpers.AtRightIn(self, parent, 18)
-            self.Bottom:Set(parent.Bottom)
-            LayoutHelpers.SetHeight(self, 200)
           end })
     
     controls.minBG = Bitmap(controls.constructionGroup)

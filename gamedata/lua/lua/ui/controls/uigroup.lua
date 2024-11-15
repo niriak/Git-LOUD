@@ -43,7 +43,7 @@ UIGroup = Class(Group) {
                 lockSize.growHorz = "right"
             end
             if not lockSize.growVert then
-                lockSize.growHorz = "down"
+                lockSize.growHorz = "bottom"
             end
         end
 
@@ -365,6 +365,8 @@ UIGroup = Class(Group) {
             local left = location.left 
             local width = location.width 
             local height = location.height 
+            local growHorz = location.growHorz
+            local growVert = location.growVert
 
             -- we can scale these accordingly as we applied the inverse on saving
             self.Left:Set(LayoutHelpers.ScaleNumber(left))
@@ -374,15 +376,16 @@ UIGroup = Class(Group) {
             LayoutHelpers.ResetRight(self)
             LayoutHelpers.ResetBottom(self)
 
-            if self._lockSize then
-                if self._lockSize.growHorz == "left" then
+            if growHorz or growVert then
+                if growHorz == "left" then
                     self.Right:Set(self.Left() + self.Width())
                     LayoutHelpers.ResetLeft(self)
                 end
-                if self._lockSize.growVert == "up" then
+                if growVert == "top" then
                     self.Bottom:Set(self.Top() + self.Height())
                     LayoutHelpers.ResetTop(self)
                 end
+                self._lockSize = { growHorz = growHorz, growVert = growVert }
             end
         elseif defaultPosition then
             -- call the provided function that sets all coords
@@ -525,6 +528,8 @@ UIGroup = Class(Group) {
 
     SetTexture = function(self, texture)
         self._window_m:SetTexture(texture)
+        self.Width:SetFunction(function() return ScaleNumber(self._window_m.BitmapWidth()) end)
+        self.Height:SetFunction(function() return ScaleNumber(self._window_m.BitmapHeight()) end)
     end,
 
     SetEditable = function(self, isEditable)

@@ -501,6 +501,7 @@ function UpdateWindow(info)
             controls.actionText:Show()
 
         else
+
             controls.actionIcon:Hide()
             controls.actionText:Hide()
 
@@ -662,10 +663,11 @@ end
 function CreateUI()
     controls.bg = UIGroup(controls.parent, false, false, 'unitview',
         {
-            Left   =  10,
-            Top    = 740,
-            Right  = 380,
-            Bottom = 880
+            All = function(self, parent)
+                LayoutHelpers.AtBottomIn(self, parent, 120)
+                LayoutHelpers.AtLeftIn(self, parent, 17)
+                LayoutHelpers.SetDimensions(self, 370, 140)
+            end
         },
         {
             tl = UIUtil.SkinnableFile('/game/unit-view-panel/unit-view-panel_brd_topLeft.dds'),
@@ -715,13 +717,10 @@ function CreateUI()
     controls.actionIcon = Bitmap(controls.bg)
     controls.actionText = UIUtil.CreateText(controls.bg, '', 14, UIUtil.bodyFont)
     
-    controls.abilities = UIGroup(controls.bg, { growVert = "up" }, false, 'abilities',
+    controls.abilities = UIGroup(controls.bg, { growVert = "top" }, false, 'abilities',
             { All = function(self, parent)
                 LayoutHelpers.AnchorToRight(self, parent, 19)
                 LayoutHelpers.AtBottomIn(self, parent, 50)
---                LayoutHelpers.SetDimensions(self, 200, 50)
---                LayoutHelpers.ResetTop(self)
---                LayoutHelpers.ResetRight(self)
               end })
     controls.abilityText = {}
 
