@@ -13,6 +13,11 @@ local Checkbox = import("/lua/maui/checkbox.lua").Checkbox
 local LayoutHelpers = import("/lua/maui/layouthelpers.lua")
 local Prefs = import("/lua/user/prefs.lua")
 
+local GROW_TO_TOP = "top"
+local GROW_TO_LEFT = "left"
+local GROW_TO_RIGHT = "right"
+local GROW_TO_BOTTOM = "bottom"
+
 -- default style set
 styles = {
     backgrounds = {
@@ -34,16 +39,16 @@ UIGroup = Class(Group) {
         self._cornerSize = 8
         self._sizeLock = false
         self._lockPosition = lockPosition or false
-        
+
         if lockSize then
             if lockSize.Type != "table" then
                 lockSize = {}
             end
-            if not lockSize.growHorz then
-                lockSize.growHorz = "right"
+            if lockSize.growHorz != GROW_TO_LEFT then
+                lockSize.growHorz = GROW_TO_RIGHT
             end
-            if not lockSize.growVert then
-                lockSize.growHorz = "bottom"
+            if lockSize.growVert != GROW_TO_TOP then
+                lockSize.growVert = GROW_TO_BOTTOM
             end
         end
 
@@ -234,8 +239,27 @@ UIGroup = Class(Group) {
                 self._sizeLock = false
                 self._resizeGroup:SetAlpha(0, true)
                 GetCursor():Reset()
-                LayoutHelpers.ResetWidth(self)
-                LayoutHelpers.ResetHeight(self)
+
+                if self._lockSize then
+                    self.Width:Set(self.Right() - self.Left())
+                    self.Height:Set(self.Bottom() - self.Top())
+
+                    if self._lockSize.growHorz == GROW_TO_LEFT then
+                        LayoutHelpers.ResetLeft(self)
+                    else
+                        LayoutHelpers.ResetRight(self)
+                    end
+
+                    if self._lockSize.growVert == GROW_TO_TOP then
+                        LayoutHelpers.ResetTop(self)
+                    else
+                        LayoutHelpers.ResetBottom(self)
+                    end
+                else
+                    LayoutHelpers.ResetWidth(self)
+                    LayoutHelpers.ResetHeight(self)
+                end
+
                 drag:Destroy()
                 self:SaveWindowLocation()
                 self:OnResizeSet()
@@ -377,11 +401,11 @@ UIGroup = Class(Group) {
             LayoutHelpers.ResetBottom(self)
 
             if growHorz or growVert then
-                if growHorz == "left" then
+                if growHorz == GROW_TO_LEFT then
                     self.Right:Set(self.Left() + self.Width())
                     LayoutHelpers.ResetLeft(self)
                 end
-                if growVert == "top" then
+                if growVert == GROW_TO_TOP then
                     self.Bottom:Set(self.Top() + self.Height())
                     LayoutHelpers.ResetTop(self)
                 end
