@@ -10,51 +10,14 @@ function SetLayout()
     LOG('>>>> HUSSAR: score_mini SetLayout... ')
     local controls = import('/lua/ui/game/score.lua').controls
     local mapGroup = import('/lua/ui/game/score.lua').savedParent
-         
-    controls.collapseArrow:SetTexture(UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_up.dds'))
-    controls.collapseArrow:SetNewTextures(UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_dis.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_dis.dds'))
-    LayoutHelpers.AtRightTopIn(controls.collapseArrow, mapGroup, -3, 21)
-    controls.collapseArrow.Depth:Set(function() return controls.bg.Depth() + 10 end)
     
-    LayoutHelpers.AtRightTopIn(controls.bg, mapGroup, 18, 7)
+    controls.bg:SetEditable(UIUtil.IsEditUI())
     controls.bg.Width:Set(controls.bgTop.Width)
     
     LayoutHelpers.AtRightTopIn(controls.bgTop, controls.bg, 3)
 	
     LayoutHelpers.AtLeftTopIn(controls.armyGroup, controls.bgTop, 10, 25)
     controls.armyGroup.Width:Set(controls.armyLines[1].Width)
-    
-    --LOG('>>>> HUSSAR: score_mini texture Bracket... ')
-    controls.leftBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_t.dds'))
-	LayoutHelpers.AtLeftTopIn(controls.leftBracketMin, controls.bg, -10, -1)
-    
-    controls.leftBracketMax:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_b.dds'))
-	LayoutHelpers.AtBottomIn(controls.leftBracketMax, controls.bg, -1)
-    controls.leftBracketMax.Left:Set(controls.leftBracketMin.Left)
-    
-    controls.leftBracketMid:SetTexture(UIUtil.UIFile('/game/bracket-left-energy/bracket_bmp_m.dds'))
-    controls.leftBracketMid.Top:Set(controls.leftBracketMin.Bottom)
-    controls.leftBracketMid.Bottom:Set(controls.leftBracketMax.Top)
-    controls.leftBracketMid.Left:Set(controls.leftBracketMin.Left)
-    
-    controls.rightBracketMin:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_t.dds'))
-	LayoutHelpers.AtRightTopIn(controls.rightBracketMin, controls.bg, -18, -5)
-    
-    controls.rightBracketMax:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_b.dds'))
-    controls.rightBracketMax.Bottom:Set(function() 
-            return math.max(controls.bg.Bottom() + 4, controls.rightBracketMin.Bottom() + controls.rightBracketMax.Height())
-        end)
-    controls.rightBracketMax.Right:Set(controls.rightBracketMin.Right)
-    
-    controls.rightBracketMid:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_m.dds'))
-    controls.rightBracketMid.Top:Set(controls.rightBracketMin.Bottom)
-    controls.rightBracketMid.Bottom:Set(controls.rightBracketMax.Top)
-	LayoutHelpers.AtRightIn(controls.rightBracketMid, controls.rightBracketMin, 7)
     
     --LOG('>>>> HUSSAR: score_mini texture panel... ')
     --controls.bgTop:SetTexture(UIUtil.UIFile('/game/score-panel/panel-score_bmp_t.dds'))

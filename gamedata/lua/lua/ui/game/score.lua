@@ -16,7 +16,7 @@ local Grid = import('/lua/maui/grid.lua').Grid
 local Prefs = import('/lua/user/prefs.lua')
 local IntegerSlider = import('/lua/maui/slider.lua').IntegerSlider
 local Tooltip = import('/lua/ui/game/tooltip.lua')
-local UIGroup               = import('/lua/ui/controls/uigroup.lua').UIGroup
+local UIGroup = import('/lua/ui/controls/uigroup.lua').UIGroup
 
 controls = {}
 savedParent = false

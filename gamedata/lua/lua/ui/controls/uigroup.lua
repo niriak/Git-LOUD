@@ -44,11 +44,17 @@ UIGroup = Class(Group) {
             if lockSize.Type != "table" then
                 lockSize = {}
             end
-            if lockSize.growHorz != GROW_TO_LEFT then
+            if lockSize.growHorz == GROW_TO_LEFT then
+                LayoutHelpers.ResetLeft(self)
+            else
                 lockSize.growHorz = GROW_TO_RIGHT
+                LayoutHelpers.ResetRight(self)
             end
-            if lockSize.growVert != GROW_TO_TOP then
+            if lockSize.growVert == GROW_TO_TOP then
+                LayoutHelpers.ResetTop(self)
+            else
                 lockSize.growVert = GROW_TO_BOTTOM
+                LayoutHelpers.ResetBottom(self)
             end
         end
 
