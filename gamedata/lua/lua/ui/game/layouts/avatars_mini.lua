@@ -21,6 +21,9 @@ function SetLayout()
 
     LayoutAvatars()
 
+    controls.bgTop:Hide()
+    controls.bgStretch:Hide()
+    controls.bgBottom:Hide()
     controls.avatarGroup:SetEditable(UIUtil.IsEditUI())
 end
 

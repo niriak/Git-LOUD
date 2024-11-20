@@ -339,8 +339,6 @@ function CreateScoreUI(parent)
         {
             All = function(self, parent)
                 LayoutHelpers.AtRightTopIn(self, parent, 10, 10)
-                local avatarGroup = import('/lua/ui/game/avatars.lua').controls.avatarGroup
-                LayoutHelpers.AnchorToBottom(avatarGroup, controls.bgBottom, 4)
             end
         }
     )

@@ -34,7 +34,7 @@ UIGroup = Class(Group) {
     __init = function(self, parent, lockSize, lockPosition, prefID, defaultPosition, textureTable)
         Group.__init(self, parent, tostring(prefID))
 
-        self._pref = prefID..'_uigroup'
+        self._pref = prefID
         self._borderSize = 5
         self._cornerSize = 8
         self._sizeLock = false
@@ -389,8 +389,9 @@ UIGroup = Class(Group) {
         end
 
         -- attempt to retrieve location of window in preference file
-        local location = Prefs.GetFromCurrentProfile(self._pref)
-        if location then
+        local groupid = Prefs.GetFromCurrentProfile("uigroup")
+        local location = groupid[self._pref]
+        if groupid and location then
             local top = location.top 
             local left = location.left 
             local width = location.width 
@@ -470,6 +471,7 @@ UIGroup = Class(Group) {
     SaveWindowLocation = function(self)
         if self._pref then
 --            LOG("custom SaveWindowLocation " .. tostring(self.Left()) .. "x" .. tostring(self.Top()) .. " of window '" .. self._pref .. "'")
+            local groupid = Prefs.GetFromCurrentProfile("uigroup") or {}
             local settings = {
                 -- invert the scale on these numbers, that allows us to apply the scale again when we read it from the preference file
                 left = LayoutHelpers.InvScaleNumber(self.Left()),
@@ -481,8 +483,8 @@ UIGroup = Class(Group) {
                 settings["growHorz"] = self._lockSize.growHorz
                 settings["growVert"] = self._lockSize.growVert
             end
-
-            Prefs.SetToCurrentProfile(self._pref, settings)
+            groupid[self._pref] = settings
+            Prefs.SetToCurrentProfile("uigroup", groupid)
         end
     end,
 
@@ -518,43 +520,6 @@ UIGroup = Class(Group) {
     OnDestroy = function(self)
         self._resizeGroup:Destroy()
     end,
-
---    EnableHitTest = function(self, affectChildren)
---        affectChildren = affectChildren or false
---        Group.EnableHitTest(self, affectChildren)
---
---        self._resizeGroup:DisableHitTest()
---        self._windowGroup:DisableHitTest()
---
---        if not self._isEditable then
---            self._repositionGroup:DisableHitTest()
---        end
---    end,
-
---    DisableHitTest = function(self, affectChildren)
---        affectChildren = affectChildren or false
---        Group.DisableHitTest(self, affectChildren)
---
---        self._resizeGroup:DisableHitTest()
---        self._windowGroup:DisableHitTest()
---
---        if self._isEditable then
---            self._repositionGroup:EnableHitTest()
---        end
---    end,
-
---    Show = function(self)
---        Group.Show(self)
---        self._resizeGroup:Hide()
---        self._repositionGroup:Hide()
---    end,
---
---    SetHidden = function(self, isHidden)
---        isHidden = isHidden or false
---        Group.SetHidden(self, isHidden)
---        self._resizeGroup:Hide()
---        self._repositionGroup:Hide()
---    end,
 
     SetTexture = function(self, texture)
         self._window_m:SetTexture(texture)
