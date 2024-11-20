@@ -336,12 +336,13 @@ function CreateScoreUI(parent)
     savedParent = GetFrame(0)
     
     controls.bg = UIGroup(savedParent, { growHorz = "left", growVert = "bottom"}, false, 'SupremeScoreBoard_score',
-            {
-                All = function(self, parent)
-                    LayoutHelpers.AtRightTopIn(self, parent, 10, 10)
-                end
-            }
-        )
+        {
+            All = function(self, parent)
+                LayoutHelpers.AtRightTopIn(self, parent, 10, 10)
+                LayoutHelpers.AnchorToBottom(avatarGroup, controls.bgBottom, 4)
+            end
+        }
+    )
     controls.bg.Depth:Set(10)
     
     controls.bgTop = Bitmap(controls.bg)

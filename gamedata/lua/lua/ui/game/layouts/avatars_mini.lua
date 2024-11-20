@@ -4,15 +4,11 @@ local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
 function SetLayout()
     local controls = import('/lua/ui/game/avatars.lua').controls
 
-    LayoutHelpers.AtRightTopIn(controls.avatarGroup, controls.parent, 0, 200)
     LayoutHelpers.SetDimensions(controls.avatarGroup, 200, 0)
 
     controls.bgTop:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_t.dds'))
     controls.bgStretch:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_m.dds'))
     controls.bgBottom:SetTexture(UIUtil.UIFile('/game/bracket-right/bracket_bmp_b.dds'))
-
-    LayoutHelpers.AtTopIn(controls.collapseArrow, controls.avatarGroup, 22)
-    LayoutHelpers.AtRightIn(controls.collapseArrow, controls.parent, -3)
 
     LayoutHelpers.AtRightIn(controls.bgTop, controls.avatarGroup)
     LayoutHelpers.AtRightIn(controls.bgBottom, controls.avatarGroup)
@@ -23,16 +19,9 @@ function SetLayout()
     LayoutHelpers.AnchorToTop(controls.bgStretch, controls.bgBottom)
     LayoutHelpers.AtRightIn(controls.bgStretch, controls.bgTop, 7)
 
-    LayoutHelpers.DepthOverParent(controls.collapseArrow, controls.bgTop)
-    controls.collapseArrow:SetTexture(UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_up.dds'))
-    controls.collapseArrow:SetNewTextures(UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_up.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_over.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-close_btn_dis.dds'),
-        UIUtil.UIFile('/game/tab-r-btn/tab-open_btn_dis.dds'))
-
     LayoutAvatars()
+
+    controls.avatarGroup:SetEditable(UIUtil.IsEditUI())
 end
 
 function LayoutAvatars()

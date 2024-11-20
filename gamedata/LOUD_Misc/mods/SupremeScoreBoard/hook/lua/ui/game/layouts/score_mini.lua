@@ -65,10 +65,6 @@ function SetLayout()
     LayoutHelpers.AnchorToLeft(controls.units, controls.unitIcon)
 	LayoutHelpers.AtVerticalCenterIn(controls.units, controls.unitIcon)
     
-    -- offset Avatars UI by height of the score board
-    local avatarGroup = import('/lua/ui/game/avatars.lua').controls.avatarGroup
-	LayoutHelpers.AnchorToBottom(avatarGroup, controls.bgBottom, 4)
-    
     --LOG('>>>> HUSSAR: score_mini layout lines... ')
     LayoutArmyLines()
 end

@@ -17,6 +17,7 @@ local Prefs             = import('/lua/user/prefs.lua')
 local StatusBar         = import('/lua/maui/statusbar.lua').StatusBar
 local ToolTip           = import('/lua/ui/game/tooltip.lua')
 local TooltipInfo       = import('/lua/ui/help/tooltips.lua').Tooltips
+local UIGroup           = import('/lua/ui/controls/uigroup.lua').UIGroup
 local UIUtil            = import('/lua/ui/uiutil.lua')
 
 local LOUDGETN = table.getn
@@ -55,17 +56,18 @@ function CreateAvatarUI(parent)
 
     controls.parent = parent
     
-    controls.avatarGroup = Group(controls.parent)
+    controls.avatarGroup = UIGroup(controls.parent, true, false, 'avatars',
+        {
+            All = function(self, parent)
+                LayoutHelpers.AtRightTopIn(self, parent, 0, 200)
+            end
+        }
+    )
     controls.avatarGroup.Depth:Set(100)
     
     controls.bgTop = Bitmap(controls.avatarGroup)
     controls.bgBottom = Bitmap(controls.avatarGroup)
     controls.bgStretch = Bitmap(controls.avatarGroup)
-    controls.collapseArrow = Checkbox(controls.parent)
-    controls.collapseArrow.OnCheck = function(self, checked)
-        ToggleAvatars(checked)
-    end
-    ToolTip.AddCheckboxTooltip(controls.collapseArrow, 'avatars_collapse')
     
     controls.avatarGroup:DisableHitTest()
     controls.bgTop:DisableHitTest()
@@ -87,42 +89,10 @@ function ToggleAvatars(checked)
         return
     end
     
-    if UIUtil.GetAnimationPrefs() then
-        if controls.avatarGroup:IsHidden() then
-            PlaySound(Sound({Cue = "UI_Score_Window_Open", Bank = "Interface"}))
-            controls.collapseArrow:SetCheck(false, true)
-            controls.avatarGroup:Show()
-            controls.avatarGroup:SetNeedsFrameUpdate(true)
-            controls.avatarGroup.OnFrame = function(self, delta)
-                local newRight = self.Right() - (1000*delta)
-                if newRight < controls.parent.Right() - 0 then
-                    newRight = function() return controls.parent.Right() - 0 end
-                    self:SetNeedsFrameUpdate(false)
-                end
-                self.Right:Set(newRight)
-            end
-        else
-            PlaySound(Sound({Cue = "UI_Score_Window_Close", Bank = "Interface"}))
-            controls.avatarGroup:SetNeedsFrameUpdate(true)
-            controls.avatarGroup.OnFrame = function(self, delta)
-                local newRight = self.Right() + (1000*delta)
-                if newRight > controls.parent.Right() + self.Width() then
-                    newRight = function() return controls.parent.Right() + self.Width() end
-                    self:Hide()
-                    self:SetNeedsFrameUpdate(false)
-                end
-                self.Right:Set(newRight)
-            end
-            controls.collapseArrow:SetCheck(true, true)
-        end
+    if controls.avatarGroup:IsHidden() then
+        controls.avatarGroup:Show()
     else
-        if checked or not controls.avatarGroup:IsHidden() then
-            controls.avatarGroup:Hide()
-            controls.collapseArrow:SetCheck(true, true)
-        else
-            controls.avatarGroup:Show()
-            controls.collapseArrow:SetCheck(false, true)
-        end
+        controls.avatarGroup:Hide()
     end
 end
 
@@ -628,6 +598,10 @@ function CreateIdleEngineerList(parent, units)
     local bgBottom = Bitmap(group, UIUtil.SkinnableFile('/game/avatar-engineers-panel/panel-eng_bmp_b.dds'))
     local bgStretch = Bitmap(group, UIUtil.SkinnableFile('/game/avatar-engineers-panel/panel-eng_bmp_m.dds'))
     
+    controls.bgTop:Hide()
+    controls.bgStretch:Hide()
+    controls.bgBottom:Hide()
+    
     group.Width:Set(bgTop.Width)
     LayoutHelpers.SetHeight(group, 1)
     
@@ -1088,8 +1062,8 @@ function AvatarUpdate()
 
 			if show then
 				buttons:Show()
-				buttons.Right:Set(function() return controls.collapseArrow.Right() - 2 end)
-				buttons.Top:Set(function() return controls.collapseArrow.Bottom() end)
+				buttons.Left:Set(function() return controls.avatarGroup.Right() + 2 end)
+				buttons.Top:Set(function() return controls.avatarGroup.Bottom() end)
 				showing = true
 			end
 
@@ -1133,44 +1107,14 @@ end
 local preContractState = false
 
 function Contract()
-
     preContractState = controls.avatarGroup:IsHidden()
-	
     controls.avatarGroup:Hide()
-    controls.collapseArrow:Hide()
-	
 end
 
 function Expand()
-
     controls.avatarGroup:SetHidden(preContractState)
-    controls.collapseArrow:Show()
 end
 
 function InitialAnimation()
-
-    controls.avatarGroup:Show()
-	
-    controls.avatarGroup.Left:Set(controls.parent.Left()-controls.avatarGroup.Width())
-    controls.avatarGroup:SetNeedsFrameUpdate(true)
-	
-    controls.avatarGroup.OnFrame = function(self, delta)
-	
-        local newLeft = self.Left() + (1000*delta)
-		
-        if newLeft > controls.parent.Left()-3 then
-		
-            newLeft = function() return controls.parent.Left()-3 end
-			
-            self:SetNeedsFrameUpdate(false)
-			
-        end
-		
-        self.Left:Set(newLeft)
-		
-    end
-	
-    controls.collapseArrow:Show()
-    controls.collapseArrow:SetCheck(false, true)
-	
+    controls.avatarGroup:InitAnimation()
 end
