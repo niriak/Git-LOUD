@@ -250,6 +250,9 @@ function SetLayout()
 
     SetBG(controls)
     UpdateStatusBars(controls)
+
+    controls.bg:SetEditable(UIUtil.IsEditUI())
+    controls.abilities:SetEditable(UIUtil.IsEditUI())
 end
 
 --function SetBG(controls)

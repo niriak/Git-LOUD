@@ -62,6 +62,8 @@ function SetLayout()
 --    LayoutHelpers.AtTopIn(controls.parent, GetFrame(0))
     controls.bgTop.defWidth = LayoutHelpers.ScaleNumber(180)
     controls.bgTop.Width:Set(controls.bgTop.defWidth)
+
+    controls.parent:SetEditable(UIUtil.IsEditUI())
 end
 
 function LayoutStretchBG()

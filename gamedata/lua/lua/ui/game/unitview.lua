@@ -647,9 +647,6 @@ function SetLayout(layout)
 
     unitViewLayout = import(UIUtil.GetLayoutFilename('unitview'))
     unitViewLayout.SetLayout()
-
-    controls.bg:SetEditable(UIUtil.IsEditUI())
-    controls.abilities:SetEditable(UIUtil.IsEditUI())
 end
 
 function SetupUnitViewLayout(mapGroup, orderControl)

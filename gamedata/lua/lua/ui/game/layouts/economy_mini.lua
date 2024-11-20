@@ -38,6 +38,8 @@ function SetLayout()
     LayoutHelpers.AtRightIn(GUI.mass, GUI.bg, 20)
     LayoutHelpers.Below(GUI.energy, GUI.mass, 4)
     GUI.energy.Right:Set(GUI.mass.Right)
+
+    GUI.bg:SetEditable(UIUtil.IsEditUI())
 end
 
 function LayoutResourceGroup(group, groupType)

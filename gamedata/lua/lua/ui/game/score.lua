@@ -88,7 +88,6 @@ function SetLayout()
     if controls.bg then
 	
         import(UIUtil.GetLayoutFilename('score')).SetLayout()
-        controls.bg:SetEditable(UIUtil.IsEditUI())
 		
     end
 	

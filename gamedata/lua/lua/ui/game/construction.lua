@@ -3386,7 +3386,6 @@ function SetLayout(layout)
     end
 
     import(UIUtil.GetLayoutFilename('construction')).SetLayout()
-    controls.constructionGroup:SetEditable(UIUtil.IsEditUI())
     CommonLogic()
 end
 

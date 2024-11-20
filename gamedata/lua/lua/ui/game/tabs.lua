@@ -419,7 +419,6 @@ end
 
 function SetLayout()
     import(UIUtil.GetLayoutFilename('tabs')).SetLayout()
-    controls.parent:SetEditable(UIUtil.IsEditUI())
 
     if activeTab then
         CreateStretchBG()

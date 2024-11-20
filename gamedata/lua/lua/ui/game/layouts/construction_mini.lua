@@ -301,6 +301,8 @@ function SetLayout()
     controls.constructionGroup:DisableHitTest()
     LayoutTabs(import('/lua/ui/game/construction.lua').controls)
     controls.constructionGroup:Hide()
+
+    controls.constructionGroup:SetEditable(UIUtil.IsEditUI())
 end
 
 function LayoutTabs(controls)

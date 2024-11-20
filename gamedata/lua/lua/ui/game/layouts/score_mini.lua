@@ -5,6 +5,7 @@ function SetLayout()
     local controls = import('/lua/ui/game/score.lua').controls
     local mapGroup = import('/lua/ui/game/score.lua').savedParent
 
+    controls.bg:SetEditable(UIUtil.IsEditUI())
     controls.bg.Width:Set(controls.bgTop.Width)
 
     LayoutHelpers.AtRightTopIn(controls.bgTop, controls.bg, 3)
