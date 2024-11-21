@@ -1,5 +1,7 @@
 do
    
+   local NewStuff = import('/Mods/V2ExtractorUpgrades/modules/newstuff.lua')
+   
    -- when this script loads, get the original CreateUI function
    local originalCreateUI = CreateUI
    
@@ -11,7 +13,16 @@ do
       local parent = import('/lua/ui/game/economy.lua').GUI.bg
       
       -- create the button, note that imports are not hooked, so we need to specify the location of our file in the mod 
-      import('/Mods/V2ExtractorUpgrades/modules/newstuff.lua').CreateButton(parent)
+      NewStuff.CreateButton(parent)
+   end
+   
+   local originalSetLayout = SetLayout
+   
+   function SetLayout(layout)
+      -- call the original function first
+      originalSetLayout(layout)
+
+      NewStuff.SetLayout(layout)
    end
    
    local oldOnSelectionChanged = OnSelectionChanged

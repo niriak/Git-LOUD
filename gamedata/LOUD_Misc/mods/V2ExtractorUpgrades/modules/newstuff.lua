@@ -3,15 +3,30 @@
 local Button = import('/lua/maui/button.lua').Button
 local LayoutHelpers = import('/lua/maui/layouthelpers.lua')
 local Tooltip = import('/lua/ui/game/tooltip.lua')
+local UIGroup = import('/lua/ui/controls/uigroup.lua').UIGroup
 local UIUtil = import('/lua/ui/uiutil.lua')
+
+local group = false
 
 function CreateButton(parent)
    -- create the button
-   local myButton = Button(parent, UIUtil.UIFile('/game/resources/mass_btn_up.dds'), UIUtil.UIFile('/game/resources/mass_btn_down.dds'), UIUtil.UIFile('/game/resources/mass_btn_over.dds'), UIUtil.UIFile('/game/resources/mass_btn_dis.dds'))
-   LayoutHelpers.AtLeftTopIn(myButton, parent, 340)
+   group = UIGroup(GetFrame(0), false, false, 'V2ExtractorUpgrades_newstuff',
+      {
+         All = function(self)
+            LayoutHelpers.AtVerticalCenterIn(self, parent)
+            LayoutHelpers.AnchorToRight(self, parent, 100)
+         end
+      }
+   )
+
+   local myButton = Button(group, UIUtil.UIFile('/game/resources/mass_btn_up.dds'), UIUtil.UIFile('/game/resources/mass_btn_down.dds'), UIUtil.UIFile('/game/resources/mass_btn_over.dds'), UIUtil.UIFile('/game/resources/mass_btn_dis.dds'))
    myButton.Depth:Set(4)
    Tooltip.AddButtonTooltip(myButton, 'seq_mex_upgrade')
-   
+
+   LayoutHelpers.AtLeftTopIn(myButton, group)
+   group.Width:Set(myButton.Width())
+   group.Height:Set(myButton.Height())
+
    -- onclick handler
    myButton.OnClick = function()
       local myUnits = import('/lua/ui/game/gamemain.lua').GetSeqUpgradeList()
@@ -19,6 +34,12 @@ function CreateButton(parent)
          -- need to fork to the function because it uses WaitSeconds()
          ForkThread(UpgradeBuildings, myUnits)
       end
+   end
+end
+
+function SetLayout()
+   if group then
+      group:SetEditable(UIUtil.IsEditUI())
    end
 end
 
