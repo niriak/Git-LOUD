@@ -502,9 +502,39 @@ Platoon = Class(PlatoonMethods) {
 						IssueFormMove( GetPlatoonUnits(self), waypointPath, 'BlockFormation', Direction)
                         
 					end
+                    
+                    local loopcount = 0
 
 					while self.MovingToWaypoint do
+
                         WaitTicks(2)
+
+--[[                        
+                        loopcount = loopcount + 1
+                    
+                        if table.getn( GetPlatoonUnits(self) ) > 1 and loopcount > 14 then
+
+                            LOG("*AI DEBUG Platoon is "..repr(self))
+                            
+                            for _,u in GetPlatoonUnits(self) do
+                    
+                                if not u:BeenDestroyed() then
+                    
+                                    local navigator = u:GetNavigator()
+                    
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Navigator is "..repr(navigator) )
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Current Goal is "..repr(navigator:GetGoalPos()) )
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Target Pos is "..repr(navigator:GetCurrentTargetPos()) )
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Status is "..repr(navigator:GetStatus()) )
+                            
+                                end
+ 
+                            end
+                            
+                            loopcount = 0
+
+                        end
+--]]
                     end
                     
 				end
@@ -961,15 +991,15 @@ Platoon = Class(PlatoonMethods) {
   
             -- alter the function according to layer
             local terrainfunction = GetTerrainHeight
-            local deviation = 2.5
+            local deviation = 3.6
             
             if platoonLayer == 'Water' then
                 terrainfunction = GetSurfaceHeight
                 deviation = 0.5
             end
             
-			-- This gives us the number of approx. 6 ogrid steps in the distance
-			steps = LOUDFLOOR( VDist2(pos[1], pos[3], targetPos[1], targetPos[3]) / 6 ) + 1
+			-- This gives us the number of approx. 8 ogrid steps in the distance
+			steps = LOUDFLOOR( VDist2(pos[1], pos[3], targetPos[1], targetPos[3]) / 8 ) + 1
 	
 			xstep = (pos[1] - targetPos[1]) / steps -- how much the X value will change from step to step
 			ystep = (pos[3] - targetPos[3]) / steps -- how much the Y value will change from step to step
@@ -978,8 +1008,9 @@ Platoon = Class(PlatoonMethods) {
             local lastposHeight = terrainfunction( lastpos[1], lastpos[3] )
             
             local nextpos = { 0, 0, 0 }
-            
             local nextposHeight
+            
+            local badstepcount = 0
 
 			-- Iterate thru the number of steps - starting at the pos and adding xstep and ystep to each point
 			for i = 1, steps do
@@ -990,14 +1021,19 @@ Platoon = Class(PlatoonMethods) {
                 nextpos[3] = pos[3] - (ystep * i)
                 nextposHeight = terrainfunction( nextpos[1], nextpos[3] )
 
-                -- if more than deviation ogrids change in height over 6 ogrids distance
+                -- if more than deviation ogrids change in height over 8 ogrids distance
 				if LOUDABS(lastposHeight - nextposHeight) > deviation or (InWater and platoonLayer != 'Amphibious') then
+                    
+                    badstepcount = badstepcount + 1
+                    
+                    if badstepcount > 1 then
 
-                    if PathFindingDialog then
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." "..repr(platoon.BuilderInstance).." "..platoonLayer.." obstructed between "..repr(pos).." and "..repr(targetPos) )
-                    end                
+                        if PathFindingDialog then
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." "..repr(platoon.BuilderInstance).." "..platoonLayer.." obstructed "..LOUDABS(lastposHeight - nextposHeight).." between "..repr(pos).." and "..repr(targetPos) )
+                        end
 
-					return true
+                        return true
+                    end
 				end
 
 				lastpos[1] = nextpos[1]
@@ -1522,7 +1558,7 @@ Platoon = Class(PlatoonMethods) {
 		end
 		
 		if RTBDialog then
-			LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..self.BuilderName.." "..repr(self.BuilderInstance).." RTB to "..repr(RTBLocation).." at tick "..GetGameTick() )
+			LOG("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." RTBAI to "..repr(RTBLocation).." at tick "..GetGameTick() )
 		end
 
 		local lastpos = { 0, 0, 0 }
@@ -1633,7 +1669,7 @@ Platoon = Class(PlatoonMethods) {
 		distance = VDist3( platPos, RTBLocation )
 		
 		if RTBDialog then
-			LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..self.BuilderName.." "..repr(self.BuilderInstance).." RTB distance is "..string.format("%.1f",distance) )
+			LOG("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." RTB distance is "..string.format("%.1f",distance) )
 		end
 
         UseFormation = 'GrowthFormation'
@@ -1676,7 +1712,7 @@ Platoon = Class(PlatoonMethods) {
                 reason = 'Direct'
 
                 if RTBDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." gets direct path "..repr(path) )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." RTBAI gets direct path "..repr(path) )
                 end
 
             else 
@@ -1719,7 +1755,7 @@ Platoon = Class(PlatoonMethods) {
 			if path then
 
                 if RTBDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." executes path movement "..repr(path) )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." RTBAI executes path movement "..repr(path) )
                 end
 
 				if PlatoonExists(aiBrain, self) then
@@ -1735,7 +1771,7 @@ Platoon = Class(PlatoonMethods) {
 				usedTransports = false
 
                 if RTBDialog then				
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." gets NO path "..repr(path))
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." RTBAI gets NO path "..repr(path))
                 end
 
 				-- try to use transports --
@@ -1785,7 +1821,7 @@ Platoon = Class(PlatoonMethods) {
         while (not count) and PlatoonExists(aiBrain, self) and distance > rtbdistance do
 
             if RTBDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..repr(self.BuilderName).." "..repr(self.BuilderInstance).."  cycle "..cyclecount.."  distance "..string.format("%.1f",distance).."  RTBLocation is "..repr(RTBLocation ) )
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." RTBAI cycle "..cyclecount.."  distance "..string.format("%.1f",distance).."  RTBLocation is "..repr(RTBLocation ) )
             end
 
             merged = false
@@ -1907,7 +1943,7 @@ Platoon = Class(PlatoonMethods) {
 					StuckCount = StuckCount + 1
 
                     if RTBDialog then                    
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." RTB AI "..self.BuilderName.." "..repr(self.BuilderInstance).." appears to be stuck - count is "..StuckCount.." moved "..VDist3Sq( lastpos, platPos) )
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." RTBAI appears to be stuck - count is "..StuckCount.." moved "..VDist3Sq( lastpos, platPos) )
                     end
 				else
 					lastpos[1] = platPos[1]
@@ -1915,7 +1951,7 @@ Platoon = Class(PlatoonMethods) {
                     lastpos[3] = platPos[3]
                     
                     if StuckCount > 0 and RTBDialog then
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." RTB AI "..self.BuilderName.." "..repr(self.BuilderInstance).." appears to have moved "..VDist3Sq( lastpos, platPos) )
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." RTBAI appears to have moved "..VDist3Sq( lastpos, platPos) )
                     end
 
 					StuckCount = 0
@@ -2041,7 +2077,7 @@ Platoon = Class(PlatoonMethods) {
 		if PlatoonExists(aiBrain, self) then
 
             if RTBDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." RTBAI "..repr(self.BuilderName).." "..repr(self.BuilderInstance).."  cycle "..cyclecount.."  appears to have arrived" )		
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." RTBAI cycle "..cyclecount.."  appears to have arrived" )		
             end
 
 			if self.MoveThread then
@@ -6070,7 +6106,7 @@ Platoon = Class(PlatoonMethods) {
 
             -- alter the function according to layer
             local terrainfunction = GetTerrainHeight
-            local deviation = 2.5
+            local deviation = 3.6
             
             if MovementLayer == 'Water' then
                 terrainfunction = GetSurfaceHeight

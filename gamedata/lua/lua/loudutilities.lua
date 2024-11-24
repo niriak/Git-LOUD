@@ -3558,7 +3558,7 @@ function PathGeneratorAir( aiBrain )
             if (not PathReplies[platoon]) and (type(platoon) == 'string' or PlatoonExists(aiBrain, platoon)) then
             
                 if PathFindingDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." no safe AIR path found to "..repr(destination))
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." no safe AIR path found to "..repr(destination))
                 end
                 
                 aiBrain.PathRequests['Replies'][platoon] = { length = 0, path = 'NoPath', cost = 0 }
@@ -3622,7 +3622,7 @@ function PathGeneratorAmphibious(aiBrain)
             if VDist2( position[1] - (xstep * i), position[3] - (ystep * i), destination[1], destination[3]) <= (stepsize*.6) then
             
                 if ScenarioInfo.PathFindingDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." found destination "..repr(destination).." on step "..i.." within stepsize "..(stepsize*.6).." range of "..repr({position[1] - (xstep * i), position[3] - (ystep * i)}).." while examining "..repr(testposition) )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." found destination "..repr(destination).." on step "..i.." within stepsize "..(stepsize*.6).." range of "..repr({position[1] - (xstep * i), position[3] - (ystep * i)}).." while examining "..repr(testposition) )
                 end
      
                 return true
@@ -3783,7 +3783,7 @@ function PathGeneratorAmphibious(aiBrain)
             ThreatWeight    = data.ThreatWeight
             
             if PathFindingDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." starts AMPHIB pathfind from "..repr(StartPosition).." to "..repr(EndPosition).." maxthreat is "..repr(ThreatWeight) )
+                LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." starts AMPHIB pathfind from "..repr(StartPosition).." to "..repr(EndPosition).." maxthreat is "..repr(ThreatWeight) )
             end
 
 			closed = {}
@@ -3817,7 +3817,7 @@ function PathGeneratorAmphibious(aiBrain)
 			if (not PathReplies[platoon]) and (type(platoon) == 'string' or PlatoonExists(aiBrain, platoon)) then
             
                 if PathFindingDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." no safe AMPHIB path found to "..repr(data.Dest))
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." no safe AMPHIB path found to "..repr(data.Dest))
                 end
                 
 				aiBrain.PathRequests['Replies'][platoon] = { length = 0, path = 'NoPath', cost = 0 }
@@ -4020,7 +4020,7 @@ function PathGeneratorLand(aiBrain)
             ThreatWeight    = data.ThreatWeight
             
             if PathFindingDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." starts LAND pathfind from "..repr(StartPosition).." to "..repr(EndPosition) )
+                LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." starts LAND pathfind from "..repr(StartPosition).." to "..repr(EndPosition) )
             end
             
             -- we must take into account the threat between the EndNode and the destination - they are rarely the same point
@@ -4055,7 +4055,7 @@ function PathGeneratorLand(aiBrain)
 			if (not PathReplies[platoon]) and (type(platoon) == 'string' or PlatoonExists(aiBrain, platoon)) then
             
                 if PathFindingDialog then            
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." no safe LAND path found to "..repr(destination))
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." no safe LAND path found to "..repr(destination))
                 end
                 
 				aiBrain.PathRequests['Replies'][platoon] = { length = 0, path = 'NoPath', cost = 0 }
@@ -4257,7 +4257,7 @@ function PathGeneratorWater(aiBrain)
 			if (not PathReplies[platoon]) and platoon then
             
                 if PathFindingDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(platoon.BuilderName or platoon).." no safe WATER path found to "..repr(destination))
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." no safe WATER path found to "..repr(destination))
                 end
                 
 				aiBrain.PathRequests['Replies'][platoon] = { length = 0, path = 'NoPath', cost = 0 }
@@ -5623,11 +5623,6 @@ function BuildScoutLocations( self )
         
         self.NumOpponents = numOpponents
 
-		
-		local StartPosX, StartPosZ = self:GetArmyStartPos()
-		
-		self.StartPosX = StartPosX
-		self.StartPosZ = StartPosZ
 
 		-- Having handled Starting Locations lets add others to the permanent list
         -- for HiPri
@@ -6040,6 +6035,10 @@ function CreateAttackPlan( self, enemyPosition )
     local counter = 0
     local throttle = 0
 
+    if not StartPosition then
+        return
+    end
+    
     -- distance from start to goal
     CDistance = VDist2Sq(StartPosition[1],StartPosition[3], Goal[1],Goal[3])
   
@@ -6139,9 +6138,9 @@ function CreateAttackPlan( self, enemyPosition )
     -- if not - try AMPHIB --
     if not path then
         
-        --if AttackPlanDialog then
-          --  LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds no LAND path to Goal "..repr(Goal).." from StartPosition of "..repr(CurrentPoint).." reason is "..repr(reason) )
-        --end
+        if AttackPlanDialog then
+            LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds no LAND path to Goal "..repr(Goal).." from StartPosition of "..repr(CurrentPoint).." reason is "..repr(reason) )
+        end
 
         pathtype = 'Amphibious'
         path, reason, pathlength = PlatoonGenerateSafePathToLOUD( self, 'AttackPlannerAmphib', 'Amphibious', CurrentPoint, Goal, 99999, 250)
@@ -6152,7 +6151,7 @@ function CreateAttackPlan( self, enemyPosition )
         pathtype = 'Unknown'
         
         if AttackPlanDialog then
-            LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds no viable LAND or AMPHIB path to Goal "..repr(Goal).." from StartPosition of "..repr(CurrentPoint) )
+            LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds no viable LAND or AMPHIB path to Goal "..repr(Goal).." from StartPosition of "..repr(CurrentPoint).." reason is "..repr(reason) )
         end
         
         GoalReached = true
@@ -6160,7 +6159,7 @@ function CreateAttackPlan( self, enemyPosition )
     else
     
         if AttackPlanDialog then
-            LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds "..pathtype.." path from Start to goal - pathlength is "..pathlength )
+            LOG("*AI DEBUG "..self.Nickname.." AttackPlan finds "..pathtype.." path from Start to goal - pathlength is "..math.floor(pathlength) )
         end
         
         CurrentBestPathLength = pathlength
@@ -6186,8 +6185,8 @@ function CreateAttackPlan( self, enemyPosition )
         else
 
             if AttackPlanDialog then
-                LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." BEGINS Current distance to goal is "..VDist2(CurrentPoint[1],CurrentPoint[3], Goal[1],Goal[3]).." stagesize is "..stagesize)
-                LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." needs to be less than "..(CurrentPointDistance - 100).." from the goal and have a path length of less than "..CurrentBestPathLength )
+                LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." BEGINS Current distance to goal is "..math.floor(VDist2(CurrentPoint[1],CurrentPoint[3], Goal[1],Goal[3])).." stagesize is "..stagesize)
+                LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." needs to be less than "..math.floor((CurrentPointDistance - 100)).." from the goal and have a path length of less than "..math.floor(CurrentBestPathLength) )
             end
           
             -- sort the markerlist for closest to the current point --
@@ -6219,7 +6218,7 @@ function CreateAttackPlan( self, enemyPosition )
                 end
 
                 if AttackPlanDialog then
-                    LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." reviewing "..repr(v.Name).." distance is "..LOUDSQRT(testdistance).." to goal" )
+                    LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." reviewing "..repr(v.Name).." distance is "..math.floor(LOUDSQRT(testdistance)).." to goal" )
                 end
                 
                 if testdistance < minstagesize then
@@ -6337,7 +6336,7 @@ function CreateAttackPlan( self, enemyPosition )
                 else
 				
                     if AttackPlanDialog then
-                        LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." could only find a marker at " .. VDist3(positions[1].Position, CurrentPoint) .. " from "..repr(CurrentPoint).." Max Distance is "..stagesize)
+                        LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." could only find a marker at " .. math.floor(VDist3(positions[1].Position, CurrentPoint)) .. " from "..repr(CurrentPoint).." Max Distance is "..stagesize)
                     end
 					
                     a = CurrentPoint[1] + positions[1].Position[1]
@@ -6355,7 +6354,7 @@ function CreateAttackPlan( self, enemyPosition )
                 if not landposition[1] then
 				
                     if AttackPlanDialog then
-                        LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." Could not find a Land Node with 200 of resultposition "..repr(result).." using Water at 300")
+                        LOG("*AI DEBUG "..self.Nickname.." AttackPlan Stagecount ".. StageCount+1 .." Could not find a Land Node within 200 of resultposition "..repr(result).." using Water at 300")
                     end
 					
                     fakeposition = AIGetMarkersAroundLocation( self, 'Water Path Node', result, 300)
