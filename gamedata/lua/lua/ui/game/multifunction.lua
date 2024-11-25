@@ -189,9 +189,9 @@ function Create(parent)
     controls.bg = UIGroup(savedParent, true, false, 'multifunction',
         {
             Left   =  10,
-            Top    = 100,
+            Top    =  80,
             Right  = 188,
-            Bottom = 170
+            Bottom = 150
         }
     )
     

@@ -85,6 +85,7 @@ local currentSkin = LazyVar.Create()
 currentLayout = false
 changeLayoutFunction = false    -- set this function to get called with the new layout name when layout changes
 editUI = false
+editUIGroup = false
 
 function IsEditUI()
     return editUI
@@ -92,6 +93,14 @@ end
 
 function ToggleEditUI()
     editUI = not editUI
+
+    if editUI and not editUIGroup then
+        editUIText = CreateText(GetFrame(0), 'UI Edit Mode', 30, bodyFont)
+        editUIText.Depth:Set(-999)
+        LayoutHelpers.AtCenterIn(editUIText, GetFrame(0))
+    end
+    editUIText:SetHidden(not editUI)
+
     if changeLayoutFunction and currentLayout then
         changeLayoutFunction(currentLayout)
     end
