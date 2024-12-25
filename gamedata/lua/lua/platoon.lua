@@ -1899,7 +1899,7 @@ Platoon = Class(PlatoonMethods) {
 				
 					if ( distance >  (300 * LOUDMAX( 1, (1/aiBrain.AirRatio) )) or StuckCount > 5 ) and PlatoonExists(aiBrain, self) then
 
-						usedTransports = SendPlatoonWithTransportsLOUD( self, aiBrain, transportLocation, 1, false, path )
+						usedTransports = SendPlatoonWithTransportsLOUD( self, aiBrain, transportLocation, 1, false, path, 10000 )
 
 						-- if we used tranports we need to update position and distance
 						if usedTransports then
@@ -8435,7 +8435,8 @@ Platoon = Class(PlatoonMethods) {
 
 					else
                     
-                        if SendPlatoonWithTransportsLOUD( self, aiBrain, RandomLocation( buildPosition[1],buildPosition[3], 8 ), 2, false ) then
+                        -- this call uses the AtGoalDistance option for transport travel with a value of 900
+                        if SendPlatoonWithTransportsLOUD( self, aiBrain, RandomLocation( buildPosition[1],buildPosition[3], 8 ), 2, false, path, 900 ) then
                             
                             if EngineerDialog then
                                 LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." says reason is "..repr(reason).." distance is "..repr(distance).." but found transport ")
@@ -8566,7 +8567,7 @@ Platoon = Class(PlatoonMethods) {
 									-- we use a random location within 8 so that we dont drop right on the target but near it 
 									-- had to do this becuase engies would land on MEX points (causing CanBuildAtLocation to fail)
 									-- a successful transport will clear the waypoint callback and end the loop --
-									if SendPlatoonWithTransportsLOUD( self, aiBrain, RandomLocation( buildPosition[1],buildPosition[3], 8 ), 1, false ) then
+									if SendPlatoonWithTransportsLOUD( self, aiBrain, RandomLocation( buildPosition[1],buildPosition[3], 8 ), 1, false, path, 900 ) then
                                     
                                         -- clear failedmoves on transport call
                                         if eng.failedmoves > 2 then
@@ -10320,11 +10321,11 @@ Platoon = Class(PlatoonMethods) {
 	PlatoonOnFinalStep = function( self, params )
     
         local aiBrain = GetBrain(self)
-	
-		--LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Platoon Triggers AtGoal params are "..repr(params) )
+
 	end,
 
     -- will send reinforcement air platoons to randomly selected primary attack base ( Primary Land or Primary Sea )
+    -- provided that base has an AirStaging platform
     ReinforceAirAI = function( self )
     
         local GetThreatAtPosition = GetThreatAtPosition
@@ -10346,18 +10347,40 @@ Platoon = Class(PlatoonMethods) {
 		if AttackBase1 then
 
 			if self.RTBLocation != AttackBase1 then
+            
+                local units = GetUnitsAroundPoint( aiBrain, categories.AIRSTAGINGPLATFORM, AttackBase1Position, 80, 'Ally' )
+            
+                if table.getn(units) > 0 then
 			
-				LOUDINSERT( selections, AttackBase1 )
-				count = count + 1
+                    LOUDINSERT( selections, AttackBase1 )
+                    count = count + 1
+                    
+                else
+                    if ScenarioInfo.PlatoonDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." No Airpads found at "..repr(AttackBase1).." "..repr(AttackBase1Position).." on tick "..GetGameTick() )
+                    end
+                    AttackBase1 = false
+                end
 			end
 		end
 		
 		if AttackBase2 then
 		
 			if self.RTBLocation != AttackBase2 then
+            
+                local units = GetUnitsAroundPoint( aiBrain, categories.AIRSTAGINGPLATFORM, AttackBase2Position, 80, 'Ally' )
+            
+                if table.getn(units) > 0 then
 			
-				LOUDINSERT( selections, AttackBase2 )
-				count = count + 1
+                    LOUDINSERT( selections, AttackBase2 )
+                    count = count + 1
+                
+                else
+                    if ScenarioInfo.PlatoonDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." No Airpads found at "..repr(AttackBase2).." "..repr(AttackBase2Position).." on tick "..GetGameTick() )
+                    end
+                    AttackBase2 = false
+                end
 			end
 		end
 
@@ -10416,7 +10439,7 @@ Platoon = Class(PlatoonMethods) {
 		
         local aiBrain = GetBrain(self)
 		
-        local AttackBase1 = GetPrimaryLandAttackBase(aiBrain)	-- may return a false
+        local AttackBase1,AttackBase1Position = GetPrimaryLandAttackBase(aiBrain)	-- may return a false
 		local AttackBase2 = false	
 		
 		local selections = {}
@@ -10425,18 +10448,20 @@ Platoon = Class(PlatoonMethods) {
 		if AttackBase1 then
 
 			if self.RTBLocation != AttackBase1 then
+            
+                local units = GetUnitsAroundPoint( aiBrain, categories.AIRSTAGINGPLATFORM, AttackBase1Position, 80, 'Ally' )
+            
+                if table.getn(units) > 0 then
 			
-				LOUDINSERT( selections, AttackBase1 )
-				count = count + 1
-			end
-		end
-		
-		if AttackBase2 then
-		
-			if self.RTBLocation != AttackBase2 then
-			
-				LOUDINSERT( selections, AttackBase2 )
-				count = count + 1
+                    LOUDINSERT( selections, AttackBase1 )
+                    count = count + 1
+                    
+                else
+                    if ScenarioInfo.PlatoonDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." No Airpads found at "..repr(AttackBase1).." "..repr(AttackBase1Position).." on tick "..GetGameTick() )
+                    end
+
+                end			
 			end
 		end
 
@@ -10479,8 +10504,8 @@ Platoon = Class(PlatoonMethods) {
 		
         local aiBrain = GetBrain(self)
 		
-        local AttackBase1 = GetBaseWithGreatestThreatAtDistance( aiBrain, 'NAVAL', 5, 350 )
-		local AttackBase2 = GetPrimarySeaAttackBase(aiBrain) -- may return a false
+        local AttackBase1,AttackBase1Position = GetBaseWithGreatestThreatAtDistance( aiBrain, 'NAVAL', 5, 350 )
+		local AttackBase2,AttackBase2Position = GetPrimarySeaAttackBase(aiBrain) -- may return a false
 		
 		local selections = {}
 		local count = 0
@@ -10488,18 +10513,40 @@ Platoon = Class(PlatoonMethods) {
 		if AttackBase1 then
 
 			if self.RTBLocation != AttackBase1 then
+            
+                local units = GetUnitsAroundPoint( aiBrain, categories.AIRSTAGINGPLATFORM, AttackBase1Position, 80, 'Ally' )
+            
+                if table.getn(units) > 0 then
 			
-				LOUDINSERT( selections, AttackBase1 )
-				count = count + 1
+                    LOUDINSERT( selections, AttackBase1 )
+                    count = count + 1
+                    
+                else
+                    if ScenarioInfo.PlatoonDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." No Airpads found at "..repr(AttackBase1).." "..repr(AttackBase1Position).." on tick "..GetGameTick() )
+                    end
+
+                end				
 			end
 		end
 		
 		if AttackBase2 then
 		
 			if self.RTBLocation != AttackBase2 then
+            
+                local units = GetUnitsAroundPoint( aiBrain, categories.AIRSTAGINGPLATFORM, AttackBase2Position, 80, 'Ally' )
+            
+                if table.getn(units) > 0 then
 			
-				LOUDINSERT( selections, AttackBase2 )
-				count = count + 1
+                    LOUDINSERT( selections, AttackBase2 )
+                    count = count + 1
+                
+                else
+                    if ScenarioInfo.PlatoonDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." No Airpads found at "..repr(AttackBase2).." "..repr(AttackBase2Position).." on tick "..GetGameTick() )
+                    end
+                    AttackBase2 = false
+                end			
 			end
 		end
 
