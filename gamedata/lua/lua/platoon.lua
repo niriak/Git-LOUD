@@ -345,7 +345,7 @@ Platoon = Class(PlatoonMethods) {
 		if prevpoint and path[1] then
         
             if MovePlatoonDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." MTWayPt "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." starts MovePlatoon with path "..repr(path))
+                LOG("*AI DEBUG "..aiBrain.Nickname.." MTWayPt "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." starts MovePlatoon "..repr(waypointslackdistance).." with path "..repr(path))
             end
             
             local GetDirection          = GetDirection            
@@ -375,8 +375,6 @@ Platoon = Class(PlatoonMethods) {
             -- to their next waypoint too early - also - speed of the platoon is important 
             -- faster platoons need a little more warning 
 
-            -- TODO: Make pathslack an optional variable that can be passed in
-            -- or calculate one based on the step distance and/or platoon size
 			local pathslack = waypointslackdistance or 21
             
             local Direction, SCOUTS, ATTACKS, ARTILLERY, GUARDS, SUPPORTS
@@ -509,32 +507,6 @@ Platoon = Class(PlatoonMethods) {
 
                         WaitTicks(2)
 
---[[                        
-                        loopcount = loopcount + 1
-                    
-                        if table.getn( GetPlatoonUnits(self) ) > 1 and loopcount > 14 then
-
-                            LOG("*AI DEBUG Platoon is "..repr(self))
-                            
-                            for _,u in GetPlatoonUnits(self) do
-                    
-                                if not u:BeenDestroyed() then
-                    
-                                    local navigator = u:GetNavigator()
-                    
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Navigator is "..repr(navigator) )
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Current Goal is "..repr(navigator:GetGoalPos()) )
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Target Pos is "..repr(navigator:GetCurrentTargetPos()) )
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Status is "..repr(navigator:GetStatus()) )
-                            
-                                end
- 
-                            end
-                            
-                            loopcount = 0
-
-                        end
---]]
                     end
                     
 				end
@@ -554,8 +526,13 @@ Platoon = Class(PlatoonMethods) {
                 prevpoint[2] = waypointPath[2]
                 prevpoint[3] = waypointPath[3]
 			end
+
 		else
-			WARN("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." has no path ! Position is "..repr(prevpoint))
+
+            if prevpoint then
+                WARN("*AI DEBUG "..aiBrain.Nickname.." "..self.BuilderName.." "..repr(self.BuilderInstance).." has no path ! Position is "..repr(prevpoint))
+            end
+
 		end
         
         self:KillMoveThread()        
@@ -757,7 +734,7 @@ Platoon = Class(PlatoonMethods) {
 								v.failedbuilds = (v.failedbuilds + 1) or 1
                         
                                 if EngineerDialog then
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..BuilderName.." immediately disbands - assigning TIMEOUT to this task - failedbuilds is "..v.failedbuilds )
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..BuilderName.." immediately disbands - assigning TIMEOUT to task - failedbuilds is "..v.failedbuilds.." on tick "..GetGameTick() )
                                 end
 								
 								ForkTo( EM.AssignTimeout, EM, BuilderName, 300 )
@@ -765,7 +742,7 @@ Platoon = Class(PlatoonMethods) {
 						end
                         
                         if EngineerDialog then
-                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..repr(BuilderName).." disbands - failedbuilds is "..(v.failedbuilds or 0) )
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..repr(BuilderName).." disbands - failedbuilds is "..(v.failedbuilds or 0).." on tick "..GetGameTick() )
                         end
                     
 						if NameEngineers then
@@ -1479,7 +1456,7 @@ Platoon = Class(PlatoonMethods) {
 				if LOUDENTITY( ENGINEERS, v ) then
                 
                     if EngineerDialog then
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..repr(BuilderName).." now in RTB to "..LocationType )                        
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..v.EntityID.." "..repr(BuilderName).." now in RTB to "..LocationType.." on tick "..GetGameTick() )                        
                     end
 				
 					engineer = v
@@ -2656,7 +2633,7 @@ Platoon = Class(PlatoonMethods) {
 				-- if the unit is not within 80 of the platpos - warp it
 				if distance > 80 then
 				
-					LOG("*AI DEBUG Warping stuck "..v.BlueprintID.." at "..repr( GetPosition(v)).." Distance to "..repr(platpos).." is "..distance)
+					WARN("WARP stuck "..v.BlueprintID.." "..v.EntityID.." "..repr(v.PlatoonHandle.BuilderName).." at "..repr( GetPosition(v)).." Distance to "..repr(platpos).." is "..distance)
                     
                     IssueStop( {v} )
 					
@@ -6393,7 +6370,7 @@ Platoon = Class(PlatoonMethods) {
                         -- find a unit in the platoon --
                         for _,u in GetPlatoonUnits(self) do
 					
-                            if not u.Dead then
+                            if (not u.Dead) and not u:BeenDestroyed() then
                                 unit = u
                                 break
                             end
@@ -6451,7 +6428,13 @@ Platoon = Class(PlatoonMethods) {
                                     LOG("*AI DEBUG "..aiBrain.Nickname.." PCAI DR "..self.BuilderName.." "..self.BuilderInstance.." moving to "..repr(distressLocation).." distance "..VDist3(platoonPos,distressLocation).." on tick "..GetGameTick() )
                                 end
                                 
-                                ATTACKS = table.merged(GetSquadUnits(self,'Attack') or {}, GetSquadUnits(self,'Unassigned') or {})
+                                ATTACKS = GetSquadUnits(self,'Attack') or {}
+                                
+                                if GetSquadUnits(self,'Unassigned')[1] then
+                                
+                                    ATTACKS = table.merged( ATTACKS, GetSquadUnits(self,'Unassigned') )
+                                
+                                end
                             
                                 if ATTACKS[1] then
                             
@@ -8040,7 +8023,7 @@ Platoon = Class(PlatoonMethods) {
         local EngineerDialog = ScenarioInfo.EngineerDialog or false
 
         if EngineerDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." enters ProcessBuildCommand" )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." enters ProcessBuildCommand on tick "..GetGameTick() )
         end
         
         local LOUDCOPY      = LOUDCOPY
@@ -8171,7 +8154,7 @@ Platoon = Class(PlatoonMethods) {
 						
 							if count > 10 and not eng.Dead then
 						
-								LOG("*AI DEBUG Eng "..eng.EntityID.." "..eng.PlatoonHandle.BuilderName.." Stuck in WatchForNotBuilding")
+								LOG("*AI DEBUG Eng "..eng.EntityID.." "..eng.PlatoonHandle.BuilderName.." Stuck in WatchForNotBuilding on tick "..GetGameTick() )
 								
 								ProcessBuildCommand( self, eng, false )
 							
@@ -8209,7 +8192,7 @@ Platoon = Class(PlatoonMethods) {
 				
 				if (not BeenDestroyed(eng)) and not eng.Dead then
 				
-					WARN("*AI DEBUG Eng "..repr(eng.EntityID).." exits WFNB from ????? - dead is "..repr(eng.Dead))
+					WARN("*AI DEBUG Eng "..repr(eng.EntityID).." exits WFNB from ????? - dead is "..repr(eng.Dead).." on tick "..GetGameTick() )
 				end
 				
 			end
@@ -8404,7 +8387,7 @@ Platoon = Class(PlatoonMethods) {
 				distance = VDist2( engPos[1],engPos[3], buildPosition[1],buildPosition[3] )
                 
                 if EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." distance from "..repr(engPos).." to "..repr(buildPosition).." is "..distance )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." distance from "..repr( {engPos[1],engPos[3]} ).." to "..repr(buildPosition).." is "..math.floor(distance).." on tick "..GetGameTick() )
                 end
                 
 				if distance < viewrange then
@@ -8424,7 +8407,7 @@ Platoon = Class(PlatoonMethods) {
 					if PlatoonExists(aiBrain,self) and (path and distance < 1200) and not eng.Dead then
                 
                         if EngineerDialog then
-                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." forks to MoveEngineer with path "..repr(path) )
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." forks to MoveEngineer with path having "..table.getn(path).." steps on tick "..GetGameTick() )
                         end
 
 						self:ForkThread( MoveEngineer, path )
@@ -8455,10 +8438,6 @@ Platoon = Class(PlatoonMethods) {
 			end
 
 			local function EngineerBuildValid ()
-                
-                if EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." checks if build valid" )
-                end
 			
 				if CanBuildStructureAt( aiBrain, buildItem, buildPosition ) then
 					return true
@@ -8469,7 +8448,7 @@ Platoon = Class(PlatoonMethods) {
 				end
                 
                 if EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." build is NOT valid at "..repr(buildPosition) )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." build is NOT valid at "..repr(buildPosition).." on tick "..GetGameTick() )
                 end
 				
 				return false
@@ -8487,7 +8466,7 @@ Platoon = Class(PlatoonMethods) {
                 local GetPosition = GetPosition
 
                 if EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." moving to "..repr(buildPosition) )
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." moving to "..repr(buildPosition).." on tick "..GetGameTick() )
                 end
                 
 				if EngineerThreatened() then
@@ -8495,7 +8474,7 @@ Platoon = Class(PlatoonMethods) {
 					eng.failedmoves = 10	-- clear this order, but continue looping --
 					
                     if EngineerDialog then
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." threatened")
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." threatened on tick "..GetGameTick() )
                     end
 
 					ForkTo( AIAddMustScoutArea, aiBrain, buildPosition )
@@ -8508,7 +8487,7 @@ Platoon = Class(PlatoonMethods) {
 					eng.failedmoves = 10	-- clear this orders --
 
                     if EngineerDialog then
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." cannot move with safe path")
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." cannot move with safe path on tick "..GetGameTick() )
                     end
 
 					ForkTo( AIAddMustScoutArea, aiBrain, buildPosition )
@@ -8533,7 +8512,7 @@ Platoon = Class(PlatoonMethods) {
 								eng.failedmoves = eng.failedmoves + 2
                                 
                                 if EngineerDialog then
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." build invalid while moving")
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." build invalid while moving on tick "..GetGameTick() )
                                 end
 								
 								ForkTo( AIAddMustScoutArea, aiBrain, buildPosition )								
@@ -8546,7 +8525,7 @@ Platoon = Class(PlatoonMethods) {
 								eng.failedmoves = 10    --eng.failedmoves + 2
 
                                 if EngineerDialog then
-                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." threatened while moving")
+                                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." threatened while moving on tick "..GetGameTick() )
                                 end
 
                                 ForkTo( AIAddMustScoutArea, aiBrain, buildPosition )
@@ -8590,9 +8569,9 @@ Platoon = Class(PlatoonMethods) {
                         
                         if engPos then
                 
-                            if EngineerDialog then
-                                LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." watching while moving "..repr(count) )
-                            end
+                            --if EngineerDialog then
+                              --  LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." watching while moving "..repr(count).." on tick "..GetGameTick() )
+                            --end
 					
                             WaitTicks(6)
 					
@@ -8614,7 +8593,7 @@ Platoon = Class(PlatoonMethods) {
 			end			
 
             if EngineerDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." buildPosition is "..repr(buildPosition))
+                LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." buildPosition is "..repr(buildPosition).." on tick "..GetGameTick() )
             end
 
 			-- get the engineer moved to the goal --
@@ -8681,8 +8660,6 @@ Platoon = Class(PlatoonMethods) {
 	
 											basetaken = true
 											
-											--WARN("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Eng "..eng.EntityID.." "..self.BuilderName.." Base already taken "..repr(NewBaseName) )
-											
 											break
 										end
 									end
@@ -8710,7 +8687,7 @@ Platoon = Class(PlatoonMethods) {
 								if AINewExpansionBase( aiBrain, NewBaseName, NewBasePos, eng, eng.NewExpansion[3] ) then
                                 
                                		if ScenarioInfo.BaseMonitorDialog or EngineerDialog then
-                                        LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Eng "..eng.EntityID.." creates new base "..repr(NewBaseName).." at "..repr(NewBasePos) )
+                                        LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Eng "..eng.EntityID.." creates new base "..repr(NewBaseName).." at "..repr(NewBasePos).." on tick "..GetGameTick() )
                                         LOG("*AI DEBUG Engineer is presently at "..repr(eng:GetPosition()))
                                     end
 									
@@ -8719,7 +8696,7 @@ Platoon = Class(PlatoonMethods) {
                                     
 								else
 									
-									WARN("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Eng "..eng.EntityID.." failed to start new base "..repr(NewBaseName).." at "..repr(NewBasePos) )
+									WARN("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." Eng "..eng.EntityID.." failed to start new base "..repr(NewBaseName).." at "..repr(NewBasePos).." on tick "..GetGameTick() )
 
 									-- clear the expansion data
 									eng.NewExpansion = nil
@@ -8741,7 +8718,7 @@ Platoon = Class(PlatoonMethods) {
 								if CanBuildStructureAt( aiBrain, buildItem, buildPosition ) then
 								
                                     if EngineerDialog then
-                                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." orders build of "..repr(buildItem).." at "..repr(buildPosition) )
+                                        LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." orders build of "..repr(buildItem).." at "..repr(buildPosition).." on tick "..GetGameTick() )
                                     end
 
 									eng.IssuedBuildCommand = true
@@ -8788,7 +8765,7 @@ Platoon = Class(PlatoonMethods) {
 
 						-- move onto next item to build
 						if EngineerDialog then
-                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." Failed to build")
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." Failed to build on tick "..GetGameTick() )
                         end
 						
 						ProcessBuildCommand( self, eng, true )
@@ -8838,7 +8815,7 @@ Platoon = Class(PlatoonMethods) {
                 end
                 
                 if EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." ends loop due to resource shortage")
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..eng.EntityID.." "..repr(self.BuilderName).." ends loop due to resource shortage on tick "..GetGameTick() )
                 end
 
                 self.PlatoonData.Construction.LoopBuild = false

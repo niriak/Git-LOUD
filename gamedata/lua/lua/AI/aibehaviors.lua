@@ -1323,6 +1323,8 @@ end
 
 function LandScoutingAI( self, aiBrain )
 
+    local ScoutDialog = false
+
 	local GetNumUnitsAroundPoint    = GetNumUnitsAroundPoint
     local GetPlatoonPosition        = GetPlatoonPosition
     local GetPlatoonUnits           = GetPlatoonUnits
@@ -1408,7 +1410,9 @@ function LandScoutingAI( self, aiBrain )
 		
 			datalist = IL.HiPri
             
-            --LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." seeks Hi Pri position")
+            if ScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." seeks Hi Pri position")
+            end
 
 			for k,v in datalist do
             
@@ -1436,6 +1440,11 @@ function LandScoutingAI( self, aiBrain )
 
                     scoutpriority = 'Hi'
                     targetArea = LOUDCOPY( Position )
+            
+                    if ScoutDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." gets HIGH Pri position "..repr(targetArea).." on tick "..GetGameTick() )
+                    end
+                    
                     break
 
                 end
@@ -1456,7 +1465,9 @@ function LandScoutingAI( self, aiBrain )
 			
 			datalist = IL.LowPri
             
-            --LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." seeks Low Pri position")
+            if ScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." seeks Low Pri position")
+            end
 
 			for k,v in datalist do
             
@@ -1481,6 +1492,11 @@ function LandScoutingAI( self, aiBrain )
 
                     scoutpriority = 'Low'
                     targetArea = LOUDCOPY( Position )
+
+                    if ScoutDialog then
+                        LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." gets LOW Pri position "..repr(targetArea).." on tick "..GetGameTick() )
+                    end
+   
                     break
 
 				end
@@ -1521,7 +1537,11 @@ function LandScoutingAI( self, aiBrain )
 			end
 			
 			if path then
-
+            
+                if ScoutDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." pathing distance is "..distance.." on tick "..GetGameTick() )
+                end
+   
 				-- if the distance is great try to get transports
                 -- notice how low air ratio makes this value
 				if distance > 1024 * math.min(1, (1/aiBrain.AirRatio)) then
@@ -1563,7 +1583,13 @@ function LandScoutingAI( self, aiBrain )
                     distance = VDist3( curPos, targetArea )                
 
 					if distance < 25 then
+
 						reconcomplete = true
+            
+                        if ScoutDialog then
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." reaches "..scoutpriority.." priority position at "..repr(targetArea).." on tick "..GetGameTick() )
+                        end
+
                         break
 					end
                     
@@ -1627,6 +1653,10 @@ function LandScoutingAI( self, aiBrain )
 				if not targetArea then
 					targetArea = GetPlatoonPosition(self) or false
 				end
+            
+                if ScoutDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." setting patrol at position "..repr(targetArea).." on tick "..GetGameTick() )
+                end
 
 				if PlatoonPatrols and targetArea then
                 
@@ -1678,28 +1708,34 @@ function LandScoutingAI( self, aiBrain )
                                     lastpos = LOUDCOPY(v)					
 
                                     if firstmove then
+
                                         IssueMove( {scout}, v )
+
                                         firstmove = false
+                                        
+                                        WaitTicks(6)
+
                                     else
+
                                         IssuePatrol( {scout}, v )
+
                                     end
 
                                 end
 
-                                WaitTicks(1)
+                                WaitTicks(2)
                             end
 				
-                            -- if this is a high or low priority, abandon 1 or 2 scouts here and move the rest on
-                            -- Low priority scouts will leave only 1 scout whereas Hi will leave 2
+                            -- if this is a high priority, abandon 1 or 2 scouts here and move the rest on
                             if scoutpriority and not scout.Dead then
+                            
+                                if scoutpriority == 'Hi' then
 
-                                AssignUnitsToPlatoon( aiBrain, aiBrain.StructurePool, {scout}, 'Guard', 'none' )
-
-                                if scoutpriority == 'Low' then
-                                    break
-                                else
-                                    baseradius = baseradius + 12
+                                    AssignUnitsToPlatoon( aiBrain, aiBrain.StructurePool, {scout}, 'Guard', 'none' )
+                                    
                                 end
+
+                                baseradius = baseradius + 12
 
                             end
                             
@@ -1707,13 +1743,18 @@ function LandScoutingAI( self, aiBrain )
 
                     end
                     
-                    if not scoutpriority then
+                    if scoutpriority != 'Hi' then
 
-                        --LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." has no targetArea - will patrol in place for 15 seconds ")
-                        
-                        WaitTicks(151)
-                        
-                   		self:SetAIPlan('ReturnToBaseAI',aiBrain)
+                        if ScoutDialog then
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." LandScoutAI "..self.BuilderName.." "..self.BuilderInstance.." will patrol for 30 seconds ")
+                        end
+
+                        WaitTicks(301)
+
+                        if not scoutpriority then
+                            self:SetAIPlan('ReturnToBaseAI',aiBrain)
+                        end
+
                     end
 
 				end
@@ -1728,6 +1769,8 @@ function LandScoutingAI( self, aiBrain )
 end
 
 function NavalScoutingAI( self, aiBrain )
+
+    local NavalScoutDialog = false
 
 	local GetNumUnitsAroundPoint    = GetNumUnitsAroundPoint
     local GetPlatoonPosition        = GetPlatoonPosition
@@ -1798,6 +1841,10 @@ function NavalScoutingAI( self, aiBrain )
         if not IL.LastScoutHi then
         
             targetArea = false
+            
+            if NavalScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." NavalScoutingAI seeking hipri mission")
+            end
 
 			for k,v in IL.HiPri do
             
@@ -1840,7 +1887,11 @@ function NavalScoutingAI( self, aiBrain )
 				aiBrain.IL.LastScoutHi = false
 				aiBrain.IL.LastScoutHiCount = 0
 			end
-			
+
+            if NavalScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." NavalScoutingAI seeking Lowpri mission")			
+            end
+            
 			for k,v in IL.LowPri do
             
                 local position = v.Position
@@ -1872,7 +1923,11 @@ function NavalScoutingAI( self, aiBrain )
 
 		-- execute the scouting mission
         if targetArea then
-        
+
+            if NavalScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." executing scout to "..repr(targetArea) )        
+            end
+            
             curPos = GetPlatoonPosition(self) or false
             
             if not curPos then
@@ -1883,16 +1938,22 @@ function NavalScoutingAI( self, aiBrain )
 			distance = VDist3( curPos, targetArea)
 
 			-- like Land Scouting we use an artificially higher threat of 100 to insure path finding
-			path, reason = PlatoonGenerateSafePathToLOUD(aiBrain, self, MovementLayer, curPos, targetArea, 100, 250 )
+			path, reason = PlatoonGenerateSafePathToLOUD(aiBrain, self, MovementLayer, curPos, targetArea, 150, 250 )
 
+            if NavalScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." pathfind is "..repr(path) )
+            end
+            
             -- move the platoon to the targetArea or abort this targetArea
 			if PlatoonExists( aiBrain, self ) then
 
 				if (not path) and not scout.Dead then
 				
 					if distance <= 120 and scout:CanPathTo(targetArea) then
-                    
-                        LOG("*AI DEBUG "..aiBrain.Nickname.." Naval Scout AI has no path - distance "..repr(distance).." - moving direct to "..repr(targetArea))
+                        
+                        if NavalScoutDialog then
+                            LOG("*AI DEBUG "..aiBrain.Nickname.." Naval Scout AI has no path - distance "..repr(distance).." - moving direct to "..repr(targetArea))
+                        end
                         
                         path = { targetArea }
 
@@ -2015,14 +2076,25 @@ function NavalScoutingAI( self, aiBrain )
             -- get the perimeter points around this position
             datalist = GetBasePerimeterPoints( aiBrain, targetArea, 42, false, false, MovementLayer )
 
-            --LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." begins patrol at "..repr(targetArea))
+            if NavalScoutDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." begins patrol at "..repr(targetArea).." for "..patroltimer.." on tick "..GetGameTick() )
+            end
+            
+            local firstmove = true
+            local lastpos = targetArea
             
 			-- set up a patrol around the position
 			for k,v in datalist do
+            
+                if CheckBlockingTerrain( lastpos, v )then
+                    continue
+                end
 
-				if k == 1 then
+                if firstmove then
 					MoveToLocation( self, v, false)
+                    firstmove = false
 				else
+
 					units = GetPlatoonUnits(self)
 
 					if units[1] and v then
@@ -2030,6 +2102,8 @@ function NavalScoutingAI( self, aiBrain )
 					end
 
 				end
+                
+                WaitTicks(1)
 
 			end
 
@@ -2042,15 +2116,23 @@ function NavalScoutingAI( self, aiBrain )
         -- otherwise go right back and find another mission
         if PlatoonExists(aiBrain,self) then
 
-            if not reconcomplete then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." NavalScoutingAI finds no recon mission")
+            if not targetArea and not reconcomplete then
 
+                if NavalScoutDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." NavalScoutingAI finds no recon mission")
+                end
+                
                 WaitTicks(31)
                 
                 --- shorten the mission timer by 5 seconds 
                 CreationTime = CreationTime - 50
 
             else
+                
+                if NavalScoutDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..repr(self.BuilderName).." "..repr(self.BuilderInstance).." completes recon mission "..repr(reconcomplete).." on tick "..GetGameTick() )            
+                end
+                
                 self:Stop()
             end
 
@@ -2627,7 +2709,7 @@ function ProsecuteTarget( unit, aiBrain, target, searchrange, AirForceDialog )
         IssueClearCommands( u )
 
         if AirForceDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." AFAI "..unit.PlatoonHandle.BuilderName.." "..unit.PlatoonHandle.BuilderInstance.." unit "..unit.Sync.id.. " assigned to target "..repr(target.Sync.id).." on tick "..GetGameTick() )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." AFAI "..unit.PlatoonHandle.BuilderName.." "..repr(unit.PlatoonHandle.BuilderInstance).." unit "..unit.Sync.id.. " assigned to target "..repr(target.Sync.id).." on tick "..GetGameTick() )
         end
         
         local attackissued, loiterposition, selfpos, targethealth, targetposition, searchdistance
@@ -2708,7 +2790,7 @@ function ProsecuteTarget( unit, aiBrain, target, searchrange, AirForceDialog )
 
         end
     
-        if (not unit.Dead) and aiBrain:PlatoonExists( unit.PlatoonHandle ) then
+        if (not unit.Dead) and unit.PlatoonHandle and aiBrain:PlatoonExists( unit.PlatoonHandle ) then
 
             if AirForceDialog then
                 LOG("*AI DEBUG "..aiBrain.Nickname.." AFAI "..unit.PlatoonHandle.BuilderName.." "..repr(unit.PlatoonHandle.BuilderInstance).." unit "..unit.Sync.id.." attack complete on tick "..GetGameTick() )
@@ -2718,7 +2800,7 @@ function ProsecuteTarget( unit, aiBrain, target, searchrange, AirForceDialog )
 
                 --- we do this as a unit may be in refit at this point - and wont have a loiterposition
                 --- this allows this behavior to exit gracefully without any intervention 
-                if loiterposition then
+                if unit.PlatoonHandle.loiterposition then
                 
                     IssueClearCommands( u )
 
@@ -2876,6 +2958,11 @@ function AirForceAILOUD( self, aiBrain )
     local attackcount, attackercount, attackers, retreat, targethealth
 	
 	local AIGetThreatLevelsAroundPoint = function(unitposition,threattype)
+    
+        if not unitposition then
+            LOG("*AI DEBUG AIGetThreatLevelsAroundPoint reports NO UNITPOSITION")
+            return 0
+        end
         
         local adjust = threatrangeadjust + ( threatringrange * threatrangeadjust ) 
 
@@ -3010,7 +3097,7 @@ function AirForceAILOUD( self, aiBrain )
 
         platoonUnits = LOUDCOPY(GetPlatoonUnits(self))
 
-        attackers     = GetSquadUnits( self,'Unassigned' )
+        attackers     = GetSquadUnits( self,'Unassigned' ) or {}
         attackercount = LOUDGETN(attackers)
 
         --- this block will look for targets if there are any available 'Unassigned' units in the platoon
@@ -3331,7 +3418,7 @@ function AirForceAILOUD( self, aiBrain )
             mythreat    = CalculatePlatoonThreat( self, 'Air', UNITCHECK)
             platPos     = GetPlatoonPosition(self) or false
 
-            if platPos then
+            if platPos and searchrange then
 
                 attackers       = GetSquadUnits( self,'Unassigned' )
                 attackercount   = LOUDGETN(attackers)
@@ -6240,7 +6327,10 @@ end
 
 -- This function will transfer engineers to a base which does not have one of that specific type
 -- and has no means of making one -- weights towards counted and primary bases first
+-- primary bases are allowed to exceed the engineer cap by 1
 function EngineerTransferAI( self, aiBrain )
+
+    local EngineerTransferDialog = false
 
 	local eng = GetPlatoonUnits(self)[1]
 	
@@ -6284,7 +6374,7 @@ function EngineerTransferAI( self, aiBrain )
             
                 capCheck = capCheck + 1
                 
-			end
+            end
 			
 			-- if base has less than maximum allowed engineers and there are structures at that position
 			-- base must have no ability to make the engineers itself (no factory)
@@ -6339,7 +6429,7 @@ function EngineerTransferAI( self, aiBrain )
 		local newbase = possibles[ Random(1,counter) ]
         
         if EngineerTransferDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." ENG_TRANSFER "..Eng_Type.." Transfers From "..repr(eng.LocationType).." To "..repr(newbase) )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." ENG_TRANSFER "..Eng_Type.." Transfers From "..repr(eng.LocationType).." To "..repr(newbase).." on tick "..GetGameTick() )
         end
 		
 		-- add him to the selected base - but dont send him to assign task -- setup new engy callbacks
@@ -7378,7 +7468,7 @@ function PlatoonWatchPrimarySeaAttackBase ( platoon, aiBrain )
         
         if Primary != Base then
         
-            LOG("*AI DEBUG "..aiBrain.Nickname.." Platoon "..platoon.BuilderName.." Detected that Primary Sea Base has changed to "..repr(Primary))
+            LOG("*AI DEBUG "..aiBrain.Nickname.." Platoon "..platoon.BuilderName.." "..repr(platoon.BuilderInstance).." Detects that Primary Sea Base has changed to "..repr(Primary))
             
             platoon.RTBLocation = Primary
             
@@ -7664,17 +7754,17 @@ function FactorySelfEnhanceThread ( unit, faction, aiBrain, manager )
 						end
 				
 						IssueScript( {unit}, {TaskName = "EnhanceTask", Enhancement = CurrentEnhancement} )
-						
-						if DisplayFactoryBuilds then
-							unit:SetCustomName(repr(CurrentEnhancement))
-						end						
 
 						repeat
 							WaitTicks(11)
 						until unit.Dead or IsUnitState(unit,'Enhancing')
-						
+					
 						if IsUnitState(unit,'Enhancing') and not unit.Dead then
-
+						
+                            if DisplayFactoryBuilds then
+                                unit:SetCustomName(repr(CurrentEnhancement))
+                            end						
+	
 							SetBlockCommandQueue( unit, true)
 							
 							if FactoryEnhanceDialog then
@@ -7786,11 +7876,14 @@ end
 -- thus providing a dynamic process that adapts nicely to feast and famine
 -- and to the needs of the upgrade in question
 
-function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtrigger, masshightrigger, energyhightrigger, checkperiod, initialdelay, bypassecon)
+-- note the addition of the 'notify' parameter, this will pop text over the affected unit, whenever the test process runs, set in AIDebug tools
+
+function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtrigger, masshightrigger, energyhightrigger, checkperiod, initialdelay, bypassecon, notify)
 
     local StructureUpgradeDialog    = ScenarioInfo.StructureUpgradeDialog or false
-
     local GetFractionComplete       = moho.entity_methods.GetFractionComplete
+
+    local Game = import('/lua/game.lua')
 
 	local upgradeID = __blueprints[unit.BlueprintID].General.UpgradesTo or false
 	local upgradebp = false
@@ -7798,6 +7891,15 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
 	if upgradeID then
 		upgradebp = __blueprints[upgradeID] or false	-- this accounts for upgradeIDs that point to non-existent units (like mod not loaded)
 	end
+    
+    if upgradebp and Game.UnitRestricted( false, upgradeID ) then
+    
+        LOG("*AI DEBUG Upgrade retricted "..repr(upgradeID) )
+    
+        unit.UpgradeThread = nil
+        unit.UpgradeComplete = true
+        return
+    end
 	
 	-- if not upgradeID and blueprint available then kill the thread and exit
 	if not (upgradeID and upgradebp) or (not aiBrain.MinorCheatModifier) then
@@ -7880,10 +7982,6 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
             end
 
         end
-        
-        --if StructureUpgradeDialog then
-          --  LOG("*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..unit.EntityID.." "..unit:GetBlueprint().Description.." advance init_delay to "..init_delay.." on tick "..GetGameTick() )
-        --end
 		
 		WaitTicks(101)
 	end
@@ -7893,7 +7991,11 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
 	local EnergyStorage, MassStorage
 	
 	while ((not unit.Dead) or unit.EntityID) and (not upgradeIssued) do
-	
+        
+        if notify then
+            ForkThread( FloatingEntityText, unit.EntityID, "Nxt Upg Chk "..string.format( "%d", math.floor(checkperiod)).."s" )
+        end
+ 	
 		WaitTicks(checkperiod * 10)
 
         if StructureUpgradeDialog then
@@ -7976,8 +8078,10 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
             checkperiod = LOUDMAX(checkperiod - .05, 10)
 
             -- all values are marginally reduced --
-            MassNeeded          = MassNeeded * .995
-            EnergyNeeded        = EnergyNeeded * .995
+            -- resources required are impacted by ajacency bonuses which takes into account the cheat bonus
+            -- the trend requirements are NOT impacted in this way
+            MassNeeded          = MassNeeded * math.min(1, unit.MassBuildAdjMod or 1)
+            EnergyNeeded        = EnergyNeeded * math.min(1, unit.EnergyBuildAdjMod or 1)
             MassTrendNeeded     = MassTrendNeeded * .995
             EnergyTrendNeeded   = EnergyTrendNeeded * .995
             
@@ -8055,6 +8159,10 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
                             end
 
 							upgradeIssued = true
+        
+                            if notify then
+                                ForkThread( FloatingEntityText, unit.EntityID, "Upgrade to "..repr(upgradeID) )
+                            end
 
 							IssueUpgrade({unit}, upgradeID)
 
@@ -8080,7 +8188,7 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
                 end
                 
             else
-            
+           
                 if StructureUpgradeDialog then
                 
                     local body = "*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..unit.EntityID.." "..unit:GetBlueprint().Description
@@ -8131,12 +8239,18 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
         repeat 
             WaitTicks(2)
         until unit.UnitBeingBuilt.BlueprintID == upgradeID
+        
+        if EntityCategoryContains( categories.FACTORY, unit) and ScenarioInfo.DisplayFactoryBuilds then
+            unit:SetCustomName("Upgrade to "..unit.UnitBeingBuilt.BlueprintID)
+        end
     
         if StructureUpgradeDialog then    
             LOG("*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..unit.EntityID.." confirms upgrade to "..repr(unit.UnitBeingBuilt.EntityID).." "..unit.UnitBeingBuilt.BlueprintID.." at game tick "..GetGameTick() )
 		end
   
 		local unitbeingbuilt = GetEntityById(unit.UnitBeingBuilt.EntityID)
+
+        unitbeingbuilt:AddUnitCallback( unit.OnUpgradeComplete, 'OnStopBeingBuilt' )
 
         upgradeID = __blueprints[unitbeingbuilt.BlueprintID].General.UpgradesTo
 
@@ -8146,7 +8260,7 @@ function SelfUpgradeThread ( unit, faction, aiBrain, masslowtrigger, energylowtr
                 LOG("*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..unit.EntityID.." has follow on upgrade to "..repr(upgradeID) )
             end
           
-            unitbeingbuilt:AddUnitCallback( unit.OnUpgradeComplete, 'OnStopBeingBuilt' )
+            
         end
 
         unit.UpgradeThread = nil

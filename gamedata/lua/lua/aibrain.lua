@@ -197,7 +197,7 @@
 	ScenarioInfo.ShieldDialog = false
 	LOG("*AI DEBUG      Report  Shield Dialog to Log is "..repr(ScenarioInfo.ShieldDialog))
     
-    ScenarioInfo.UnitDialog = true
+    ScenarioInfo.UnitDialog = false
 	LOG("*AI DEBUG      Report  Unit Event Dialog to Log is "..repr(ScenarioInfo.UnitDialog))	
 
 	ScenarioInfo.WeaponDialog = false
@@ -345,6 +345,7 @@ function SetAIDebug(data)
             'ProjectileDialog',
             'ProjectileTrackingDialog',
             'ShieldDialog',
+            'UnitDialog',
             'WeaponDialog',
             'WeaponStateDialog',
         }
@@ -1078,8 +1079,12 @@ AIBrain = Class(moho.aibrain_methods) {
 				
 				-- AI may have upgrade threads to run - delay them so they dont all happen on same tick
 				if self.BrainType != 'Human' then
+                
+                    if unit.LaunchUpgradeThread then
 				
-					unit:ForkThread( function(unit) mult = mult + 1 WaitTicks( 1 + (mult*75)) unit:LaunchUpgradeThread(self) end )
+                        unit:ForkThread( function(unit) mult = mult + 1 WaitTicks( 1 + (mult*75)) unit:LaunchUpgradeThread(self) end )
+                    
+                    end
 
 				end
 				

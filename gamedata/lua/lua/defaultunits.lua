@@ -174,7 +174,7 @@ StructureUnit = Class(Unit) {
 
                 local unitBuilding = self.UnitBeingBuilt
                 
-                local fractionOfComplete = GetFractionComplete(unitBuilding)
+                local FractionComplete = GetFractionComplete( unitBuilding )
 
                 self.AnimatorUpgradeManip = CreateAnimator(self)
 
@@ -184,13 +184,25 @@ StructureUnit = Class(Unit) {
 
                 PlayAnim( self.AnimatorUpgradeManip, bp.AnimationUpgrade, false):SetRate(0)
 
-                while fractionOfComplete < 1 and not self.Dead do
-
-                    fractionOfComplete = GetFractionComplete(unitBuilding)
-
-                    self.AnimatorUpgradeManip:SetAnimationFraction(fractionOfComplete)
+                while FractionComplete < 1 and not self.Dead do
 
                     WaitTicks(4)
+                    
+                    if not unitBuilding.Dead then
+
+                        FractionComplete = GetFractionComplete( unitBuilding )
+
+                    else
+                    
+                        FractionComplete = 1
+
+                    end
+                    
+                    if not self.Dead then
+
+                        self.AnimatorUpgradeManip:SetAnimationFraction( FractionComplete )
+                    
+                    end
 
                 end
 
@@ -215,7 +227,9 @@ StructureUnit = Class(Unit) {
                 self:StopUpgradeEffects(unitBuilding)
 
                 PlayUnitSound(self,'UpgradeEnd')
+
 				self:DoDestroyCallbacks()
+
                 self:Destroy()
 
             end
@@ -630,6 +644,10 @@ StructureUnit = Class(Unit) {
 
     CreateDestructionEffects = function( self, overKillRatio )
 
+        if ScenarioInfo.UnitDialog then
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." "..self.BlueprintID.." CreateDestructionEffects on overkill "..overKillRatio.." on tick "..GetGameTick())
+        end
+
         if ( GetAverageBoundingXZRadius( self ) < 1.0 ) then
             CreateScalableUnitExplosion( self, overKillRatio )
         else
@@ -699,7 +717,8 @@ StructureUnit = Class(Unit) {
             end
 
 			if not finishedUnit.UpgradeThread then
-				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.004, 1.005, 9999, 9999, checkrate, initialdelay, true )
+                -- notice the additional parameter at the end, tells the threat to post a note, over the unit, each time the thread runs
+				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.004, 1.005, 9999, 9999, checkrate, initialdelay, true, ScenarioInfo.DisplayFactoryBuilds )
 			end
 		end
 
@@ -713,14 +732,14 @@ StructureUnit = Class(Unit) {
                     checkrate = 15
                     initialdelay = 90
 
-                    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.0032, 0.74, 9999, 1.8, checkrate, initialdelay, true )
+                    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.0032, 0.74, 9999, 1.8, checkrate, initialdelay, true, ScenarioInfo.StructureUpgradeDialog )
                     
                 else
                 
                     checkrate = 14
                     initialdelay = 100
                 
-                    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 0.85, 0.74, 9999, 1.8, checkrate, initialdelay, true )
+                    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 0.85, 0.74, 9999, 1.8, checkrate, initialdelay, true, ScenarioInfo.StructureUpgradeDialog )
                 
                 end
 
@@ -747,7 +766,7 @@ StructureUnit = Class(Unit) {
                 checkrate = 16
                 initialdelay = 110
   
-				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.0045, 0.76, 9999, 1.8, checkrate, initialdelay, true )
+				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.0045, 0.76, 9999, 1.8, checkrate, initialdelay, true, ScenarioInfo.StructureUpgradeDialog )
 
 			end
 		end
@@ -771,7 +790,7 @@ StructureUnit = Class(Unit) {
                 checkrate = 13.5
                 initialdelay = 70
 
-				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, .74, 1.0032, 1.8, 9999, checkrate, initialdelay, true )
+				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, .74, 1.0032, 1.8, 9999, checkrate, initialdelay, true, ScenarioInfo.StructureUpgradeDialog )
 
 			end
         end
@@ -795,7 +814,7 @@ StructureUnit = Class(Unit) {
                 checkrate = 16
                 initialdelay = 85
 
-				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, .74, 1.002, 9999, 9999, checkrate, initialdelay, true )
+				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, .74, 1.002, 9999, 9999, checkrate, initialdelay, true, ScenarioInfo.StructureUpgradeDialog )
 
 			end
         end
@@ -808,7 +827,7 @@ StructureUnit = Class(Unit) {
                 checkrate = 24
                 initialdelay = 150
 
-				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.008, 1.0115, 9999, 9999, checkrate, initialdelay, false )
+				finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.008, 1.0115, 9999, 9999, checkrate, initialdelay, false, ScenarioInfo.StructureUpgradeDialog )
 
 			end
         end
@@ -821,7 +840,7 @@ StructureUnit = Class(Unit) {
                 checkrate = 24
                 initialdelay = 150
 
-			    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.009, 1.02, 9999, 9999, checkrate, initialdelay, false )
+			    finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.009, 1.02, 9999, 9999, checkrate, initialdelay, false, ScenarioInfo.StructureUpgradeDialog )
 
 			end
         end
@@ -832,7 +851,7 @@ StructureUnit = Class(Unit) {
             checkrate = 36
             initialdelay = 300
 
-			finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.012, 1.03, 9999, 9999, checkrate, initialdelay, false )
+			finishedUnit.UpgradeThread = finishedUnit:ForkThread( SelfUpgradeThread, FactionIndex, aiBrain, 1.012, 1.03, 9999, 9999, checkrate, initialdelay, false, ScenarioInfo.StructureUpgradeDialog )
 		end
 
 		-- add thread to the units trash
@@ -857,6 +876,7 @@ StructureUnit = Class(Unit) {
 		if bp.FactionName == 'UEF' then
 
 			HideBone( self, 0, true)
+
 			self.BeingBuiltShowBoneTriggered = false
 
 			if bp.UpgradesFrom != builder.BlueprintID then
@@ -887,7 +907,10 @@ StructureUnit = Class(Unit) {
         elseif FactionName == 'UEF' and not self.BeingBuiltShowBoneTriggered then
             self:ShowBone(0, true)
             self:HideLandBones()
+
         end
+
+        self.BeingBuiltShowBoneTriggered = nil        
 
 		UnitStopBeingBuiltEffects(self, builder, layer)
     end,
@@ -919,6 +942,10 @@ StructureUnit = Class(Unit) {
     -- When we're adjacent, try all the possible bonuses.
     OnAdjacentTo = function(self, adjacentUnit, triggerUnit)
 
+        if ScenarioInfo.UnitDialog then
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." "..self.BlueprintID.." OnAdjacentTo "..repr(adjacentUnit.BlueprintID).." on tick "..GetGameTick())
+        end
+
         if IsBeingBuilt(self) or IsBeingBuilt(adjacentUnit) then
 			return
 		end
@@ -943,6 +970,10 @@ StructureUnit = Class(Unit) {
 
         if adjBuffs and import('/lua/sim/adjacencybuffs.lua')[adjBuffs] then
 
+            if ScenarioInfo.UnitDialog then
+                LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." "..self.BlueprintID.." OnNotAdjacentTo "..repr(adjacentUnit.BlueprintID).." on tick "..GetGameTick())
+            end
+
             for k,v in import('/lua/sim/adjacencybuffs.lua')[adjBuffs] do
 			
                 if HasBuff(adjacentUnit, v) then
@@ -951,7 +982,7 @@ StructureUnit = Class(Unit) {
 				
             end
 
-			self:DestroyAdjacentEffects()
+			self:DestroyAdjacentEffects(adjacentUnit)
 
 			self:RequestRefreshUI()
 			adjacentUnit:RequestRefreshUI()
@@ -982,19 +1013,37 @@ StructureUnit = Class(Unit) {
     end,
 
     DestroyAdjacentEffects = function(self, adjacentUnit)
+    
+        if ScenarioInfo.UnitDialog then
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." "..self.BlueprintID.." DestroyAdjacentEffects to "..repr(adjacentUnit.EntityID).." bag is "..repr(self.AdjacencyBeamsBag).." on tick "..GetGameTick())
+        end
 
         if self.AdjacencyBeamsBag then
 
 			for k, v in self.AdjacencyBeamsBag do
 
-				local unit = GetEntityById(v.Unit)
+				local unit
+
+                unit = adjacentUnit.EntityID
+                
+                if not adjacentUnit then
+                    unit = v.Unit
+                end    
 
 				-- adjacency beams persist until either unit has been destroyed
 				-- even if one of them is a production unit that might be turned off
-				if BeenDestroyed(unit) or unit.Dead or BeenDestroyed(self) or self.Dead then
+				if unit == v.Unit then    --and not ((BeenDestroyed(unit) or unit.Dead) or (self:BeenDestroyed() or self.Dead)) then
+
+                    if ScenarioInfo.UnitDialog then
+                        LOG("*AI DEBUG Destroy AdjacentEffects from "..self.EntityID.." to unit "..v.Unit )
+                    end
+
 					v.Trash:Destroy()
-					self.AdjacencyBeamsBag[k] = nil
-				end
+
+                    self.AdjacencyBeamsBag[k] = nil
+                
+                end
+
 			end
 		end
     end,
@@ -1012,10 +1061,12 @@ StructureUnit = Class(Unit) {
         local aiBrain = GetAIBrain(self)
     
         if ScenarioInfo.StructureUpgradeDialog then    
-            LOG("*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..self.EntityID.." launching follow on upgrade thread at game tick "..GetGameTick() )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." STRUCTUREUpgrade "..self.EntityID.." UpgradeComplete on game tick "..GetGameTick() )
 		end
         
-        self:LaunchUpgradeThread( aiBrain )
+        if self.LaunchUpgradeThread then
+            self:LaunchUpgradeThread( aiBrain )
+        end
     end
   
 }
@@ -2777,7 +2828,7 @@ AirStagingPlatformUnit = Class(StructureUnit) {
     OnTransportAttach = function(self, attachBone, unit)
     
         if ScenarioInfo.UnitDialog then
-            LOG("*AI DEBUG UNIT "..self.Sync.id.." Airpad attaching to unit "..unit.Sync.id)
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.Sync.id.." Airpad OnTransportAttach to unit "..unit.Sync.id.." on tick "..GetGameTick() )
         end
         
 		if not self.UnitStored then
@@ -2796,13 +2847,15 @@ AirStagingPlatformUnit = Class(StructureUnit) {
     OnTransportDetach = function(self, attachBone, unit)
 
         if ScenarioInfo.UnitDialog then
-            LOG("*AI DEBUG UNIT "..self.Sync.id.." Airpad detaching unit "..unit.Sync.id)
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.Sync.id.." Airpad OnTransportDetach unit "..unit.Sync.id.." on tick "..GetGameTick() )
         end
-
-		self.UnitStored[unit.EntityID] = nil
-        
+  
         unit.Attached = nil
-	
+
+        if self.UnitStored[unit.EntityID] then
+            self.UnitStored[unit.EntityID] = nil
+        end
+      	
 		StructureUnitOnTransportDetach(self, attachBone, unit)
 		
     end,
@@ -3355,7 +3408,11 @@ SubUnit = Class(MobileUnit) {
     end,
 
     DeathThread = function(self, overkillRatio, instigator)
-
+    
+        if ScenarioInfo.UnitDialog then
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." SubUnit DeathThread for "..__blueprints[self.BlueprintID].Description.." on tick "..GetGameTick() )
+        end
+  
         if self.DeathAnimManip then
 			WaitFor(self.DeathAnimManip)
 		end
@@ -3545,7 +3602,11 @@ SeaUnit = Class(MobileUnit) {
     end,
 
     DeathThread = function(self, overkillRatio, instigator)
-
+    
+        if ScenarioInfo.UnitDialog then
+            LOG("*AI DEBUG UNIT "..GetAIBrain(self).Nickname.." "..self.EntityID.." SeaUnit DeathThread for "..__blueprints[self.BlueprintID].Description.." on tick "..GetGameTick() )
+        end
+  
         if self.DeathAnimManip then
 			WaitFor(self.DeathAnimManip)
 		end
@@ -4118,7 +4179,7 @@ AirUnit = Class(MobileUnit) {
     CreateUnitAirDestructionEffects = function( self, scale )
 
         if ScenarioInfo.UnitDialog then    
-            LOG("*AI DEBUG UNIT "..self.EntityID.." AIR Create DestructionEffects for "..self.BlueprintID)
+            LOG("*AI DEBUG UNIT "..self.EntityID.."AIR Create DestructionEffects for "..self.BlueprintID)
         end
 
         CreateDefaultHitExplosion( self, GetAverageBoundingXZRadius(self))

@@ -268,8 +268,6 @@ Weapon = Class(moho.weapon_methods) {
             local function AmmoThread(amount)
 	
                 if not BeenDestroyed(self.unit) then
-			
-                    WaitTicks(2)
 		
                     if nuke then
                         self.unit:GiveNukeSiloAmmo(amount)
@@ -277,6 +275,9 @@ Weapon = Class(moho.weapon_methods) {
                         self.unit:GiveTacticalSiloAmmo(amount)
                     end
                 end
+
+                WaitTicks(2)
+
             end
 			
             ForkThread( AmmoThread, LOUDFLOOR(initStore))
@@ -289,9 +290,9 @@ Weapon = Class(moho.weapon_methods) {
     OnDestroy = function(self)
 		-- this only triggers when the unit itself is destroyed
 		-- but I don't see it all the time
-		if ScenarioInfo.WeaponDialog then
-			LOG("*AI DEBUG Weapon OnDestroy ")
-		end
+		--if ScenarioInfo.WeaponDialog then
+			--LOG("*AI DEBUG Weapon OnDestroy ")
+		--end
 
         TrashDestroy(self.Trash)
     end,
@@ -444,7 +445,11 @@ Weapon = Class(moho.weapon_methods) {
     OnStartTracking = function(self, label)
     
         if self.WeaponIsEnabled then
-
+	
+            if ScenarioInfo.WeaponDialog then
+                LOG("*AI DEBUG Weapon OnStartTracking for "..repr(self.bp.Label).." on tick "..GetGameTick() )
+            end
+ 
             self:PlayWeaponSound('BarrelStart')
         end
     end,
@@ -452,6 +457,10 @@ Weapon = Class(moho.weapon_methods) {
     OnStopTracking = function(self, label)
 	
         if self.WeaponIsEnabled then
+	
+            if ScenarioInfo.WeaponDialog then
+                LOG("*AI DEBUG Weapon OnStopTracking for "..repr(self.bp.Label).." on tick "..GetGameTick() )
+            end
 
             self:PlayWeaponSound('BarrelStop')
 		

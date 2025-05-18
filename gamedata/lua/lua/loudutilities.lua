@@ -281,6 +281,7 @@ function GetBaseWithGreatestThreatAtDistance( aiBrain, threattype, threatcutoff,
     local bestname = false
     local threatamount = 0
     local bestthreat = threatcutoff or 10
+    local bestposition = false
     
     local ringcheck = LOUDFLOOR(distance/ScenarioInfo.IMAPSize)
     
@@ -308,11 +309,12 @@ function GetBaseWithGreatestThreatAtDistance( aiBrain, threattype, threatcutoff,
             
                 bestname = base.BaseName
                 bestthreat = threatamount
+                bestposition = base.Position
             end
         end
     end
     
-    return bestname, bestthreat
+    return bestname, bestposition, bestthreat
 end
 
 -- Sorts the list of scouting areas by time since scouted, and then distance from main base.
@@ -565,7 +567,7 @@ function GetFreeUnitsAroundPoint( aiBrain, category, location, radius, useRefuel
 			if not v.Dead and not IsBeingBuilt(v) and v.ArmyIndex == ArmyIndex then
 			
 				-- select only units in the Army pool or not attached
-				if not v.PlatoonHandle or (v.PlatoonHandle == ArmyPool) or (useRefuelPool and v.PlatoonHandle == RefuelPool) then
+				if (not v.Attached) and (not v.PlatoonHandle or (v.PlatoonHandle == ArmyPool)) or (useRefuelPool and v.PlatoonHandle == RefuelPool) then
 
 					retUnits[counter] = v
 					counter = counter + 1
@@ -1174,6 +1176,8 @@ function DisperseUnitsToRallyPoints( aiBrain, units, position, rallypointtable, 
 		local rallycount = LOUDGETN(rallypointtable)
         
         local rp
+        
+        local unitcount = 0
 
         -- if provided use only that number of points
         -- since the table should be sorted, we end up moving only to those
@@ -1185,11 +1189,34 @@ function DisperseUnitsToRallyPoints( aiBrain, units, position, rallypointtable, 
         end
 		
 		for _,u in units do
+        
+            if not u.Dead then
+        
+                -- healthy units will be sent to closest threat rally points
+                -- damaged units will be sent to the rally point furthest 
+                -- from the checkposition (usually safest)
+                if u:GetHealthPercent() > .5 then
 		
-			rp = rallypointtable[ Random( 1, rallycount) ]
+                    rp = rallypointtable[ Random( 1, rallycount) ]
+                
+                else
             
-            IssueStop( {u} )
-			IssueMove( {u}, RandomLocation( rp[1], rp[3], 9 ) )
+                    rp = rallypointtable[ Random( rallycount, checkcount) ]
+                
+                end
+            
+                IssueStop( {u} )
+                IssueMove( {u}, RandomLocation( rp[1], rp[3], 9 ) )
+            
+                unitcount = unitcount + 1
+
+                -- throttling of commands
+                if unitcount > 15 then
+                    unitcount = 0
+                    
+                    WaitTicks(2)
+                end
+            end
 		end
         
 	else
@@ -1888,6 +1915,8 @@ end
 function ProcessAirUnits( unit, aiBrain )
 
 	if (not unit.Dead) and (not IsBeingBuilt(unit)) then
+    
+        --LOG("*AI DEBUG Unit is "..repr(unit.BlueprintID).." GetFuel is "..GetFuelRatio(unit) )
 
 		if ( GetFuelRatio(unit) > -1 and GetFuelRatio(unit) < .75 ) or unit:GetHealthPercent() < .80 then
 
@@ -2230,13 +2259,18 @@ function AirStagingThread( unit, airstage, aiBrain, RefitDialog )
 	while (not unit.Dead) and (not airstage.Dead) do
      
         if unit.Attached then
+
+            if RefitDialog then
+                LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." refit reports ATTACHED at tick "..GetGameTick() )
+            end
+        
             break
         end
 		
 		if (( GetFuelRatio(unit) < .85 and GetFuelRatio(unit) != -1) or GetHealthPercent(unit) < .85) then
 
 			WaitTicks( 16 )
-            waitcount = waitcount + 1
+            waitcount = waitcount + 1.5
 
             if RefitDialog then
                 LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." refit loading cycle "..waitcount.." at tick "..GetGameTick() )
@@ -2252,6 +2286,10 @@ function AirStagingThread( unit, airstage, aiBrain, RefitDialog )
             if waitcount == 41 then  --- just land
         
                 IssueClearCommands( {unit} )
+
+                if RefitDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." refit loading TIMEOUT "..waitcount.." - issuing clear command at tick "..GetGameTick() )
+                end
 
             end
 
@@ -2306,10 +2344,8 @@ function AirStagingThread( unit, airstage, aiBrain, RefitDialog )
                 LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." attached to airpad "..waitcount.." at tick "..GetGameTick() )
             end
 		end
- 
-        if RefitDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." finished refuel at tick "..GetGameTick() )
-        end
+        
+        airstage:OnTransportDetach( nil, unit)
 
 		unit:SetReclaimable(true)
 		unit:SetCapturable(true)
@@ -2320,7 +2356,7 @@ function AirStagingThread( unit, airstage, aiBrain, RefitDialog )
 	if not unit.Dead then
 
         if RefitDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." leaves AirStagingThread at tick "..GetGameTick() )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." "..unit.Sync.id.." leaves AirStagingThread - Attached is "..repr(unit.Attached).." at tick "..GetGameTick() )
         end
   
 	end	
@@ -2346,10 +2382,16 @@ function TeleportLocationBlocked( self, location )
 			
 				local noTeleDistance = __blueprints[unit.BlueprintID].Defense.NoTeleDistance
 				local atposition = GetPosition(unit)
-				local targetdestdistance = VDist2(location[1], location[3], atposition[1], atposition[3])
+                local targetdestdistance = false
+                
+                if location and atposition then
 				
+                    targetdestdistance = VDist2(location[1], location[3], atposition[1], atposition[3])
+                    
+                end
+
 				-- if the antiteleport range covers the targetlocation
-				if noTeleDistance and noTeleDistance > targetdestdistance then
+				if targetdestdistance and noTeleDistance and noTeleDistance > targetdestdistance then
 				
 					--FloatingEntityText(self.EntityID,'Teleportation Malfunction')
 					
@@ -4070,29 +4112,34 @@ end
 -- this pathgenerator also takes into account casualties along the route
 function PathGeneratorWater(aiBrain)
 
-    local GetThreatAtPosition   = GetThreatAtPosition	
-    local PlatoonExists         = PlatoonExists
-
+    local GetThreatBetweenPositions = GetThreatBetweenPositions
+    local PlatoonExists             = PlatoonExists
+    
 	local LOUDCOPY      = LOUDCOPY
     local LOUDEQUAL     = LOUDEQUAL
 	local LOUDREMOVE    = table.remove
 	local LOUDSORT      = LOUDSORT
 	local ForkThread    = ForkThread
-	local WaitTicks     = coroutine.yield
-
-	local dist_comp = aiBrain.dist_comp
+    local type          = type
+    local VDist2        = VDist2
+	local WaitTicks     = WaitTicks
 	
+	local dist_comp = aiBrain.dist_comp
+    
 	local graph         = ScenarioInfo.PathGraphs['Water']
     local Rings         = ScenarioInfo.RingSize or 0
 	local IMAPRadius    = ScenarioInfo.IMAPSize * .5
     local IMAPSize      = ScenarioInfo.IMAPSize
 
-	local data      = false	
+	local data      = false
+    local calctable = {}
 	local queue     = {}
 	local closed    = {}
-
-    local adjacentnodes, checkrange, destination, fork, Node, position, queueitem, stepsize, TestPath, threat, ThreatLayer
-    local EndPosition, EndThreat, platoon, pathcost, pathlist, pathlength, StartNode, StartPosition, ThreatWeight, shortcut
+    
+    local maxthreat, minthreat
+    
+    local checkrange, destination, fork, platoon, stepcostadjust, stepsize,  TestPath, testposition, threat, ThreatLayer
+    local EndPosition, EndThreat, pathcost, pathlength, pathlist, shortcut, StartNode, StartPosition, ThreatWeight
 
 	local function DestinationBetweenPoints(position,testposition)
 
@@ -4117,89 +4164,117 @@ function PathGeneratorWater(aiBrain)
 		return false
 	end
     
-	local AStarLoopBody = function()
+	local function AStarLoopBody()
 
+        local GetThreatAtPosition       = GetThreatAtPosition
         local GetThreatBetweenPositions = GetThreatBetweenPositions
-        
-        local LOUDCOPY = LOUDCOPY
-        local LOUDEQUAL = LOUDEQUAL
-        local LOUDINSERT = LOUDINSERT
-        local LOUDSORT = LOUDSORT
-        local VDist2 = VDist2
-        local VDist3 = VDist3
-        
-        local Cost, newnode, queueitem, position, stepcostadjust, testposition 
+
+        local LOUDCOPY      = LOUDCOPY
+        local LOUDEQUAL     = LOUDEQUAL
+        local LOUDINSERT    = LOUDINSERT
+        local LOUDSORT      = LOUDSORT
+        local VDist3        = VDist3
+
+        local Cost, newnode, Node, Pathcount, position, queueitem, testposition, testpositionlength, Threat	
 
 		queueitem = LOUDREMOVE(queue, 1)
 
-		if closed[queueitem.Node[1]] then
+        Cost        = queueitem.cost
+        Node        = queueitem.Node
+        Pathcount   = queueitem.pathcount
+		position    = Node.position
+        Threat      = queueitem.threat
+
+		if closed[Node[1]] then
 			return false, 0, false, 0
 		end
-
-        Node = queueitem.Node
-	
-		position        = Node.position
-		adjacentnodes   = Node.adjacent
-
-		if LOUDEQUAL(position, data.EndNode.position) or VDist3( destination, position) <= stepsize then
+		
+		if LOUDEQUAL( position, EndPosition ) or VDist3( destination, position ) <= stepsize then
 			return queueitem.path, queueitem.length, false, queueitem.cost
 		end
-		
+	
 		closed[Node[1]] = true
 
-		-- loop thru all the nodes which are adjacent to this one and create a fork entry for each adjacent node
-		-- adjacentnode data format is nodename, distance to node
-		for _, adjacentNode in adjacentnodes do
+		for _, adjacentNode in Node.adjacent do
 			
 			newnode = adjacentNode[1]
-			
+
 			if closed[newnode] then
 				continue
 			end
 
 			testposition = LOUDCOPY(graph[newnode].position)
-
+		
 			if Testpath and DestinationBetweenPoints( position, testposition ) then
             
-                queueitem.length = queueitem.length + VDist3( destination, position)
+                queueitem.length = queueitem.length + VDist3(destination, position)
 
 				return queueitem.path, queueitem.length, true, queueitem.cost
 			end
-
-			threat = LOUDMAX( 0, GetThreatBetweenPositions( aiBrain, position, testposition, nil, ThreatLayer))
-			
-			if threat > queueitem.threat then
-				continue
-			else
             
-                stepcostadjust = queueitem.length/IMAPSize
+            testpositionlength = LOUDFLOOR(VDist3( position, testposition ))
+            
+            threat = 0
+            
+            if Threat < 99999 then
+			
+                threat = LOUDMAX(0, GetThreatAtPosition( aiBrain, testposition, Rings, true, ThreatLayer ))
+			
+                if threat > Threat then
+                    continue
+                end
+			
+                -- if below min threat - devalue it - tiny threats should not impair pathing
+                if threat <= minthreat then
+                    threat = threat * 0.7
+                
+                -- if above max threat - inflate by ratio - really stay away from big threats
+                elseif threat > maxthreat then
+                    threat = (threat/maxthreat)
+                end
+
+                -- adjust threat for the length of the step compared to size of the IMAP block
+                if not calctable[testpositionlength] then 
+                    calctable[testpositionlength] = LOUDSQRT(testpositionlength/IMAPSize)
+                end
+
+                stepcostadjust = calctable[testpositionlength]
                 
                 threat = threat * stepcostadjust
                 
             end
+
+			fork = { cost = 0, goaldist = 0, length = 0, Node = graph[newnode], path = LOUDCOPY(queueitem.path), pathcount = 0 }
             
+            stepcostadjust = 5
+            
+            if threat > 0 then 
+                stepcostadjust = stepcostadjust + 10
+                
+                if threat > (Threat*.5) then
+                    stepcostadjust = stepcostadjust + 10
+                end
+            end
 
-			fork = { cost = 0, goaldist = 0, length = 0, Node = graph[newnode], path = LOUDCOPY(queueitem.path) }
-
-			fork.cost = queueitem.cost + threat + 10
+			fork.cost = Cost + threat + stepcostadjust
 			
-			fork.goaldist = VDist2( destination[1], destination[3], testposition[1], testposition[3] )
+			fork.goaldist = VDist3( destination, testposition )
 
 			fork.length = queueitem.length + adjacentNode[2]
 
-			fork.pathcount = queueitem.pathcount + 1
+			fork.pathcount = Pathcount + 1
 			
 			fork.path[fork.pathcount] = testposition
 
-			fork.threat = queueitem.threat - threat
-			
+			fork.threat = Threat - threat
+
 			LOUDINSERT(queue,fork)
 		end
 
 		LOUDSORT(queue, function(a,b) return (a.cost + a.goaldist) < (b.cost + b.goaldist) end)
 
 		return false, 0, false, 0
-	end
+	end		
 
     local PathRequests = aiBrain.PathRequests.Water
 	local PathReplies = aiBrain.PathRequests['Replies']
@@ -4215,7 +4290,6 @@ function PathGeneratorWater(aiBrain)
             
             destination     = data.Dest
             EndPosition     = data.EndNode.position
-            
             StartNode       = data.StartNode
             StartPosition   = StartNode.position
             stepsize        = data.Stepsize
@@ -4245,24 +4319,28 @@ function PathGeneratorWater(aiBrain)
 
 			while queue[1] do
 
+				-- adjust these multipliers to make pathfinding more or less sensitive to threat
+				maxthreat = ThreatWeight * 0.9
+				minthreat = ThreatWeight * .3
+
 				pathlist, pathlength, shortcut, pathcost = AStarLoopBody()
-                
-				if pathlist and platoon then
+
+				if pathlist and (type(platoon) == 'string' or PlatoonExists(aiBrain, platoon)) then
 
 					aiBrain.PathRequests['Replies'][platoon] = { length = pathlength, path = LOUDCOPY(pathlist), cost = pathcost }
 					break
 				end
+
 			end
-			
-			if (not PathReplies[platoon]) and platoon then
+
+			if (not PathReplies[platoon]) and (type(platoon) == 'string' or PlatoonExists(aiBrain, platoon)) then
             
-                if PathFindingDialog then
+                if PathFindingDialog then            
                     LOG("*AI DEBUG "..aiBrain.Nickname.." PathFind "..repr(platoon.BuilderName or platoon).." no safe WATER path found to "..repr(destination))
                 end
                 
 				aiBrain.PathRequests['Replies'][platoon] = { length = 0, path = 'NoPath', cost = 0 }
 			end
-
         else
             WaitTicks(3)
         end
@@ -4529,6 +4607,10 @@ function ParseIntelThread( aiBrain )
 	
     -- this rate is important since it must be able to keep up with the shift in fast moving air units -- this is the primary performance value -
 	local parseinterval = 58    -- the rate of a single iteration in ticks - every 5.7 seconds (relative to the IMAP update cycle which is 3 seconds)
+    
+    if ScenarioInfo.Options.FogOfWar == 'none' then
+        parseinterval = parseinterval + 30      -- when FOW is turned off, we'll add 50% to the amount of time a cycle will take (8.7 seconds)
+    end
 
 	-- this moves all the local creation up front so NO locals need to be declared in the primary loop
 	local bp, counter, dupe, gametime, newthreat, newtime, oldthreat, threatamounttrigger, threatcategories, threatreport, threats, totalThreat, totalThreatAir, totalThreatSurface
@@ -6634,7 +6716,7 @@ function AttackPlanMonitor(self)
 			SetPrimarySeaAttackBase(self)
             
             -- and wait for next cycle (GoCheckInterval)            
-            WaitTicks(self.AttackPlan.GoCheckInterval * 10)
+            WaitTicks( (self.AttackPlan.GoCheckInterval or 60) * 10)
 		else
             if AttackPlanDialog then
                 LOG("*AI DEBUG "..self.Nickname.." AttackPlan pending")
@@ -6833,7 +6915,7 @@ end
 
 function DrawPath ( origin, path, destination )
  
-    for i = 0, 250 do
+    for i = 0, 300 do
     
         local lastpoint = LOUDCOPY(origin)
         

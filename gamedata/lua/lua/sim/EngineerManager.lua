@@ -246,7 +246,7 @@ EngineerManager = Class(BuilderManager) {
 		end
 
         if EngineerDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." starts AssignEngineerTask at at "..self.LocationType )
+            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." starts AssignEngineerTask at "..self.LocationType.." on tick "..GetGameTick() )
         end
 
 		unit.AssigningTask = true
@@ -265,11 +265,11 @@ EngineerManager = Class(BuilderManager) {
             local PlanName      = PlatoonTemplates[Builder.PlatoonTemplate].Plan
 
 			if PlatoonDialog then
-				LOG("*AI DEBUG "..aiBrain.Nickname.." Platoon "..repr(BuilderName).." forms at EM "..LocationType )
+				LOG("*AI DEBUG "..aiBrain.Nickname.." Platoon "..repr(BuilderName).." forms at EM "..LocationType.." on tick "..GetGameTick() )
 			end
 
             if EngineerDialog then
-                LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." "..repr(BuilderName).." forms at "..LocationType )
+                LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." "..repr(BuilderName).." forms at "..LocationType.." on tick "..GetGameTick() )
             end
 			
             local hndl = MakePlatoon( aiBrain, BuilderName, PlanName or 'none' )
@@ -377,8 +377,8 @@ EngineerManager = Class(BuilderManager) {
 			
             else
             
-                if ScenarioInfo.EngineerDialog then
-                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." finds NO TASK at EM "..self.LocationType)
+                if EngineerDialog then
+                    LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." finds NO TASK at EM "..self.LocationType.." on tick "..GetGameTick() )
                 end
                 
             end
@@ -397,12 +397,14 @@ EngineerManager = Class(BuilderManager) {
     -- This routine runs when an engy cant find a job to do
 	-- Delays him before seeking a new task to avoid thrashing the EM
     DelayAssignEngineerTask = function( self, unit, aiBrain )
+    
+        local delay = LOUDMIN( 101, 14 + (unit.failedbuilds * 5))
 
         if ScenarioInfo.EngineerDialog then
-            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." waiting "..(14 + (unit.failedbuilds * 5)).." ticks")
+            LOG("*AI DEBUG "..aiBrain.Nickname.." Eng "..unit.EntityID.." waiting "..delay.." ticks")
         end    
 
-		WaitTicks(14 + (unit.failedbuilds * 5))
+		WaitTicks( delay )
         
         local IsUnitState = IsUnitState
         
@@ -600,7 +602,7 @@ EngineerManager = Class(BuilderManager) {
 			-- since the engineer is added to the new base (which changes his LocationType but not the platoons)
 			-- it was necessary to change this call to use the units LocationType and NOT the platoons
             -- altered this so that we pass the locationtype to the factory when the build is started 
-            ForkThread( aiBrain.BuilderManagers[finishedUnit.LocationType].FactoryManager.AddFactory, aiBrain.BuilderManagers[finishedUnit.LocationType].FactoryManager, finishedUnit )
+            ForkThread( aiBrain.BuilderManagers[finishedUnit.LocationType].FactoryManager.AddFactory, aiBrain.BuilderManagers[finishedUnit.LocationType].FactoryManager, finishedUnit, aiBrain )
 		end
 
 		-- if STRUCTURE see if Upgrade Thread should start - excluding NUKES & Strat Artillery (they get formed into their own platoons)
@@ -609,14 +611,12 @@ EngineerManager = Class(BuilderManager) {
 			finishedUnit.DesiresAssist = true
 
 			AssignUnitsToPlatoon( aiBrain, StructurePool, {finishedUnit}, 'Support', 'none' )
-
-			-- confirm that finishedUnit is upgradeable
-			local upgradeID = __blueprints[finishedUnit.BlueprintID].General.UpgradesTo or false
-
-			if upgradeID and __blueprints[upgradeID] then
-				-- if upgradeID available then launch upgrade thread
-				finishedUnit:LaunchUpgradeThread( aiBrain )
-			end
+            
+            if finishedUnit.LaunchUpgradeThread then
+                finishedUnit:LaunchUpgradeThread( aiBrain )
+            --else
+                --LOG("*AI DEBUG finishedUnit "..repr(finishedUnit.BlueprintID).." has no LaunchUpgradeThread")
+            end
 
 			-- TMLs --
 			if LOUDENTITY( categories.TACTICALMISSILEPLATFORM, finishedUnit ) then

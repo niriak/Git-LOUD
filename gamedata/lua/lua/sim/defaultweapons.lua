@@ -509,15 +509,15 @@ DefaultProjectileWeapon = Class(Weapon) {
             
             TrashAdd( self.unit.Trash, self.UnpackAnimator )
         end
-        
+
+        self.WeaponUnpacked = true
+
         if self.UnpackAnimator then
 
             self.UnpackAnimator:SetRate(bp.WeaponUnpackAnimationRate)
             
             WaitFor(self.UnpackAnimator)
-            
-            self.WeaponUnpacked = true
-            
+         
             self.ElapsedRepackTime = GetGameTick() - self.ElapsedRepackTime
 
             if ScenarioInfo.WeaponStateDialog then
@@ -560,7 +560,9 @@ DefaultProjectileWeapon = Class(Weapon) {
         if unitBP.Close then
             PlaySound( self, unitBP.Close)
         end
-        
+
+        self.WeaponUnpacked = nil
+
         if bp.WeaponUnpackAnimation and self.UnpackAnimator then
 
             if ScenarioInfo.WeaponStateDialog then
@@ -573,15 +575,13 @@ DefaultProjectileWeapon = Class(Weapon) {
         if self.UnpackAnimator then
 
             WaitFor(self.UnpackAnimator)
-            
-            self.WeaponUnpacked = false
 
             if ScenarioInfo.WeaponStateDialog then
                 LOG("*AI DEBUG DefaultWeapon Pack Sequence "..repr(bp.Label).." ends at "..GetGameTick() )
             end
 
         end
-        
+
     end,
 
     PlayRackRecoil = function(self, rackList, blueprint)
@@ -672,6 +672,7 @@ DefaultProjectileWeapon = Class(Weapon) {
         self.OnGotTargetEvent = true
     
     end,
+
     -- General State-less event handling
     OnLostTarget = function(self)
     
@@ -680,7 +681,7 @@ DefaultProjectileWeapon = Class(Weapon) {
         if self.WeaponIsEnabled then
 
             if ScenarioInfo.WeaponStateDialog then
-                LOG("*AI DEBUG DefaultWeapon OnLostTarget for "..repr(self.bp.Label).." on tick "..GetGameTick() )		
+                LOG("*AI DEBUG DefaultWeapon OnLostTarget for "..repr(self.bp.Label).." has target "..repr(WeaponHasTarget(self)).." on tick "..GetGameTick() )		
             end
 
             local target = WeaponHasTarget(self)
@@ -691,15 +692,15 @@ DefaultProjectileWeapon = Class(Weapon) {
 
             end
 
-            if self.bp.WeaponUnpacks then
+        end
 
-                LOUDSTATE(self, self.WeaponPackingState)
+        if self.bp.WeaponUnpacks then
 
-            else
+            LOUDSTATE(self, self.WeaponPackingState)
 
-                LOUDSTATE(self, self.IdleState)
+        --else
 
-            end
+          --  LOUDSTATE(self, self.IdleState)
 
         end
 
@@ -808,6 +809,12 @@ DefaultProjectileWeapon = Class(Weapon) {
 
             if unit.Dead then return end
             
+            if self.WeaponUnpacked then
+
+                LOUDSTATE(self, self.WeaponPackingState)
+
+            end
+            
             if ScenarioInfo.WeaponStateDialog then
                 LOG("*AI DEBUG DefaultWeapon Idle State "..repr(bp.Label).." at "..GetGameTick() )
             end
@@ -883,8 +890,8 @@ DefaultProjectileWeapon = Class(Weapon) {
             local unit = self.unit
 
             if ScenarioInfo.WeaponStateDialog then
-                LOG("*AI DEBUG DefaultWeapon Idle State OnGotTarget "..repr(bp.Label).." at "..GetGameTick() )
-                --LOG("*AI DEBUG DefaultWeapon Distance to target is "..VDist3( unit:GetPosition(), self:GetCurrentTargetPos() ) )
+                LOG("*AI DEBUG DefaultWeapon Idle State OnGotTarget "..repr(bp.Label).." charged is "..repr(self.WeaponCharged).." at "..GetGameTick() )
+                LOG("*AI DEBUG DefaultWeapon Distance to target is "..VDist3( unit:GetPosition(), self:GetCurrentTargetPos() ) )
             end
 
             if (bp.WeaponUnpackLocksMotion != true or (bp.WeaponUnpackLocksMotion == true and not unit:IsUnitState('Moving'))) then
@@ -908,10 +915,15 @@ DefaultProjectileWeapon = Class(Weapon) {
                 else
                 
                     --- precharged weapons will wait for an OnFire event
+                    --- while others will be ready to fire immediately
                     if not self.WeaponCharged then
 
                         LOUDSTATE(self, self.RackSalvoChargeState)
+                        
+                    else
                     
+                        LOUDSTATE(self, self.RackSalvoFireReadyState)
+                        
                     end
 					
                 end
@@ -1021,17 +1033,7 @@ DefaultProjectileWeapon = Class(Weapon) {
                 self:PlayFxWeaponUnpackSequence(bp)
             end
 
-            --- weapons with a charge time or an energy requirement may now goto the Charge State
-            --- and will wait for the next OnFire event -- otherwise the weapon is ready to fire
-            --if bp.RackSalvoChargeTime or bp.EnergyRequired then
-
-                LOUDSTATE(self, self.RackSalvoChargeState)
-
-            --else
-
-              --  LOUDSTATE(self, self.RackSalvoFireReadyState)
-
-            --end
+            LOUDSTATE(self, self.RackSalvoChargeState)
             
         end,
 
@@ -1553,7 +1555,11 @@ DefaultProjectileWeapon = Class(Weapon) {
             if self.RecoilManipulators then
                 self:WaitForAndDestroyManips()
             end
-
+            
+            if WeaponStateDialog then
+                LOG("*AI DEBUG DefaultWeapon RackSalvo Reload State "..repr(bp.Label).." has target "..repr(WeaponHasTarget(self)).." on tick "..GetGameTick() )
+            end
+  
             -- if the weapon has a target and is not a counted projectile
             if WeaponHasTarget( self ) and not bp.CountedProjectile then 
 
@@ -1872,6 +1878,18 @@ DefaultBeamWeapon = Class(DefaultProjectileWeapon) {
 
     end,
 
+    OnLostTarget = function(self)
+    
+        if self.BeamStarted then
+        
+            self.PlayFxBeamEnd(self)
+            
+        end
+        
+        DefaultProjectileWeapon.OnLostTarget(self)
+    
+    end,
+    
     CreateProjectileAtMuzzle = function(self, muzzle)
 		
         local enabled = false
