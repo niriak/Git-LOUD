@@ -3756,8 +3756,13 @@ Platoon = Class(PlatoonMethods) {
 			StuckCount = 0
 
             platLoc = GetPlatoonPosition(self) or false
-            distance = VDist3( platLoc, marker )
-            oldplatpos = LOUDCOPY(platLoc)
+            
+            if platLoc then
+                distance = VDist3( platLoc, marker )
+                oldplatpos = LOUDCOPY(platLoc)
+            else
+                marker = false
+            end
 
 			-- TRAVEL TO THE MARKER POINT -- Check exit parameters along the way
 			while PlatoonExists(aiBrain,self) and marker and distance > UntRadius and guardtime < guardTimer do
@@ -4167,18 +4172,18 @@ Platoon = Class(PlatoonMethods) {
 			UntCat = LOUDPARSE(UntCat)
 		end
 
-        local bAggroMove = PlatoonData.AggressiveMove or false
-		local allowinwater = PlatoonData.AllowInWater or 'true'		-- platoon will consider points on/under water
-		local AssistRange = PlatoonData.AssistRange or 0			-- range at which the platoon will set an assist marker
-		local AvoidBases = PlatoonData.AvoidBases or 'false'			-- Platoon will avoid points within PMin of allied base positions
-		local guardRadius = PlatoonData.GuardRadius or 75			-- range at which platoon will engage enemy targets around point
-        local guardTimer = PlatoonData.GuardTimer or 600	 		-- how long platoon will remain at point before moving on        
-		local MergeLimit = PlatoonData.MergeLimit or false			-- unit count at which to prevent merging
-        local MergePlanMatch = PlatoonData.MergePlanMatch or false -- if merging, the behavior AND the plan name must match.
-		local MissionTimer = PlatoonData.MissionTime or 1200		-- how long platoon will operate before RTB        
-		local PatrolRadius = PlatoonData.PatrolRadius or 60
-        local PlatoonFormation = PlatoonData.UseFormation or 'None'
-		local SetPatrol = PlatoonData.SetPatrol or false
+        local bAggroMove        = PlatoonData.AggressiveMove or false
+		local allowinwater      = PlatoonData.AllowInWater or 'true'	-- platoon will consider points on/under water
+		local AssistRange       = PlatoonData.AssistRange or 0			-- range at which the platoon will set an assist marker
+		local AvoidBases        = PlatoonData.AvoidBases or 'false'		-- Platoon will avoid points within PMin of allied base positions
+		local guardRadius       = PlatoonData.GuardRadius or 75			-- range at which platoon will engage enemy targets around point
+        local guardTimer        = PlatoonData.GuardTimer or 600	 		-- how long platoon will remain at point before moving on        
+		local MergeLimit        = PlatoonData.MergeLimit or false		-- unit count at which to prevent merging
+        local MergePlanMatch    = PlatoonData.MergePlanMatch or false   -- if merging, the behavior AND the plan name must match.
+		local MissionTimer      = PlatoonData.MissionTime or 1200		-- how long platoon will operate before RTB        
+		local PatrolRadius      = PlatoonData.PatrolRadius or 60
+        local PlatoonFormation  = PlatoonData.UseFormation or 'None'
+		local SetPatrol         = PlatoonData.SetPatrol or false
 
 		
         local CategoryList = {}
@@ -7250,21 +7255,28 @@ Platoon = Class(PlatoonMethods) {
 
 		eng.EngineerBuildQueue = {} 	-- clear the engineers build queue		
 
-        local reference = false
-		local refName = false
-		local orient = false
-        local relative = false
-		local rotation = false
-		local startpos = false
-		local baselineref = false
+        local reference     = false
+		local refName       = false
+		local orient        = false
+        local relative      = false
+		local rotation      = false
+		local startpos      = false
+		local baselineref   = false
 
-        local BasePerimeterOrientation = cons.BasePerimeterOrientation or 'FRONT'
-        local addrotations = cons.AddRotations or 0
-		local buildpoint = cons.BasePerimeterSelection or false	-- true, false, or a specific number (0-12) depending upon Orientation (FRONT,REAR,ALL)
-		local iterations = cons.Iterations or false
+        local BuilderLocation           = self.BuilderLocation
 
-        local NearMarkerType = cons.NearMarkerType or nil
-        local Radius = cons.Radius or 1
+        local BasePerimeterOrientation  = cons.BasePerimeterOrientation or 'FRONT'
+        local addrotations              = cons.AddRotations or 0
+		local buildpoint                = cons.BasePerimeterSelection or false	-- true, false, or a specific number (0-12) depending upon Orientation (FRONT,REAR,ALL)
+		local iterations                = cons.Iterations or false
+
+        local NearMarkerType            = cons.NearMarkerType or nil
+        local Radius                    = cons.Radius or 1
+        
+        local ThreatMax                 = cons.ThreatMax    or 20
+        local ThreatMin                 = cons.ThreatMin    or 0
+        local ThreatRings               = cons.ThreatRings  or 1
+        local ThreatType                = cons.ThreatType   or 'AntiSurface'
 		
         local buildFunction = false
 
@@ -7370,7 +7382,7 @@ Platoon = Class(PlatoonMethods) {
 			
 			-- this reference passes along the NAME of the location -- this should trigger the function to record the ORIENT value on the manager
 			-- the other places where this function is called are used when building a NEW base so the orient value is not available 
-            reference, orient, buildpoint = GetBasePerimeterPoints(aiBrain, self.BuilderLocation, Radius, BasePerimeterOrientation, cons.BasePerimeterSelection or false)
+            reference, orient, buildpoint = GetBasePerimeterPoints(aiBrain, BuilderLocation, Radius, BasePerimeterOrientation, buildpoint)
 
 			RotateBuildLayout()
 			
@@ -7383,27 +7395,27 @@ Platoon = Class(PlatoonMethods) {
 			if NearMarkerType == 'Naval Area' then
 			
 				-- Naval Base
-				startpos, refName = AIFindNavalAreaForExpansion( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.ThreatMin, cons.ThreatMax, cons.ThreatRings, cons.ThreatType )
+				startpos, refName = AIFindNavalAreaForExpansion( aiBrain, BuilderLocation, (cons.LocationRadius or 100), ThreatMin, ThreatMax, ThreatRings, ThreatType )
 				
 			elseif NearMarkerType == 'Defensive Point' then
 			
 				-- Defensive Points with ExpansionBase == true
-				startpos, refName = AIFindDefensivePointForDP( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.ThreatMin, cons.ThreatMax, cons.ThreatRings, cons.ThreatType, false )
+				startpos, refName = AIFindDefensivePointForDP( aiBrain, BuilderLocation, (cons.LocationRadius or 100), ThreatMin, ThreatMax, ThreatRings, ThreatType, false )
 
 			elseif NearMarkerType == 'Naval Defensive Point' then	
 			
-				startpos, refName = AIFindNavalDefensivePointNeedsStructure( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, cons.ThreatMin, cons.ThreatMax, cons.ThreatRings, cons.ThreatType )			
+				startpos, refName = AIFindNavalDefensivePointNeedsStructure( aiBrain, BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, ThreatMin, ThreatMax, ThreatRings, ThreatType )			
 				
 			else
 				
 				if cons.CountedBase == false then
 					
-					startpos, refName = AIFindBaseAreaForDP( aiBrain, self.BuilderLocation, (cons.LocationRadius or 2000), cons.ThreatMin, cons.ThreatMax, cons.ThreatRings, cons.ThreatType, false )
+					startpos, refName = AIFindBaseAreaForDP( aiBrain, BuilderLocation, (cons.LocationRadius or 2000), ThreatMin, ThreatMax, ThreatRings, ThreatType, false )
 					
 				else
 				
 					-- Land Base - finds both Starts and Large Expansion areas
-					startpos, refName = AIFindBaseAreaForExpansion( aiBrain, self.BuilderLocation, (cons.LocationRadius or 2000), cons.ExpansionRadius, cons.ThreatMin, cons.ThreatMax, cons.ThreatRings, cons.ThreatType, false )
+					startpos, refName = AIFindBaseAreaForExpansion( aiBrain, BuilderLocation, (cons.LocationRadius or 2000), cons.ExpansionRadius, ThreatMin, ThreatMax, ThreatRings, ThreatType, false )
 				end
 			end
 
@@ -7436,19 +7448,19 @@ Platoon = Class(PlatoonMethods) {
 			if NearMarkerType == 'Defensive Point' then
             
                 --  this will actually locate Defensive Points and 'small' Expansion Base markers --
-				startpos, refName = AIFindDefensivePointNeedsStructure( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, (cons.ThreatMin or 0), (cons.ThreatMax or 5), (cons.ThreatRings or 1), (cons.ThreatType or 'AntiSurface') )
+				startpos, refName = AIFindDefensivePointNeedsStructure( aiBrain, BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, ThreatMin, ThreatMax, ThreatRings, ThreatType )
 			
 			elseif NearMarkerType == 'Start Location' then
 			
-				startpos, refName = AIFindStartPointNeedsStructure( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, (cons.ThreatMin or 0), (cons.ThreatMax or 5), (cons.ThreatRings or 1), (cons.ThreatType or 'AntiSurface') )										
+				startpos, refName = AIFindStartPointNeedsStructure( aiBrain, BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, ThreatMin, ThreatMax, ThreatRings, ThreatType )
 
 			elseif NearMarkerType == 'Expansion Area' then
 			
-				startpos, refName = AIFindBasePointNeedsStructure( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, (cons.ThreatMin or 0), (cons.ThreatMax or 5), (cons.ThreatRings or 1), (cons.ThreatType or 'AntiSurface') )						
+				startpos, refName = AIFindBasePointNeedsStructure( aiBrain, BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, ThreatMin, ThreatMax, ThreatRings, ThreatType )						
 
 			elseif NearMarkerType == 'Naval Defensive Point' then	
 			
-				startpos, refName = AIFindNavalDefensivePointNeedsStructure( aiBrain, self.BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, (cons.ThreatMin or 0), (cons.ThreatMax or 5), (cons.ThreatRings or 1), (cons.ThreatType or 'AntiSurface') )			
+				startpos, refName = AIFindNavalDefensivePointNeedsStructure( aiBrain, BuilderLocation, (cons.LocationRadius or 100), cons.MarkerUnitCategory, cons.MarkerRadius, cons.MarkerUnitCount, ThreatMin, ThreatMax, ThreatRings, ThreatType )			
 			
 			end
 			
@@ -7581,7 +7593,7 @@ Platoon = Class(PlatoonMethods) {
 				return self:SetAIPlan('ReturnToBaseAI',aiBrain)
 			end
 
-			reference = GetOwnUnitsAroundPointWithThreatCheck( aiBrain, cons.AdjacencyCategory, pos, cons.AdjacencyDistance or 50, cons.ThreatMin, cons.ThreatMax, cons.ThreatRings)
+			reference = GetOwnUnitsAroundPointWithThreatCheck( aiBrain, cons.AdjacencyCategory, pos, cons.AdjacencyDistance or 50, ThreatMin, ThreatMax, ThreatRings)
 
 			buildFunction = AIBuildAdjacency
 			LOUDINSERT( baseTmplList, baseTmpl )

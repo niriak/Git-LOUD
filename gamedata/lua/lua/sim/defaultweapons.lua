@@ -178,10 +178,6 @@ DefaultProjectileWeapon = Class(Weapon) {
         local Audio         = bp.Audio
         local CacheLayer    = unit.CacheLayer
 	
-		if ScenarioInfo.ProjectileDialog then
-			LOG("*AI DEBUG Projectile CreateProjectileAtMuzzle "..repr(bp.Label).." Muzzle "..repr(muzzle).." Projectile "..repr(proj.BlueprintID) )
-		end
-		
         if not proj or BeenDestroyed(proj) then
             return false
         end
@@ -225,7 +221,11 @@ DefaultProjectileWeapon = Class(Weapon) {
 		end
 
         proj:ForkThread( MicroMonitor, self)
-
+	
+		if ScenarioInfo.ProjectileDialog then
+			LOG("*AI DEBUG Projectile CreateProjectileAtMuzzle "..repr(bp.Label).." Muzzle "..repr(muzzle).." Projectile "..repr(proj) )
+		end
+	
         return proj
     end,
 	
@@ -629,14 +629,18 @@ DefaultProjectileWeapon = Class(Weapon) {
     PlayRackRecoilReturn = function(self, rackList)
 	
         WaitTicks(1)
+    
+        if not self.unit.Dead then
 		
-        for _, v in rackList do
+            for _, v in rackList do
         
-            for _, mv in self.RecoilManipulators do
-                SetGoal( mv, 0, 0, 0)
-                SetSpeed( mv, self.RackRecoilReturnSpeed)
+                for _, mv in self.RecoilManipulators do
+                    SetGoal( mv, 0, 0, 0)
+                    SetSpeed( mv, self.RackRecoilReturnSpeed)
+                end
             end
         end
+        
     end,
 
     WaitForAndDestroyManips = function(self)
@@ -697,10 +701,6 @@ DefaultProjectileWeapon = Class(Weapon) {
         if self.bp.WeaponUnpacks then
 
             LOUDSTATE(self, self.WeaponPackingState)
-
-        --else
-
-          --  LOUDSTATE(self, self.IdleState)
 
         end
 
@@ -1011,7 +1011,7 @@ DefaultProjectileWeapon = Class(Weapon) {
 	
     WeaponUnpackingState = State {
 
-        WeaponWantEnabled = false,
+        WeaponWantEnabled = true,
         WeaponAimWantEnabled = true,
 
         Main = function(self)
@@ -1192,7 +1192,7 @@ DefaultProjectileWeapon = Class(Weapon) {
             end
 			
         end,
-        
+     
         OnGotTarget = function(self)
 
             if ScenarioInfo.WeaponStateDialog then
@@ -1374,7 +1374,7 @@ DefaultProjectileWeapon = Class(Weapon) {
                     ------------------					
             
                     if WeaponStateDialog then
-                        LOG("*AI DEBUG DefaultWeapon RackSalvo Firing State "..repr(bp.Label).." - FIRES rack "..self.CurrentRackNumber.." muzzle "..i.." at "..GetGameTick() )
+                        LOG("*AI DEBUG DefaultWeapon RackSalvo Firing State "..repr(bp.Label).." - FIRES rack "..self.CurrentRackNumber.." muzzle "..i.." "..repr(muzzle).." at "..GetGameTick() )
                     end
 
                     self:PlayFxMuzzleSequence(muzzle)                    
@@ -1422,9 +1422,9 @@ DefaultProjectileWeapon = Class(Weapon) {
                             end
                         end
 						
-                        WaitSeconds( MuzzleSalvoDelay )
+                        WaitTicks( LOUDFLOOR(MuzzleSalvoDelay * 10 ) + 1)
                     end
-                    
+
                 end
                 
                 if bp.CameraShakeRadius or bp.ShipRock or bp.RackRecoilDistance != 0 then
@@ -1541,7 +1541,7 @@ DefaultProjectileWeapon = Class(Weapon) {
                     LOG("*AI DEBUG DefaultWeapon RackSalvo Reload State "..repr(bp.Label).." RackSalvoReloadTime waits "..math.ceil(bp.RackSalvoReloadTime * 10) - self.ElapsedRackReloadTicks.." ticks" )
                 end
             
-                WaitTicks( (math.ceil(bp.RackSalvoReloadTime * 10) - self.ElapsedRackReloadTicks) )
+                WaitTicks( (math.ceil(bp.RackSalvoReloadTime * 10) - self.ElapsedRackReloadTicks) + 1 )
             end
             
             if self.BeamLifetimeWatch then

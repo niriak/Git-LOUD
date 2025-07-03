@@ -1151,20 +1151,65 @@ end
 
 -- creates the buttons for the alt orders, placing them as possible
 local function CreateAltOrders(availableOrders, availableToggles, units)
-    --LOG("*AI DEBUG Creating ALT Orders")
 
-    --TODO? it would indeed be easier if the alt orders slot was in the blueprint, but for now try
-    --to determine where they go by using preferred slots
+    --LOG("*AI DEBUG Creating ALT Orders")
 
     --Look for units in the selection that have special ability buttons
     --If any are found, add the ability information to the standard order table
-    if units and categories.ABILITYBUTTON and EntityCategoryFilterDown(categories.ABILITYBUTTON, units) then
+
+    -- May 2025 - note that ability buttons rely upon the UnitData table, which is NOT repopulated during a loaded save game
+    -- this leaves units, with ability buttons, locked out of their special functions
+    -- I've installed code which re-initializes the UnitData table entry, allowing them to properly function again
+    if (units and categories.ABILITYBUTTON) and EntityCategoryFilterDown(categories.ABILITYBUTTON, units)[1] then
+
+        --LOG("*AI DEBUG Unit has ABILITYBUTTON "..repr(EntityCategoryFilterDown(categories.ABILITYBUTTON, units)))
+
         for index, unit in units do
-            local tempBP = UnitData[unit:GetEntityId()]
+
+            -- notice how this retrieves current state of the button, from the UnitData table
+            -- this table is entirely empty, upon reload, and is repopulated as things happen on the unit
+            -- but, if the ability button is the only thing that can happen to the unit, the unit is essentially 'locked out'
+            local tempBP = UnitData[unit:GetEntityId()] or false
+
+            -- this should only occur when loading a saved game
+            -- we'll put the default blueprint values into UnitData so that
+            -- normal activity can resume
+            if not tempBP then
+
+                local unitID = unit:GetEntityId()
+
+                UnitData[unitID] = {}
+
+                UnitData[unitID].Abilities = {}
+
+                local bpabilities = unit:GetBlueprint().Abilities or false
+
+                if bpabilities then
+
+                    for k,v in bpabilities do
+                        UnitData[unitID].Abilities[k] = v
+                    end
+
+                end
+
+                tempBP = UnitData[unit:GetEntityId()]
+
+            end
+
+            --LOG("*AI DEBUG Unit tempBP is "..repr(tempBP))
+
             if tempBP.Abilities then
+
+                --LOG("*AI DEBUG Available Orders are "..repr(availableOrders) )
+
                 for abilityIndex, ability in tempBP.Abilities do
+
+                    --LOG("*AI DEBUG Checking Ability "..repr(ability) )
+
                     if ability.Active != false then
+
                         --LOG("*AI DEBUG Adding Ability order "..repr(ability).." for index "..repr(abilityIndex) )
+
                         table.insert(availableOrders, abilityIndex)
 
                         -- if the preferred slot and the script were defined in the ability (from the bp)
@@ -1176,7 +1221,9 @@ local function CreateAltOrders(availableOrders, availableToggles, units)
                         end
 
                         --LOG("*AI DEBUG Added Ability order data is "..repr(standardOrdersTable[abilityIndex]))
+
                         standardOrdersTable[abilityIndex].behavior = AbilityButtonBehavior
+
                     end
                 end
             end
@@ -1218,6 +1265,7 @@ local function CreateAltOrders(availableOrders, availableToggles, units)
     -- we first want a table of slots we want to fill, and what orders want to fill them
     local desiredSlot = {}
     local usedSpecials = {}
+
     if availableOrders[1] then
         --LOG("*AI DEBUG Examining Available Orders "..repr(availableOrders))
         for index, availOrder in availableOrders do
@@ -1391,7 +1439,8 @@ end
 
 -- called by gamemain when new orders are available, 
 function SetAvailableOrders(availableOrders, availableToggles, newSelection)
-    -- adopted from Domino Mod Support 
+
+    -- adopted from Domino Mod Support
     if table.getn(newSelection) == 0 then
         if controls.bg.Mini then
             controls.bg.Mini(true)
@@ -1484,56 +1533,16 @@ end
 
 
 function SetAvailableOrdersMod(availableOrders, availableToggles, newSelection)
-    --LOG("*AI DEBUG availableOrders now is "..repr(availableOrders))
+
+    --LOG("*AI DEBUG availableOrders now is "..repr(availableOrders).." Toggles "..repr(availableToggles) )
+
     currentSelection = newSelection
 
     local TotalSlotsNeeded = 0
     local numValidOrders = 0
     local HighestSlot = 16
-    local AddedAbilities = {}
 
---[[
-    -- this block is here to support a DMS feature (not in use)
-    if currentSelection then
-        for index, Unit in currentSelection do
-            local UnitId = Unit:GetEntityId()
-            local UnitAbilities = GetUnitParamTable(Unit, 'Abilities')
-            local UnitRallyPoints = UnitRallyPoints[UnitId]
-
-            --Abilities....
-            if UnitAbilities and table.getsize(UnitAbilities) > 0 then
-                for AbilityName, Params in UnitAbilities do
-                    if Params then 
-                        local idenitfier = Params.identifier
-                        if Params.active and not AddedAbilities[idenitfier] and Params.showtoggle then
-                            AddedAbilities[idenitfier] = true
-                            TotalSlotsNeeded = TotalSlotsNeeded + 1
-                            if Params.preferredSlot > HighestSlot then 
-                                HighestSlot = Params.preferredSlot
-                            end
-                        end
-                    end
-                end
-            end
-
-            --RallyPoints
-            if UnitRallyPoints and table.getsize(UnitRallyPoints) > 0 then
-                for RallyPointName, Params in UnitRallyPoints do
-                    if Params then 
-                        local idenitfier = Params.identifier
-                        if Params.active and not AddedAbilities[idenitfier] and Params.showtoggle then
-                            AddedAbilities[idenitfier] = true
-                            TotalSlotsNeeded = TotalSlotsNeeded + 1
-                            if Params.preferredSlot > HighestSlot then 
-                                HighestSlot = Params.preferredSlot
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
---]]
+    --local AddedAbilities = {}
 
     --clear ALL existing orders
     orderCheckboxMap = {}
@@ -1547,20 +1556,23 @@ function SetAvailableOrdersMod(availableOrders, availableToggles, newSelection)
     -- the syntax of the override in the blueprint is as follows (the overrides use same naming as in the default table above):
     -- In General table
     -- OrderOverrides = {
-    --     RULEUTC_IntelToggle = {
-    --         bitmapId = 'custom',
-    --         helpText = 'toggle_custom',
-    --     },
+    --     RULEUTC_IntelToggle = { bitmapId = 'custom', helpText = 'toggle_custom' },
     --  },
     -- 
     local orderDiffs
+
     for index, unit in newSelection do
+
         local overrideTable = unit:GetBlueprint().General.OrderOverrides
+
         if overrideTable then
+
             for orderKey, override in overrideTable do
+
                 if orderDiffs == nil then
                     orderDiffs = {}
                 end
+
                 if orderDiffs[orderKey] != nil and (orderDiffs[orderKey].bitmapId != override.bitmapId or orderDiffs[orderKey].helpText != override.helpText) then
                     -- found order diff already, so mark it false so it gets ignored when applying to table
                     orderDiffs[orderKey] = false

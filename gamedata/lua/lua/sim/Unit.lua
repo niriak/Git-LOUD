@@ -170,11 +170,11 @@ local WALL = categories.WALL
 Unit = Class(UnitMethods) {
 
     BuffTypes = {
-        Regen = { BuffType = 'VET_REGEN', BuffValFunction = 'Add', BuffDuration = -1, BuffStacks = 'REPLACE' },
-        Health = { BuffType = 'VET_HEALTH', BuffValFunction = 'Mult', BuffDuration = -1, BuffStacks = 'REPLACE' },
-        EnergyWeapon = { BuffType = 'VET_ENERGYWEAPON', BuffValFunction = 'Mult', BuffDuration = -1, BuffStacks = 'REPLACE' },
-		VisionRadius = { BuffType = 'VET_VISION', BuffValFunction = 'Add', BuffDuration = -1, BuffStacks = 'REPLACE' },
-        WaterVisionRadius = { BuffType = 'VET_WATER_VISION', BuffValFunction = 'Add', BuffDuration = -1, BuffStacks = 'REPLACE' },
+        Regen               = { BuffType = 'VET_REGEN',         BuffValFunction = 'Add',    BuffDuration = -1, BuffStacks = 'REPLACE' },
+        Health              = { BuffType = 'VET_HEALTH',        BuffValFunction = 'Mult',   BuffDuration = -1, BuffStacks = 'REPLACE' },
+        EnergyWeapon        = { BuffType = 'VET_ENERGYWEAPON',  BuffValFunction = 'Mult',   BuffDuration = -1, BuffStacks = 'REPLACE' },
+		VisionRadius        = { BuffType = 'VET_VISION',        BuffValFunction = 'Add',    BuffDuration = -1, BuffStacks = 'REPLACE' },
+        WaterVisionRadius   = { BuffType = 'VET_WATER_VISION',  BuffValFunction = 'Add',    BuffDuration = -1, BuffStacks = 'REPLACE' },
     },
 
     FxDamageScale = 1,
@@ -3788,7 +3788,7 @@ Unit = Class(UnitMethods) {
 			
         elseif unitEnhancements[tempEnhanceBp.Slot] then
 		
-			LOG("*AI DEBUG "..GetAIBrain(self).Nickname.." "..ALLBPS[self.BlueprintID].Description.." Slot required is " .. tempEnhanceBp.Slot )
+			LOG("*AI DEBUG "..GetAIBrain(self).Nickname.." "..ALLBPS[self.BlueprintID].Description.." "..repr(work).." Slot required is " .. tempEnhanceBp.Slot )
 			
             --error('*ERROR: "..self.Brain.Nickname.." enhancement '..repr(work)..' does not have the proper slot available!', 2)
             return false	-- as above, to OnWorkFail ?
@@ -5156,18 +5156,30 @@ Unit = Class(UnitMethods) {
 	end,
 
     OnShieldIsUp = function(self)
-	
+
+        if ScenarioInfo.ShieldDialog then
+            LOG("*AI DEBUG OnShieldIsUp")
+        end
+
         self:DoUnitCallbacks('OnShieldIsUp')
 		
     end,
 
 	OnShieldIsDown = function(self)
+
+        if ScenarioInfo.ShieldDialog then
+            LOG("*AI DEBUG OnShieldIsDown")
+        end
 	
         self:DoUnitCallbacks('OnShieldIsDown')
 		
 	end,
 
     OnShieldIsCharging = function(self)
+
+        if ScenarioInfo.ShieldDialog then
+            LOG("*AI DEBUG OnShieldIsCharging")
+        end
 	
         self:DoUnitCallbacks('OnShieldIsCharging')
 		
@@ -5885,7 +5897,7 @@ Unit = Class(UnitMethods) {
 	-- It ensures that the cloak effect and cloak field are always in the correct state for units that are in the field
 	-- This task hogs a buttload of CPU - original wait period was 2 ticks - now 80 
 	CloakEffectControlThread = function(self,blueprint)
-	
+    
 		local bp = blueprint or ALLBPS[self.BlueprintID]
 		local brain = GetAIBrain(self)
 		

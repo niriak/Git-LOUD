@@ -53,6 +53,7 @@ UnitBlueprint {
         MaxHealth = 1900,
         RegenRate = 3,
 
+        SubThreatLevel = 3,
         SurfaceThreatLevel = 8,
     },
 	
@@ -63,6 +64,7 @@ UnitBlueprint {
             '<LOC ability_radar>Radar',
             '<LOC ability_sonar>Sonar',
             "<LOC ability_torpedodef>Torpedo Defense",
+            "<LOC ability_depthcharge>Depth Charge",
         },
         AnimationDeath = {
             {
@@ -146,25 +148,30 @@ UnitBlueprint {
     LifeBarSize = 1.25,
 	
     Physics = {
-        BackUpDistance = 6,
+        BackUpDistance = 8,
         BankingSlope = 0,
         BuildOnLayerCaps = {
             LAYER_Water = true,
         },
-        CatchUpAcc = 8,
+        CatchUpAcc = 10,
         DragCoefficient = 0.2,
-        MaxAcceleration = 2,
-        MaxBrake = 4,
+
+        MaxAcceleration = 2.4,
+        MaxBrake = 2,
         MaxSpeed = 4,
         MaxSpeedReverse = 4,
+
         MaxSteerForce = 5,
+
         MeshExtentsX = 0.6,
         MeshExtentsY = 0.8,
         MeshExtentsZ = 2.7,
+
         MinSpeedPercent = 0,
         MotionType = 'RULEUMT_Water',
-        TurnRadius = 15,
-        TurnRate = 50,
+
+        TurnRadius = 12,
+        TurnRate = 66,
     },
 	
     SelectionSizeX = 0.5,
@@ -197,6 +204,7 @@ UnitBlueprint {
             },
 			
             BallisticArc = 'RULEUBA_LowArc',
+			CannotAttackGround = true,
             CollideFriendly = false,
 			
             Damage = 45,
@@ -272,6 +280,7 @@ UnitBlueprint {
             },
 
             BallisticArc = 'RULEUBA_LowArc',
+			CannotAttackGround = true,
             CollideFriendly = false,
 			
             Damage = 45,
@@ -366,16 +375,13 @@ UnitBlueprint {
             MinRadius = 6,
 
             MuzzleSalvoDelay = 0.6,
-            MuzzleVelocity = 7.5,
+            MuzzleVelocity = 6.5,
 			
             ProjectileId = '/projectiles/AIMAntiTorpedo01/AIMAntiTorpedo01_proj.bp',
             ProjectileLifetime = 3,
 			
             RackBones = {
-                {
-                    MuzzleBones = { 'Projectile01' },
-                    RackBone = 'Projectile01',
-                },
+                { MuzzleBones = { 'Projectile01' }, RackBone = 'Projectile01'},
             },
 
             RangeCategory = 'UWRC_Countermeasure',
@@ -388,8 +394,72 @@ UnitBlueprint {
             TargetRestrictOnlyAllow = 'TORPEDO',
             TargetType = 'RULEWTT_Projectile',
             
-            WeaponRepackTimeout = 0.9,
+            WeaponRepackTimeout = 1.2,
         },
+
+        {
+            AutoInitiateAttackCommand = true,
+            
+            Audio = {
+                Fire = Sound { Bank = 'UAAWeapon', Cue = 'UAA0204_Depth_Charge', LodCutoff = 'Weapon_LodCutoff' },
+            },
+
+            BallisticArc = 'RULEUBA_None',
+            BelowWaterTargetsOnly = true,
+            
+            CollideFriendly = false,
+			
+            Damage = 75,
+            DamageRadius = 2.5,
+            DamageType = 'Normal',
+			
+            DisplayName = 'Harmonic Depth Charge',
+			
+            FireTargetLayerCapsTable = {
+                Water = 'Seabed|Sub|Water',
+            },
+			
+            FiringRandomness = 7,
+            FiringTolerance = 18,
+			
+            Label = 'DepthCharge',
+			
+            MaxRadius = 12,
+
+            MuzzleSalvoDelay = 0.5,
+            MuzzleSalvoSize = 2,
+
+            MuzzleVelocity = 5,
+            
+            NotExclusive = true,
+			
+            ProjectileId = '/projectiles/AANDepthCharge01/AANDepthCharge01_proj.bp',
+			ProjectileLifetime = 5.5, 
+
+            RackBones = {
+                {
+                    MuzzleBones = {'Projectile02'},
+                    RackBone = 'Projectile02',
+                },
+            },
+
+            RackSalvoReloadTime = 4.8,
+
+            RangeCategory = 'UWRC_AntiNavy',
+
+            RateOfFire = 0.5,     -- controlled by rack salvo reload and muzzle salvo delay - once every 5.8 seconds = 150/5.8 = 26 dps
+
+            TargetCheckInterval = 2,
+            
+            TargetPriorities = {
+                'SUBMARINE',
+                'SUBMERSIBLE',
+            },
+            TargetRestrictDisallow = 'UNTARGETABLE, HOVER',
+			
+            TrackingRadius = 2,
+
+        },        
     },
 	
 }

@@ -1376,12 +1376,12 @@ MobileUnit = Class(Unit) {
         local sizeX = treads.TreadMarksSizeX
         local sizeZ = treads.TreadMarksSizeZ
 		
-        local interval = treads.TreadMarksInterval * 10 + 1
+        local interval      = treads.TreadMarksInterval * 10 + 1
 		
-        local treadOffset = treads.TreadOffset
-        local treadBone = treads.BoneName or 0
-        local treadTexture = treads.TreadMarks
-        local duration = treads.TreadLifeTime or 10
+        local treadOffset   = treads.TreadOffset
+        local treadBone     = treads.BoneName or 0
+        local treadTexture  = treads.TreadMarks
+        local duration      = treads.TreadLifeTime or 10
 		
         local army = self.Army
 
@@ -1839,6 +1839,10 @@ MobileUnit = Class(Unit) {
 					self:StartRocking()
 				end
 			end
+            
+			if new == 'Stopped' and self.EventCallbacks.OnHorizontalStopMove then
+				self:DoOnHorizontalStopMoveCallbacks()
+			end
 
             self:StopUnitAmbientSound( 'AmbientMove' )
             self:StopUnitAmbientSound( 'AmbientMoveWater' )
@@ -1850,6 +1854,52 @@ MobileUnit = Class(Unit) {
             self:UpdateMovementEffectsOnMotionEventChange( new, old )
         end
 
+    end,
+
+    AddOnHorizontalStartMoveCallback = function(self, fn)
+
+		if not self.EventCallbacks.OnHorizontalStartMove then
+			self.EventCallbacks.OnHorizontalStartMove = {}
+		end
+
+        LOUDINSERT(self.EventCallbacks.OnHorizontalStartMove, fn)
+    end,
+
+    DoOnHorizontalStartMoveCallbacks = function(self)
+
+		if self.EventCallbacks.OnHorizontalStartMove then
+
+			for k, cb in self.EventCallbacks.OnHorizontalStartMove do
+
+				if cb then
+
+					cb(self)
+				end
+			end
+		end
+    end,
+
+    AddOnHorizontalStopMoveCallback = function(self, fn)
+
+		if not self.EventCallbacks.OnHorizontalStopMove then
+			self.EventCallbacks.OnHorizontalStopMove = {}
+		end
+
+        LOUDINSERT(self.EventCallbacks.OnHorizontalStopMove, fn)
+    end,
+
+    DoOnHorizontalStopMoveCallbacks = function(self)
+
+		if self.EventCallbacks.OnHorizontalStopMove then
+
+			for k, cb in self.EventCallbacks.OnHorizontalStopMove do
+
+				if cb then
+
+					cb(self)
+				end
+			end
+		end
     end,
 
     OnMotionVertEventChange = function( self, new, old )
@@ -1902,29 +1952,6 @@ MobileUnit = Class(Unit) {
             end
         end
 
-    end,
-
-    AddOnHorizontalStartMoveCallback = function(self, fn)
-
-		if not self.EventCallbacks.OnHorizontalStartMove then
-			self.EventCallbacks.OnHorizontalStartMove = {}
-		end
-
-        LOUDINSERT(self.EventCallbacks.OnHorizontalStartMove, fn)
-    end,
-
-    DoOnHorizontalStartMoveCallbacks = function(self)
-
-		if self.EventCallbacks.OnHorizontalStartMove then
-
-			for k, cb in self.EventCallbacks.OnHorizontalStartMove do
-
-				if cb then
-
-					cb(self)
-				end
-			end
-		end
     end,
 
     StartBeingBuiltEffects = function(self, builder, layer)
@@ -2771,7 +2798,7 @@ QuantumGateUnit = Class(FactoryUnit) {
 		self.TeleportInProgress = false
 		destinationGate.TeleportInProgress = false
 
-		LOG("~Transport sequence complete!")
+		--LOG("~Transport sequence complete!")
 	end,
 
 
@@ -4753,9 +4780,11 @@ NukeMineStructureUnit = Class(MineStructureUnit) {
             Fire = function(self)
 
                 if self.unit.DeathWeaponEnabled ~= false then
+
                     local myBlueprint = self:GetBlueprint()
                     local myProjectile = self.unit:CreateProjectile(myBlueprint.ProjectileId, 0, 0, 0, nil, nil, nil):SetCollision(false)
-                    myProjectile:PassDamageData(self:GetDamageTable())
+
+                    myProjectile:PassDamageData(self.damageTable)    --GetDamageTable())
                 end
             end,
         },

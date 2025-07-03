@@ -731,6 +731,8 @@ EEL0001 = Class(TWalkingLandUnit) {
     end,
 
     WeaponConfigCheck = function(self)
+    
+        if self.Dead then return end
 
 		if self.wcBuildMode then
 
@@ -757,7 +759,7 @@ EEL0001 = Class(TWalkingLandUnit) {
 
                     wep = self:GetWeaponByLabel('EXFlameCannon01')
                     wep:ChangeMaxRadius(self:GetBlueprint().Weapon[5].MaxRadius)
-                    
+
                 else
                     self:SetWeaponEnabledByLabel('EXFlameCannon01', false)
                     self:SetWeaponEnabledByLabel('EXFlameCannon02', true)
@@ -873,6 +875,7 @@ EEL0001 = Class(TWalkingLandUnit) {
 
 				wep = self:GetWeaponByLabel('EXEnergyLance01')
 				wep:ChangeMaxRadius(self:GetBlueprint().Weapon[18].MaxRadius)
+
 			else
 				self:SetWeaponEnabledByLabel('EXEnergyLance01', false)
                 self:HideBone('Right_Lance_Turret', true)
@@ -885,6 +888,7 @@ EEL0001 = Class(TWalkingLandUnit) {
 
 				wep = self:GetWeaponByLabel('EXEnergyLance02')
 				wep:ChangeMaxRadius(self:GetBlueprint().Weapon[19].MaxRadius)
+
 			else
 				self:SetWeaponEnabledByLabel('EXEnergyLance02', false)
                 self:HideBone('Left_Lance_Turret', true)

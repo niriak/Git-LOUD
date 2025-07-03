@@ -4,12 +4,14 @@
 
 local VizMarker = import('/lua/sim/VizMarker.lua').VizMarker
 
+local LOUDCEIL = math.ceil
+local LOUDMIN = math.min
+	
 local WaitTicks = coroutine.yield
 
--- TODO: make sure each new instance is using a previous metatable
 function RemoteViewing(SuperClass)
 
-    local RemoteViewingDebug = true
+    local RemoteViewingDebug = false
 
     return Class(SuperClass) {
 	
@@ -28,10 +30,18 @@ function RemoteViewing(SuperClass)
                 VisibleLocation         = false,
             }
 
+            if RemoteViewingDebug then
+                LOG("*AI DEBUG OnCreate for "..repr(self.BlueprintID) )
+            end
+  
         end,
 
         OnStopBeingBuilt = function(self,builder,layer)
 
+            if RemoteViewingDebug then
+                LOG("*AI DEBUG OnStopBeingBuilt for "..repr(self.BlueprintID) )
+            end
+  
             self.Sync.Abilities = self.RemoteViewingData.Abilities            
             self.Sync.Abilities.TargetLocation.Active = true
 
@@ -95,32 +105,21 @@ function RemoteViewing(SuperClass)
             self:CreateVisibleEntity()
 
         end,
-
-        CreateVisibleEntity = function(self)
-		
-			local VisibilityEntityWillBeCreated = (self.RemoteViewingData.VisibleLocation and self.RemoteViewingData.DisableCounter == 0)
-
-            if RemoteViewingDebug then        
-                LOG("*AI DEBUG CreateVisibleEntity "..repr(VisibilityEntityWillBeCreated) )
-			end
-            
-            -- Only give a visible area if we have a location and intel button enabled
-            if not self.RemoteViewingData.VisibleLocation then
-                return
+        
+        AntiTeleportBlock = function( self, aiBrain, location )
+        
+            if RemoteViewingDebug then
+                LOG("*AI DEBUG AntiTeleportBlock location is "..repr(location))
+                LOG("*AI DEBUG RemoteViewingData is "..repr(self.RemoteViewingData))
             end
-			
-			-- here is where we would drop in a function to defeat remote viewing (ie - antiteleport)
-			-- essentially costing the user the energy but remote entity fails to materialize
-			-- this code taken from Black Ops
-			
-			--LOG("*AI DEBUG Checking for AntiRemoteViewing")
 
 			for num, brain in ArmyBrains do
 		
 				local unitList = brain:GetListOfUnits(categories.ANTITELEPORT, false, true)
-				local location = self.RemoteViewingData.VisibleLocation
+				--local location = self.RemoteViewingData.VisibleLocation
 			
 				for i, unit in unitList do
+
 					--	if it's an ally, then we skip.
 					if not IsEnemy(self.Army, unit.Army) then 
 						continue
@@ -139,8 +138,6 @@ function RemoteViewing(SuperClass)
                         self.RemoteViewingData.PendingVisibleLocation = false
 						self.RemoteViewingData.VisibleLocation = false
 
-                        VisibilityEntityWillBeCreated = false
-						
 						-- play audio warning
 						if GetFocusArmy() == self.Army then
 
@@ -150,15 +147,38 @@ function RemoteViewing(SuperClass)
 							ForkThread(Brain.PlayVOSound, Brain, Voice, 'RemoteViewingFailed')
 						end						
 						
-						return
+						return true
 					end
 				end
 
-			end			
+			end	
+
+            return false
+            
+        end,
+        
+
+        CreateVisibleEntity = function(self)
+		
+			local VisibilityEntityWillBeCreated = (self.RemoteViewingData.VisibleLocation and self.RemoteViewingData.DisableCounter == 0)
+
+            if RemoteViewingDebug then        
+                LOG("*AI DEBUG CreateVisibleEntity "..repr(VisibilityEntityWillBeCreated) )
+			end
+            
+            -- Only give a visible area if we have a location and intel button enabled
+            if not self.RemoteViewingData.VisibleLocation then
+                return
+            end
+			
+			-- here is where we would drop in a function to defeat remote viewing (ie - antiteleport)
+			-- essentially costing the user the energy but remote entity fails to materialize
+			-- this code taken from Black Ops
+            VisibleEntityWillBeCreated = self:AntiTeleportBlock( self:GetAIBrain(), self.RemoteViewingData.VisibleLocation )
             
             if VisibilityEntityWillBeCreated then
 
-                -- Create new visible area
+                -- Create new visible entity
                 if not self.RemoteViewingData.Satellite then
 
                     local spec = {
@@ -174,20 +194,31 @@ function RemoteViewing(SuperClass)
                         Army = self:GetAIBrain():GetArmyIndex(),
                     }
                     
-                    --LOG("*AI DEBUG Creating RemoteViewing Entity")
-                    
                     self.RemoteViewingData.Satellite = VizMarker(spec)
+                    
+                    -- this functionality is for remoteviewing that attaches to a specific unit
+                    -- rather than just at a specific place
+                    if self.RemoteViewingData.TargetUnit then
+                        self.RemoteViewingData.Satellite:AttachTo(self.RemoteViewingData.TargetUnit, -1)
+                    end
 
                     self.Trash:Add(self.RemoteViewingData.Satellite)
 
                 else
 
                     -- Move and reactivate old visible area
-                    if not self.RemoteViewingData.Satellite:BeenDestroyed() then
+                    if not self.RemoteViewingData.Satellite:BeenDestroyed() and self.RemoteViewingData.VisibleLocation then
                     
-                        --LOG("*AI DEBUG Moving Existing RemoteViewing Entity and Enabling Vision")
-
+                        if RemoteViewingDebug then
+                            LOG("*AI DEBUG Moving Existing RemoteViewing Entity and Enabling Vision")
+                        end
+                        
                         Warp( self.RemoteViewingData.Satellite, self.RemoteViewingData.VisibleLocation )
+
+                        if self.RemoteViewingData.TargetUnit then
+                            self.RemoteViewingData.Satellite:DetachFrom()
+                            self.RemoteViewingData.Satellite:AttachTo(self.RemoteViewingData.TargetUnit, -1)
+                        end
 
                         self.RemoteViewingData.Satellite:EnableIntel('Vision')
                     end
@@ -202,19 +233,46 @@ function RemoteViewing(SuperClass)
 				
                 -- start the cooldown period before allowing target to be moved again
 				if bp.Cooldown and bp.Cooldown > 0 then
-                    self.CooldownThread = self:ForkThread(self.Cooldown, bp.Cooldown)  -- cooldown
+   
+                    if RemoteViewingDebug then
+                        LOG("*AI DEBUG Cooldown Thread "..repr(self.CooldownThread) )
+                    end
+                   
+                    if self.CooldownThread then
+                        KillThread(self.CooldownThread)
+                    end
+                    
+                    self.CooldownThread = self:ForkThread(self.Cooldown, bp.Cooldown)
                     self.Trash:Add(self.CooldownThread)
                 end
 				
-				-- start the timer that will auto-shut off the eye
+				-- start the timer that will auto-shut off the viewing entity
                 if bp.Viewtime and bp.Viewtime > 0 then
+   
+                    if RemoteViewingDebug then
+                        LOG("*AI DEBUG Viewtime Thread "..repr(self.ViewtimeThread) )
+                    end
+
+                    -- kill any existing thread
+                    if self.ViewtimeThread then
+                        KillThread(self.ViewtimeThread)
+                    end
+
                     self.ViewtimeThread = self:ForkThread(self.Viewtime, bp.Viewtime)  -- auto-remove view
                     self.Trash:Add(self.ViewtimeThread)
                 end
 				
 				-- grow the viewing radius in steps
                 if bp.RemoteViewingRadiusFinal and bp.RemoteViewingRadiusFinal > 0 and bp.RemoteViewingRadiusFinal != bp.RemoteViewingRadius then
+   
+                    if RemoteViewingDebug then
+                        LOG("*AI DEBUG ViewingRadius Thread "..repr(self.ViewingRadiusThread) )
+                    end
 				
+                    if self.ViewingRadiusThread then
+                        KillThread(self.ViewingRadiusThread)
+                    end
+                    
                     -- for a growing viewing radius
                     local initRadius = bp.RemoteViewingRadius
                     local finalRadius = bp.RemoteViewingRadiusFinal
@@ -257,53 +315,7 @@ function RemoteViewing(SuperClass)
                 KillThread(self.ViewingRadiusThread)
             end
         end,
---[[
-        OnIntelEnabled = function(self,intel)
 
-            if RemoteViewingDebug then            
-                LOG("*AI DEBUG OnIntelEnabled")
-            end
-
-            -- Make sure the button is only calculated once rather than once per possible intel type
-            self.RemoteViewingData.DisableCounter = self.RemoteViewingData.DisableCounter - 1
-
-            self:CreateVisibleEntity()
-
-            SuperClass.OnIntelEnabled(self,intel)
-        end,
-
-        OnIntelDisabled = function(self,intel)
-
-            if RemoteViewingDebug then        
-                LOG("*AI DEBUG OnIntelDisabled")
-            end
-
-            -- make sure button is only calculated once rather than once per possible intel type
-            self.RemoteViewingData.DisableCounter = self.RemoteViewingData.DisableCounter + 1
-
-            self:DisableVisibleEntity()
-
-            SuperClass.OnIntelDisabled(self,intel)
-        end,
-		
-		-- a cooldown period. the vision marker cannot be changed during this period
-        Cooldown = function(self, time)
-
-            if time > 0 then
-            
-                --LOG("*AI DEBUG Cooldown for " .. time*10 )
-
-                self.Sync.Abilities = self.RemoteViewingData.Abilities
-                self.Sync.Abilities.TargetLocation.Active = false
-
-                WaitTicks(time * 10)
-
-                self.Sync.Abilities = self.RemoteViewingData.Abilities
-                self.Sync.Abilities.TargetLocation.Active = true
-
-            end
-        end,
---]]
         -- this function recharges the emitter responsible for creating the viewing entity
         -- the first thing it does is remove the targeting button
         -- by turning this into an EconomyEvent, we no longer need to monitor resources
@@ -314,17 +326,21 @@ function RemoteViewing(SuperClass)
             self.Sync.Abilities = self.RemoteViewingData.Abilities
             self.Sync.Abilities.TargetLocation.Active = false
 
+            if RemoteViewingDebug then
+                LOG("*AI DEBUG RechargeEmitter for "..repr(self.BlueprintID))
+            end
+  
             self:RequestRefreshUI()
         
             local chargeEcost   = self.RemoteViewingData.Intel.RemoteViewingEnergyDrain * (self.EnergyMaintAdjMod or 1)
             local chargetime    = self.RemoteViewingData.Intel.ReactivateTime or 15
 
-            local Cost = CreateEconomyEvent(self, chargeEcost, 0, chargetime, self.SetWorkProgress)
-
             if RemoteViewingDebug then
-                LOG("*AI DEBUG RechargeEmitter for " .. chargetime * 10 )
+                LOG("*AI DEBUG RechargeEmitter for "..repr(self.BlueprintID).." ".. chargetime * 10 )
             end
-            
+  
+            local Cost = CreateEconomyEvent(self, chargeEcost, 0, chargetime, self.SetWorkProgress)
+          
             WaitFor(Cost)
 
             self:SetWorkProgress(0.0)
@@ -350,8 +366,6 @@ function RemoteViewing(SuperClass)
 
             if viewtime > 0 then
 
-                --LOG("*AI DEBUG ViewTime for " .. viewtime*10 )
-
                 WaitTicks(viewtime * 10)
 
                 self:DisableVisibleEntity()
@@ -361,9 +375,6 @@ function RemoteViewing(SuperClass)
         -- changes the size of the camera each tick. Should be able to handle growing and shrinking
         ViewingRadius = function(self, initialRadius, endingRadius, step)
 		
-			local LOUDCEIL = math.ceil
-			local LOUDMIN = math.min
-			
             local sat = self.RemoteViewingData.Satellite
             
             local nTicks = LOUDCEIL( (endingRadius - initialRadius) / step )

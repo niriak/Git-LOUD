@@ -71,9 +71,12 @@ local IsUnitState           = moho.unit_methods.IsUnitState
 
 local VectorCached = { 0, 0, 0 }
 
+local AIRFACT3      = categories.FACTORY * categories.AIR * categories.TECH3
 local AIRPADS       = categories.AIRSTAGINGPLATFORM - categories.MOBILE
 local EXTRACTORS    = categories.MASSEXTRACTION - categories.TECH1
 local FABRICATORS   = categories.MASSFABRICATION * categories.TECH3
+local NAVALFAC      = categories.NAVAL * categories.FACTORY 
+local NAVALMOBILE   = categories.NAVAL * categories.MOBILE
 local PARAGONS      = categories.MASSFABRICATION * categories.EXPERIMENTAL
 
 local timeACTBrains = {}
@@ -171,6 +174,11 @@ function HaveGreaterThanUnitsWithCategory(aiBrain, numReq, testCat, idleReq)
     return GetCurrentUnits(aiBrain,testCat) > numReq
 end
 
+-- this is a custom condition
+function HaveGreaterThanT3AirFactories(aiBrain, numReq)
+    return GetCurrentUnits(aiBrain, AIRFACT3) > numReq
+end
+
 function HaveGreaterThanUnitsWithCategoryAndAlliance(aiBrain, numReq, testCat, alliance)
 	return GetNumUnitsAroundPoint( aiBrain, testCat, VectorCached, 999999, alliance ) > numReq
 end
@@ -184,8 +192,11 @@ function UnitCapCheckGreater(aiBrain, percent)
 	if aiBrain.IgnoreArmyCaps then
 		return false
 	end
-	
-    return ( GetArmyUnitCostTotal(aiBrain.ArmyIndex) / GetArmyUnitCap(aiBrain.ArmyIndex) ) > percent 
+    
+    local ArmyIndex = aiBrain.ArmyIndex
+    local result    = GetArmyUnitCostTotal(ArmyIndex) / GetArmyUnitCap(ArmyIndex)
+ 	
+    return result > percent 
 end
 
 function UnitCapCheckLess(aiBrain, percent)
@@ -221,7 +232,7 @@ function BaseInPlayableArea( aiBrain, managerposition )
     return true
 end
 
--- This routine returns the location of the closest base that has engineers or factories
+-- This routine returns the location of the closest base that has engineers or NON-NAVAL factories
 function AIFindClosestBuilderManagerPosition( aiBrain, position)
 
     local distance = 9999999
@@ -234,7 +245,7 @@ function AIFindClosestBuilderManagerPosition( aiBrain, position)
 	
 		if v.EngineerManager.Active then
 		
-			if v.EngineerManager.EngineerList.Count > 0 or EntityCategoryCount( categories.FACTORY - categories.NAVAL, v.FactoryManager.FactoryList ) > 0 then
+			if v.EngineerManager.EngineerList.Count > 0 or EntityCategoryCount( NAVALFAC, v.FactoryManager.FactoryList ) > 0 then
 			
 				if VDist2Sq( position[1],position[3], v.Position[1],v.Position[3] ) <= distance then
 					distance = VDist2Sq( position[1],position[3], v.Position[1],v.Position[3] )
@@ -1713,7 +1724,7 @@ function ClearOutBase( manager, aiBrain )
         end
 	
         -- all naval units including EXPERIMENTALS excluding MOBILESONAR
-        local groupsea, groupseacount = GetFreeUnitsAroundPoint( aiBrain, (categories.NAVAL * categories.MOBILE) - categories.MOBILESONAR - categories.INSIGNIFICANTUNIT, Position, 100 )
+        local groupsea, groupseacount = GetFreeUnitsAroundPoint( aiBrain, NAVALMOBILE - categories.MOBILESONAR - categories.INSIGNIFICANTUNIT, Position, 100 )
 
         if groupseacount > 0 then
 
@@ -4634,7 +4645,7 @@ function ParseIntelThread( aiBrain )
     
     local AIRUNITS = (categories.AIR * categories.MOBILE) - categories.TRANSPORTFOCUS - categories.SATELLITE - categories.SCOUT + categories.uea0203
     local LANDUNITS = (categories.LAND * categories.MOBILE) - categories.ANTIAIR - categories.ENGINEER - categories.SCOUT
-    local NAVALUNITS = (categories.NAVAL * categories.MOBILE) + (categories.NAVAL * categories.FACTORY) + (categories.NAVAL * categories.DEFENSE)
+    local NAVALUNITS = NAVALMOBILE + NAVALFAC + (categories.NAVAL * categories.DEFENSE)
 
 	WaitTicks( LOUDFLOOR(Random() * 25 + 1))	-- to avoid all the AI running at exactly the same tick
 
@@ -5419,7 +5430,7 @@ function ParseIntelThread( aiBrain )
                     navidle = 0
                     navaltot = 0
                     
-                    for _,u in EntityCategoryFilterDown( categories.NAVAL, units) do
+                    for _,u in EntityCategoryFilterDown( NAVALFAC, units) do
                     
                         navcount = navcount + 1
                         
@@ -5512,7 +5523,7 @@ function ParseIntelThread( aiBrain )
             mynavalidle = 0
             mynavaltot = 0
 
-            for _,u in EntityCategoryFilterDown( categories.NAVAL, units) do
+            for _,u in EntityCategoryFilterDown( NAVALFAC, units) do
 
                 mynavalcount = mynavalcount + 1
 
@@ -5537,14 +5548,14 @@ function ParseIntelThread( aiBrain )
                 aiBrain.NavalProdRatio = mynavaltot/(grandnavaltot/aiBrain.NumOpponents)
             end
 
-            -- the enemy is in the water and building
+            -- I have navy production but the enemy is undetected
             if grandnavaltot > 0 and aiBrain.NavalRatio < 0.02 then
                 aiBrain.NavalRatio = 0.2
             end
             
-            -- the enemy is in the air and building
+            -- I have air production but the enemy is undetected
             if grandairtot > 0 and aiBrain.AirRatio < 0.02 then
-                aiBrain.AirRatio = 0.2
+                aiBrain.AirRatio = (0.25 * aiBrain.AirProdRatio)
             end
 
             if ReportRatios then
